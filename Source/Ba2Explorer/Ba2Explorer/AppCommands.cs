@@ -13,12 +13,22 @@ namespace Ba2Explorer
 
         public static RoutedUICommand ExtractSingle
         {
-            get {  return extractSingle; }
+            get { return extractSingle; }
+        }
+
+        private static RoutedUICommand extractAll;
+
+        public static RoutedUICommand ExtractAll
+        {
+            get { return extractAll; }
         }
 
         static AppCommands()
         {
-            extractSingle = new RoutedUICommand("ExtractSingle", "ExtractSingle", typeof(AppCommands));
+            Type t = typeof(AppCommands);
+
+            extractSingle = new RoutedUICommand("ExtractSingle", "ExtractSingle", t);
+            extractAll = new RoutedUICommand("ExtractAll", "ExtractAll", t);
         }
     }
 }
