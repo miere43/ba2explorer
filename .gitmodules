@@ -1,0 +1,3 @@
+[submodule "Third-party/Ba2Tools"]
+	path = Third-party/Ba2Tools
+	url = https://github.com/miere43/Ba2Tools
