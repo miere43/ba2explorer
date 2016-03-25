@@ -30,6 +30,8 @@ namespace Ba2Explorer
             InitializeComponent();
 
             mainViewModel = (MainViewModel)DataContext;
+
+            mainViewModel.ArchiveInfo.OpenWithDialog();
         }
 
         private void OpenCommandExecuted(object sender, ExecutedRoutedEventArgs e)
@@ -63,7 +65,7 @@ namespace Ba2Explorer
         {
             IList sels = ArchiveFilesList.SelectedItems;
 
-            mainViewModel.ArchiveInfo.ExtractFiles(sels.OfType<string>().ToList());
+            mainViewModel.ExtractFilesWithDialog(sels.OfType<string>().ToList());
             e.Handled = true;
         }
     }

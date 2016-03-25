@@ -28,6 +28,7 @@
         <Menu Grid.Row="0" Grid.ColumnSpan="2">
             <MenuItem Header="File">
                 <MenuItem Command="Open" Header="Open" />
+                <MenuItem Command="Close" Header="Close" />
                 <Separator />
                 <MenuItem Header="Exit" />
             </MenuItem>

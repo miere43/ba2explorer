@@ -79,9 +79,17 @@
     <Compile Include="AppCommands.cs" />
     <Compile Include="ArchiveFilename.cs" />
     <Compile Include="ExtractSingleCommand.cs" />
+    <Compile Include="FileExtractionWindow.xaml.cs">
+      <DependentUpon>FileExtractionWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ViewModel\ArchiveInfo.cs" />
+    <Compile Include="ViewModel\FileExtractionViewModel.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
     <Compile Include="ViewModel\ViewModelLocator.cs" />
+    <Page Include="FileExtractionWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

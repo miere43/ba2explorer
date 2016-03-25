@@ -1,0 +1,43 @@
+﻿<Window x:Class="Ba2Explorer.FileExtractionWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Ba2Explorer"
+        mc:Ignorable="d"
+        DataContext="{Binding Source={StaticResource Locator}, Path=FileExtraction}"
+        Title="Extracting..." Height="150" Width="300">
+
+    <Window.CommandBindings>
+        <CommandBinding Command="Stop" CanExecute="CanStopExtraction" Executed="StopExtraction" />
+    </Window.CommandBindings>
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+
+        </Grid.ColumnDefinitions>
+
+        <TextBlock Margin="6" VerticalAlignment="Center"  Text="Extracting..." />
+        <ProgressBar
+            Height="20"
+            Grid.Row="1"
+            Grid.Column="0"
+            Grid.ColumnSpan="3"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Stretch"
+            Margin="10"
+            x:Name="ExtractionProgress"
+            Minimum="0"
+            Maximum="1" />
+        
+        <Button Command="Stop" Grid.Row="3" Margin="10" Grid.Column="1" IsCancel="True" x:Name="Cancel" Content="Cancel" />
+    </Grid>
+</Window>
