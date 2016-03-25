@@ -42,5 +42,11 @@
                 </ContextMenu>
             </ListView.ContextMenu>
         </ListView>
+
+        <local:FilePreview
+            Grid.Row="2"
+            Grid.Column="2">
+            
+        </local:FilePreview>
     </Grid>
 </Window>
