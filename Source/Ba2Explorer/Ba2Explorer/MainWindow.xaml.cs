@@ -12,6 +12,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Ba2Explorer.ViewModel;
+using Microsoft.Win32;
 
 namespace Ba2Explorer
 {
@@ -20,9 +22,40 @@ namespace Ba2Explorer
     /// </summary>
     public partial class MainWindow : Window
     {
+        private MainViewModel mainViewModel;
+
         public MainWindow()
         {
             InitializeComponent();
+
+            mainViewModel = (MainViewModel)DataContext;
+        }
+
+        private void OpenCommandExecuted(object sender, ExecutedRoutedEventArgs e)
+        {
+            mainViewModel.ArchiveInfo.OpenWithDialog();
+            e.Handled = true;
+        }
+
+        private void ExtractSingleCommandExecuted(object sender, ExecutedRoutedEventArgs e)
+        {
+            string sel = ArchiveFilesList.SelectedItem as string;
+
+            mainViewModel.ArchiveInfo.ExtractSingle(sel);
+            e.Handled = true;
+        }
+
+        private void ExtractSingleCanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            if (!mainViewModel.ArchiveInfo.IsOpened)
+            {
+                e.CanExecute = false;
+                e.Handled = true;
+                return;
+            }
+
+            e.CanExecute = ArchiveFilesList.SelectedIndex != -1;
+            e.Handled = true;
         }
     }
 }

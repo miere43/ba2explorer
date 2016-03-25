@@ -5,8 +5,40 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Ba2Explorer"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525">
+        DataContext="{Binding Source={StaticResource Locator}, Path=Main}"
+        Title="BA2 Explorer" Height="350" Width="525">
+
+    <Window.CommandBindings>
+        <CommandBinding Command="Open" Executed="OpenCommandExecuted" />
+        <CommandBinding Command="local:AppCommands.ExtractSingle" CanExecute="ExtractSingleCanExecute" Executed="ExtractSingleCommandExecuted" />
+    </Window.CommandBindings>
+
     <Grid>
-        
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="2*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="1*" />
+            <RowDefinition Height="2*" />
+        </Grid.RowDefinitions>
+
+        <Menu Grid.Row="0" Grid.ColumnSpan="2">
+            <MenuItem Header="File">
+                <MenuItem Command="Open" Header="Open" />
+                <Separator />
+                <MenuItem Header="Exit" />
+            </MenuItem>
+        </Menu>
+
+        <ListView x:Name="ArchiveFilesList" Grid.Row="2" Grid.Column="0" DataContext="{Binding ArchiveInfo}" ItemsSource="{Binding Files}">
+            <ListView.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Extract" Command="local:AppCommands.ExtractSingle" />
+                    <MenuItem Header="Extract selected" />
+                </ContextMenu>
+            </ListView.ContextMenu>
+        </ListView>
     </Grid>
 </Window>

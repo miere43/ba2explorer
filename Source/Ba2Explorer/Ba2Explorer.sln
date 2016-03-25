@@ -5,6 +5,8 @@ VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ba2Explorer", "Ba2Explorer\Ba2Explorer.csproj", "{67B75E76-0B03-4CB9-B905-001C9404F8A3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ba2Tools", "..\..\Third-party\Ba2Tools\Source\Ba2Tools\Ba2Tools.csproj", "{4716F53B-DB26-4B24-B5DF-F0EE73938F1A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{67B75E76-0B03-4CB9-B905-001C9404F8A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{67B75E76-0B03-4CB9-B905-001C9404F8A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{67B75E76-0B03-4CB9-B905-001C9404F8A3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4716F53B-DB26-4B24-B5DF-F0EE73938F1A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4716F53B-DB26-4B24-B5DF-F0EE73938F1A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4716F53B-DB26-4B24-B5DF-F0EE73938F1A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4716F53B-DB26-4B24-B5DF-F0EE73938F1A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
