@@ -7,6 +7,7 @@ using System.Windows;
 using System.IO;
 using System;
 using System.Diagnostics.Contracts;
+using Microsoft.Win32;
 
 namespace Ba2Explorer.ViewModel
 {
@@ -25,6 +26,8 @@ namespace Ba2Explorer.ViewModel
     public class MainViewModel : ViewModelBase
     {
         public ArchiveInfo ArchiveInfo { get; set; }
+
+        public MainWindow Window { get; set; }
 
         //private bool CharCmp(char c)
         //{
@@ -85,6 +88,37 @@ namespace Ba2Explorer.ViewModel
             ////}
         }
 
+        public void OpenArchiveWithDialog()
+        {
+            OpenFileDialog dialog = new OpenFileDialog();
+
+            dialog.Title = "Open archive";
+            dialog.CheckPathExists = true;
+            dialog.Filter = "BA2 Archives|*.ba2|All files|*.*";
+            dialog.CheckFileExists = true;
+            dialog.ShowDialog();
+
+            OpenArchive(dialog.FileName);
+        }
+
+        public void OpenArchive(string path)
+        {
+            ArchiveInfo.Open(path);
+        }
+
+        public void ExtractFiles(string path, IEnumerable<string> files)
+        {
+            FileExtractionWindow window = new FileExtractionWindow();
+            window.ViewModel.ArchiveInfo = this.ArchiveInfo;
+            window.ViewModel.DestinationFolder = path;
+            window.ViewModel.FilesToExtract = files;
+            window.ShowInTaskbar = true;
+            window.Owner = this.Window;
+
+            window.ShowDialog();
+            window.Activate();
+        }
+
         public void ExtractFilesWithDialog(IEnumerable<string> files)
         {
             Contract.Ensures(ArchiveInfo.IsBusy == false);
@@ -98,14 +132,7 @@ namespace Ba2Explorer.ViewModel
 
                 if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                 {
-                    FileExtractionWindow window = new FileExtractionWindow();
-                    window.ViewModel.ArchiveInfo = this.ArchiveInfo;
-                    window.ViewModel.DestinationFolder = dialog.SelectedPath;
-                    window.ViewModel.FilesToExtract = files;
-                    window.ShowInTaskbar = true;
-
-                    window.ShowDialog();
-                    window.Activate();
+                    ExtractFiles(dialog.SelectedPath, files);
                 }
             }
             catch (Exception e)

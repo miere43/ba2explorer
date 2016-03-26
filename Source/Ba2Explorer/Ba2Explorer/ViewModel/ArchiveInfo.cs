@@ -17,7 +17,16 @@ namespace Ba2Explorer.ViewModel
 {
     public class ArchiveInfo : ObservableObject
     {
-        public ObservableCollection<string> Files { get; set; }
+        private ObservableCollection<string> files;
+        public ObservableCollection<string> Files
+        {
+            get { return files; }
+            set
+            {
+                files = value;
+                RaisePropertyChanged();
+            }
+        }
 
         private bool isOpened = false;
         public bool IsOpened
@@ -100,7 +109,11 @@ namespace Ba2Explorer.ViewModel
             try
             {
                 IsBusy = true;
-                archive.ExtractFiles(files, destination, cancellationToken, progress);
+                archive.ExtractFiles(files, destination, cancellationToken, progress, true);
+            }
+            catch (OperationCanceledException e)
+            {
+                throw;
             }
             finally
             {
@@ -128,27 +141,23 @@ namespace Ba2Explorer.ViewModel
             }
         }
 
-        public void OpenWithDialog()
-        {
-            OpenFileDialog dialog = new OpenFileDialog();
-            dialog.Title = "Open archive";
-            dialog.CheckPathExists = true;
-            dialog.Filter = "BA2 Archives|*.ba2|All files|*.*";
-            dialog.CheckFileExists = true;
-            dialog.ShowDialog();
-
-            Open(dialog.FileName);
-        }
-
         public void Open(string path)
         {
+            if (archive != null && IsOpened)
+            {
+                if (IsBusy)
+                    throw new ArgumentException();
+
+                archive.Dispose();
+                archive = null;
+                IsOpened = false;
+                Files = null;
+            }
+
             try
             {
                 archive = BA2Loader.Load(path);
-                Debug.WriteLine("open");
                 Files = new ObservableCollection<string>(archive.ListFiles());
-                Debug.WriteLine("files");
-                RaisePropertyChanged("Files");
                 IsOpened = true;
             }
             catch (Exception e)

@@ -30,13 +30,15 @@ namespace Ba2Explorer
             InitializeComponent();
 
             mainViewModel = (MainViewModel)DataContext;
+            mainViewModel.Window = this;
 
-            mainViewModel.ArchiveInfo.OpenWithDialog();
+            mainViewModel.OpenArchive("D:/Games/Fallout 4/Data/Fallout4 - Interface.ba2");
+            //mainViewModel.ExtractFiles("D:/", new string[] { "Interface\\Book.swf" });
         }
 
         private void OpenCommandExecuted(object sender, ExecutedRoutedEventArgs e)
         {
-            mainViewModel.ArchiveInfo.OpenWithDialog();
+            mainViewModel.OpenArchiveWithDialog();
             e.Handled = true;
         }
 

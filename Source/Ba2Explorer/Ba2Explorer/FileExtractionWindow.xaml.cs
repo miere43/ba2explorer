@@ -13,6 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using Ba2Explorer.ViewModel;
 using System.Diagnostics;
+using System.ComponentModel;
 
 namespace Ba2Explorer
 {
@@ -50,9 +51,19 @@ namespace Ba2Explorer
             if (ViewModel?.ArchiveInfo == null)
                 return;
 
-            bool canStop = ViewModel.ArchiveInfo.IsBusy;
-            e.CanExecute = canStop;
+            e.CanExecute = ViewModel.IsExtracting;
             e.Handled = true;
+        }
+
+        private void CanOpenFolder(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = true;
+            e.Handled = true;
+        }
+
+        private void OpenFolderExecuted(object sender, ExecutedRoutedEventArgs e)
+        {
+            Process.Start(ViewModel.DestinationFolder);
         }
 
         private void StopExtraction(object sender, ExecutedRoutedEventArgs e)
@@ -62,6 +73,15 @@ namespace Ba2Explorer
             Cancel.Content = "Canceling...";
 
             ViewModel.Cancel();
+        }
+
+        protected override void OnClosing(CancelEventArgs e)
+        {
+            // TODO hide close button on window.
+            if (ViewModel.IsExtracting)
+                e.Cancel = true;
+            else
+                e.Cancel = false;
         }
     }
 }

@@ -24,8 +24,6 @@ namespace Ba2Explorer.ViewModel
             }
         }
 
-        public Progress<int> ExtractionProgress { get; set; }
-
         private bool isExtracting = false;
         public bool IsExtracting
         {
@@ -33,6 +31,29 @@ namespace Ba2Explorer.ViewModel
             set
             {
                 isExtracting = value;
+                Debug.WriteLine("changed to " + isExtracting);
+                RaisePropertyChanged();
+            }
+        }
+
+        private bool isExtractionFinished = false;
+        public bool IsExtractionFinished
+        {
+            get { return isExtractionFinished; }
+            set
+            {
+                isExtractionFinished = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        private bool isExtractionCancelled = false;
+        public bool IsExtractionCancelled
+        {
+            get { return isExtractionCancelled; }
+            set
+            {
+                isExtractionCancelled = value;
                 RaisePropertyChanged();
             }
         }
@@ -59,6 +80,8 @@ namespace Ba2Explorer.ViewModel
             }
         }
 
+        public Progress<int> ExtractionProgress { get; set; }
+
         private CancellationTokenSource cancellationToken;
 
         public FileExtractionViewModel()
@@ -76,18 +99,29 @@ namespace Ba2Explorer.ViewModel
 
         public void ExtractFiles()
         {
+            Contract.Ensures(IsExtracting == false);
+
             Debug.WriteLine("begin extr");
             try
             {
                 var task = Task.Run(() =>
                 {
+                    IsExtracting = true;
                     ArchiveInfo.ExtractFiles(FilesToExtract, DestinationFolder, cancellationToken.Token, ExtractionProgress);
+                    Debug.WriteLine("finished");
+                    IsExtractionFinished = true;
+                    IsExtracting = false;
                 });
             }
             catch (OperationCanceledException)
             {
                 // todo;
                 MessageBox.Show("cancelled.");
+                IsExtracting = false;
+            }
+            finally
+            {
+                IsExtracting = false;
             }
         }
     }

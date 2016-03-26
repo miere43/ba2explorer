@@ -85,6 +85,7 @@
     <Compile Include="FilePreview.xaml.cs">
       <DependentUpon>FilePreview.xaml</DependentUpon>
     </Compile>
+    <Compile Include="InverseBooleanConverter.cs" />
     <Compile Include="ViewModel\ArchiveInfo.cs" />
     <Compile Include="ViewModel\FileExtractionViewModel.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
