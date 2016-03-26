@@ -104,7 +104,7 @@ namespace Ba2Explorer.ViewModel
             Debug.WriteLine("begin extr");
             try
             {
-                var task = Task.Run(() =>
+                var task = Task.Run(() => 
                 {
                     IsExtracting = true;
                     ArchiveInfo.ExtractFiles(FilesToExtract, DestinationFolder, cancellationToken.Token, ExtractionProgress);
