@@ -112,7 +112,7 @@ namespace Ba2Explorer.ViewModel
                     IsExtractionFinished = true;
                     IsExtracting = false;
                 });
-            }
+            } 
             catch (OperationCanceledException)
             {
                 // todo;
