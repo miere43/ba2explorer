@@ -41,7 +41,9 @@ namespace Ba2Explorer
 
         private void FileExtractionWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            ViewModel.OnFinished += ViewModel_OnFinished;
+            ViewModel.OnFinishedSuccessfully += ViewModel_OnFinished;
+            ViewModel.OnCanceled += ViewModel_OnCanceled;
+            ViewModel.OnExtractionError += ViewModel_OnExtractionError;
             ViewModel.ExtractionProgress.ProgressChanged += ExtractionProgress_ProgressChanged;
 
             this.Title = "Extracting " + ViewModel.ArchiveInfo.FileName;
@@ -50,13 +52,30 @@ namespace Ba2Explorer
             ViewModel.ExtractFiles();
         }
 
+        private void ViewModel_OnExtractionError(object sender, EventArgs e)
+        {
+            this.Dispatcher.Invoke(() =>
+            {
+                
+            });
+        }
+
+        private void ViewModel_OnCanceled(object sender, EventArgs e)
+        {
+            this.Dispatcher.Invoke(() =>
+            {
+                this.Cancel.Content = "Canceled";
+                this.Title = "Canceled extraction of " + ViewModel.ArchiveInfo.FileName;
+            });
+        }
+
         private void ViewModel_OnFinished(object sender, EventArgs e)
         {
             this.Dispatcher.Invoke(() =>
             {
                 SetExtractingText(ViewModel.FilesToExtract.Count(), ViewModel.FilesToExtract.Count());
                 ExtractionProgress.Value = 1.0d;
-                ViewModel.OnFinished -= ViewModel_OnFinished;
+                ViewModel.OnFinishedSuccessfully -= ViewModel_OnFinished;
                 ViewModel.ExtractionProgress.ProgressChanged -= ExtractionProgress_ProgressChanged;
                 this.Title = "Finished extracting " + ViewModel.ArchiveInfo.FileName;
             });
@@ -95,7 +114,6 @@ namespace Ba2Explorer
 
         private void StopExtraction(object sender, ExecutedRoutedEventArgs e)
         {
-            Debug.WriteLine("stop extr");
             Cancel.Content = "Canceling...";
             Cancel.IsEnabled = false;
 

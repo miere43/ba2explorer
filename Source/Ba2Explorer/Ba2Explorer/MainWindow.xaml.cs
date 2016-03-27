@@ -39,8 +39,8 @@ namespace Ba2Explorer
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
 
-            mainViewModel.OpenArchive("D:/Games/Fallout 4/Data/Fallout4 - Interface.ba2");
-            mainViewModel.ExtractFiles("D:/", mainViewModel.ArchiveInfo.Files);
+            mainViewModel.OpenArchive("D:/Games/Fallout 4/Data/Fallout4 - Sounds.ba2");
+            mainViewModel.ExtractFiles("D:/A", mainViewModel.ArchiveInfo.Files);
         }
 
         private void OpenCommandExecuted(object sender, ExecutedRoutedEventArgs e)

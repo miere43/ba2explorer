@@ -1,4 +1,5 @@
-﻿using GalaSoft.MvvmLight;
+﻿using Ba2Tools;
+using GalaSoft.MvvmLight;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -97,7 +98,11 @@ namespace Ba2Explorer.ViewModel
             cancellationToken.Cancel();
         }
 
-        public event EventHandler OnFinished;
+        public event EventHandler OnFinishedSuccessfully;
+
+        public event EventHandler OnCanceled;
+
+        public event EventHandler OnExtractionError;
 
         public void ExtractFiles()
         {
@@ -108,14 +113,27 @@ namespace Ba2Explorer.ViewModel
             {
                 var task = Task.Run(() => 
                 {
-                    IsExtracting = true;
-                    ArchiveInfo.ExtractFiles(FilesToExtract, DestinationFolder, cancellationToken.Token, ExtractionProgress);
-                    Debug.WriteLine("finished");
-                    IsExtractionFinished = true;
-                    IsExtracting = false;
-
-                    if (OnFinished != null)
-                        OnFinished(this, null);
+                    try
+                    {
+                        IsExtracting = true;
+                        ArchiveInfo.ExtractFiles(FilesToExtract, DestinationFolder, cancellationToken.Token, ExtractionProgress);
+                        if (OnFinishedSuccessfully != null)
+                            OnFinishedSuccessfully(this, null);
+                    }
+                    catch (OperationCanceledException ex)
+                    {
+                        if (OnCanceled != null)
+                            OnCanceled(this, null);
+                    }
+                    catch (BA2ExtractionException ex)
+                    {
+                        if (OnExtractionError != null)
+                            OnExtractionError(this, null);
+                    }
+                    finally
+                    {
+                        IsExtracting = false;
+                    }
                 });
             } 
             catch (OperationCanceledException)
