@@ -15,6 +15,7 @@ using System.Windows.Shapes;
 using Ba2Explorer.ViewModel;
 using Microsoft.Win32;
 using System.Collections;
+using System.Diagnostics;
 
 namespace Ba2Explorer
 {
@@ -32,8 +33,14 @@ namespace Ba2Explorer
             mainViewModel = (MainViewModel)DataContext;
             mainViewModel.Window = this;
 
+            this.Loaded += MainWindow_Loaded;
+        }
+
+        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+
             mainViewModel.OpenArchive("D:/Games/Fallout 4/Data/Fallout4 - Interface.ba2");
-            //mainViewModel.ExtractFiles("D:/", new string[] { "Interface\\Book.swf" });
+            mainViewModel.ExtractFiles("D:/", mainViewModel.ArchiveInfo.Files);
         }
 
         private void OpenCommandExecuted(object sender, ExecutedRoutedEventArgs e)

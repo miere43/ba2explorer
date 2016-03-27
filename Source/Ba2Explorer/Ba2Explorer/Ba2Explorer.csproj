@@ -90,6 +90,7 @@
     <Compile Include="ViewModel\FileExtractionViewModel.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
     <Compile Include="ViewModel\ViewModelLocator.cs" />
+    <Compile Include="Win32Util.cs" />
     <Page Include="FileExtractionWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

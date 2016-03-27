@@ -14,6 +14,7 @@ using System.Windows.Shapes;
 using Ba2Explorer.ViewModel;
 using System.Diagnostics;
 using System.ComponentModel;
+using System.Windows.Interop;
 
 namespace Ba2Explorer
 {
@@ -32,18 +33,44 @@ namespace Ba2Explorer
         protected override void OnInitialized(EventArgs e)
         {
             ViewModel = (FileExtractionViewModel)DataContext;
-            ViewModel.ExtractionProgress.ProgressChanged += ExtractionProgress_ProgressChanged;
 
-            Debug.WriteLine("file extr activated");
-            ViewModel.ExtractFiles();
+            this.Loaded += FileExtractionWindow_Loaded;
 
             base.OnInitialized(e);
         }
 
+        private void FileExtractionWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            ViewModel.OnFinished += ViewModel_OnFinished;
+            ViewModel.ExtractionProgress.ProgressChanged += ExtractionProgress_ProgressChanged;
+
+            this.Title = "Extracting " + ViewModel.ArchiveInfo.FileName;
+
+            Debug.WriteLine("file extr activated");
+            ViewModel.ExtractFiles();
+        }
+
+        private void ViewModel_OnFinished(object sender, EventArgs e)
+        {
+            this.Dispatcher.Invoke(() =>
+            {
+                SetExtractingText(ViewModel.FilesToExtract.Count(), ViewModel.FilesToExtract.Count());
+                ExtractionProgress.Value = 1.0d;
+                ViewModel.OnFinished -= ViewModel_OnFinished;
+                ViewModel.ExtractionProgress.ProgressChanged -= ExtractionProgress_ProgressChanged;
+                this.Title = "Finished extracting " + ViewModel.ArchiveInfo.FileName;
+            });
+        }
+
+        private void SetExtractingText(int actual, int excepted)
+        {
+            this.MainText.Text = "Extracting " + actual + "/" + excepted;
+        }
+
         private void ExtractionProgress_ProgressChanged(object sender, int e)
         {
-            Debug.WriteLine("progress changed " + e);
             ExtractionProgress.Value = (double)e / ViewModel.FilesToExtract.Count();
+            SetExtractingText(e, ViewModel.FilesToExtract.Count());
         }
 
         private void CanStopExtraction(object sender, CanExecuteRoutedEventArgs e)
@@ -69,8 +96,8 @@ namespace Ba2Explorer
         private void StopExtraction(object sender, ExecutedRoutedEventArgs e)
         {
             Debug.WriteLine("stop extr");
-            this.IsEnabled = false;
             Cancel.Content = "Canceling...";
+            Cancel.IsEnabled = false;
 
             ViewModel.Cancel();
         }

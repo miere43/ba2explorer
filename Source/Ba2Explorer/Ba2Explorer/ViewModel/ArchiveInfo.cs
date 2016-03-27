@@ -50,6 +50,10 @@ namespace Ba2Explorer.ViewModel
             }
         }
 
+        public string FileName { get; private set; }
+
+        public string FilePath { get; private set; }
+
         public int TotalFiles
         {
             get { return (int)archive.TotalFiles; }
@@ -152,12 +156,16 @@ namespace Ba2Explorer.ViewModel
                 archive = null;
                 IsOpened = false;
                 Files = null;
+                FilePath = null;
+                FileName = null;
             }
 
             try
             {
                 archive = BA2Loader.Load(path);
                 Files = new ObservableCollection<string>(archive.ListFiles());
+                FilePath = path;
+                FileName = Path.GetFileName(FilePath);
                 IsOpened = true;
             }
             catch (Exception e)

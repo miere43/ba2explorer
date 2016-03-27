@@ -97,6 +97,8 @@ namespace Ba2Explorer.ViewModel
             cancellationToken.Cancel();
         }
 
+        public event EventHandler OnFinished;
+
         public void ExtractFiles()
         {
             Contract.Ensures(IsExtracting == false);
@@ -111,6 +113,9 @@ namespace Ba2Explorer.ViewModel
                     Debug.WriteLine("finished");
                     IsExtractionFinished = true;
                     IsExtracting = false;
+
+                    if (OnFinished != null)
+                        OnFinished(this, null);
                 });
             } 
             catch (OperationCanceledException)
