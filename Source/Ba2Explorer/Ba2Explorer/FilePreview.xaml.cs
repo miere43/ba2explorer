@@ -4,6 +4,8 @@ using System.IO;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Documents;
+using System.Windows.Media;
 
 namespace Ba2Explorer
 {
@@ -56,7 +58,12 @@ namespace Ba2Explorer
 
         private void SetUnknownPreview(string filePath)
         {
-            this.PreviewTextField.Text = "Cannot preview " + Path.GetFileName(filePath);
+            this.PreviewTextField.Inlines.Clear();
+            this.PreviewTextField.Inlines.Add("Cannot preview " + Path.GetFileName(filePath));
+            var grayedText = new Run(" (unsupported)");
+            grayedText.Foreground = Brushes.Gray;
+            this.PreviewTextField.Inlines.Add(grayedText);
+
             this.PreviewTextField.Visibility = Visibility.Visible;
         }
 

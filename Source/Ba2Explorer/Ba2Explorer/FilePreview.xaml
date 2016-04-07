@@ -17,6 +17,8 @@
 
         <TextBlock Grid.Row="0"
                    x:Name="PreviewTextField"
+                   TextWrapping="Wrap"
+                   TextTrimming="CharacterEllipsis"
         />
 
         <TextBlock
