@@ -1,23 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace Ba2Explorer
 {
-
-
     public partial class FilePreview : UserControl
     {
         private enum FileType
@@ -31,13 +20,62 @@ namespace Ba2Explorer
             InitializeComponent();
         }
 
-        public void SetPreviewTarget(Stream stream, string fileType)
+        public bool CanPreviewTarget(string filePath)
         {
-            
+            return ResolveFileTypeFromExtension(Path.GetExtension(filePath)) != FileType.Unknown;
+        }
+
+        public void SetUnknownPreviewTarget(string filePath)
+        {
+            if (String.IsNullOrWhiteSpace(filePath))
+                throw new ArgumentException(nameof(filePath));
+
+            SetUnknownPreview(filePath);
+        }
+
+        public void SetPreviewTarget(Stream stream, string filePath)
+        {
+            if (stream == null)
+                throw new ArgumentNullException(nameof(stream));
+            if (String.IsNullOrWhiteSpace(filePath))
+                throw new ArgumentException(nameof(filePath));
+
+            FileType fileType = ResolveFileTypeFromExtension(Path.GetExtension(filePath));
+            switch (fileType)
+            {
+                case FileType.Unknown:
+                    SetUnknownPreview(filePath);
+                    break;
+                case FileType.Text:
+                    SetTextPreview(stream);
+                    break;
+                default:
+                    throw new NotSupportedException($"Preview of file with type \"{fileType}\" is not supported.");
+            }
+        }
+
+        private void SetUnknownPreview(string filePath)
+        {
+            this.PreviewTextField.Text = "Cannot preview " + Path.GetFileName(filePath);
+            this.PreviewTextField.Visibility = Visibility.Visible;
+        }
+
+        private void SetTextPreview(Stream stream)
+        {
+            byte[] buffer = new byte[stream.Length];
+            int readed = stream.Read(buffer, 0, (int)stream.Length);
+            Debug.Assert(readed == stream.Length);
+
+            string text = Encoding.ASCII.GetString(buffer);
+
+            this.PreviewTextField.Text = text;
+            this.PreviewTextField.Visibility = Visibility.Visible;
         }
 
         private FileType ResolveFileTypeFromExtension(string extension)
         {
+            extension = extension.TrimStart('.');
+
             if (extension == "txt")
             {
                 return FileType.Text;

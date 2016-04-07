@@ -9,13 +9,8 @@ using System.Windows;
 
 namespace Ba2Explorer
 {
-    /// <summary>
-    /// Логика взаимодействия для App.xaml
-    /// </summary>
     public partial class App : Application
     {
-
-
         public App()
         {
 

@@ -15,13 +15,21 @@ using System.Windows;
 
 namespace Ba2Explorer.ViewModel
 {
-    public class ArchiveInfo : ObservableObject
+    /// <summary>
+    /// Wrapper over Ba2Tools.BA2Archive
+    /// </summary>
+    /// <seealso cref="GalaSoft.MvvmLight.ObservableObject" />
+    public sealed class ArchiveInfo : ObservableObject, IDisposable
     {
         private ObservableCollection<string> files;
+
+        /// <summary>
+        /// Gets filenames in archive.
+        /// </summary>
         public ObservableCollection<string> Files
         {
             get { return files; }
-            set
+            private set
             {
                 files = value;
                 RaisePropertyChanged();
@@ -29,6 +37,13 @@ namespace Ba2Explorer.ViewModel
         }
 
         private bool isOpened = false;
+
+        /// <summary>
+        /// Gets a value indicating whether archive is opened.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is opened; otherwise, <c>false</c>.
+        /// </value>
         public bool IsOpened
         {
             get { return isOpened; }
@@ -40,6 +55,13 @@ namespace Ba2Explorer.ViewModel
         }
 
         private bool isBusy = false;
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is busy.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is busy; otherwise, <c>false</c>.
+        /// </value>
         public bool IsBusy
         {
             get { return isBusy; }
@@ -50,10 +72,19 @@ namespace Ba2Explorer.ViewModel
             }
         }
 
+        /// <summary>
+        /// Opened archive file name.
+        /// </summary>
         public string FileName { get; private set; }
 
+        /// <summary>
+        /// Opened archive file path.
+        /// </summary>
         public string FilePath { get; private set; }
 
+        /// <summary>
+        /// Total files in archive.
+        /// </summary>
         public int TotalFiles
         {
             get { return (int)archive.TotalFiles; }
@@ -61,18 +92,39 @@ namespace Ba2Explorer.ViewModel
 
         private BA2Archive archive;
 
+        void ThrowIfBusy()
+        {
+            if (IsBusy)
+                throw new InvalidOperationException("I'am busy!");
+        }
+
         public ArchiveInfo()
         {
 
         }
 
-        public void ExtractSingle(string fileInArchive)
+        public void ExtractToStream(Stream stream, string fileName)
         {
-            if (!archive.ContainsFile(fileInArchive))
+            ThrowIfBusy();
+
+            try
             {
-                MessageBox.Show("this file doesnt exist");
-                return;
+                IsBusy = true;
+                archive.ExtractToStream(fileName, stream);
             }
+            catch (Exception e)
+            {
+                MessageBox.Show(e.Message);
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+        }
+
+        public void ExtractFile(string fileName)
+        {
+            ThrowIfBusy();
 
             try
             {
@@ -81,7 +133,7 @@ namespace Ba2Explorer.ViewModel
                 dialog.OverwritePrompt = true;
                 dialog.ValidateNames = true;
                 dialog.Title = "Extract file as...";
-                dialog.FileName = Path.GetFileName(fileInArchive);
+                dialog.FileName = Path.GetFileName(fileName);
 
                 string ext = Path.GetExtension(dialog.SafeFileName);
 
@@ -90,15 +142,20 @@ namespace Ba2Explorer.ViewModel
 
                 using (FileStream stream = File.Create(dialog.FileName))
                 {
-                    archive.ExtractToStream(fileInArchive, stream);
+                    IsBusy = true;
+                    archive.ExtractToStream(fileName, stream);
                 }
 
-                MessageBox.Show("OK!");
+                // MessageBox.Show("OK!");
             }
             catch (Exception e)
             {
                 // todo;
                 MessageBox.Show(e.Message);
+            }
+            finally
+            {
+                IsBusy = false;
             }
         }
 
@@ -108,14 +165,14 @@ namespace Ba2Explorer.ViewModel
             CancellationToken cancellationToken,
             IProgress<int> progress)
         {
-            Contract.Ensures(IsBusy == false);
+            ThrowIfBusy();
 
             try
             {
                 IsBusy = true;
                 archive.ExtractFiles(files, destination, cancellationToken, progress, true);
             }
-            catch (OperationCanceledException e)
+            catch (OperationCanceledException)
             {
                 throw;
             }
@@ -127,6 +184,8 @@ namespace Ba2Explorer.ViewModel
 
         public void ExtractFiles(IEnumerable<string> files)
         {
+            ThrowIfBusy();
+
             try
             {
                 var dialog = new System.Windows.Forms.FolderBrowserDialog();
@@ -135,6 +194,7 @@ namespace Ba2Explorer.ViewModel
 
                 if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                 {
+                    IsBusy = true;
                     archive.ExtractFiles(files, dialog.SelectedPath, true);
                 }
             }
@@ -143,36 +203,58 @@ namespace Ba2Explorer.ViewModel
                 // todo;
                 MessageBox.Show(e.Message);
             }
+            finally
+            {
+                IsBusy = false;
+            }
         }
 
-        public void Open(string path)
+        public static ArchiveInfo Open(string path)
         {
-            if (archive != null && IsOpened)
-            {
-                if (IsBusy)
-                    throw new ArgumentException();
+            ArchiveInfo info = null;
 
-                archive.Dispose();
-                archive = null;
-                IsOpened = false;
-                Files = null;
-                FilePath = null;
-                FileName = null;
-            }
+            //if (archive != null && IsOpened)
+            //{
+            //    if (IsBusy)
+            //        throw new ArgumentException();
+
+            //    archive.Dispose();
+            //    archive = null;
+            //    IsOpened = false;
+            //    Files = null;
+            //    FilePath = null;
+            //    FileName = null;
+            //}
 
             try
             {
-                archive = BA2Loader.Load(path);
-                Files = new ObservableCollection<string>(archive.ListFiles());
-                FilePath = path;
-                FileName = Path.GetFileName(FilePath);
-                IsOpened = true;
+                BA2Archive archive = BA2Loader.Load(path);
+
+                info = new ArchiveInfo();
+                info.archive = archive;
+                info.Files = new ObservableCollection<string>(archive.ListFiles());
+                info.FilePath = path;
+                info.FileName = Path.GetFileName(info.FilePath);
+            }
+            catch (BA2LoadException e)
+            {
+                // todo
+                MessageBox.Show($"Error while loading archive: {e.Message}");
             }
             catch (Exception e)
             {
-                // todo
-                MessageBox.Show(e.Message);
+                MessageBox.Show($"Unexcepted error while opening archive: {e.Message}");
             }
+
+            return info;
+        }
+
+        public void Dispose()
+        {
+            ThrowIfBusy();
+
+            if (archive != null)
+                archive.Dispose();
         }
     }
 }

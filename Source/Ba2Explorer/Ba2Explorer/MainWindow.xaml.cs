@@ -16,6 +16,7 @@ using Ba2Explorer.ViewModel;
 using Microsoft.Win32;
 using System.Collections;
 using System.Diagnostics;
+using System.IO;
 
 namespace Ba2Explorer
 {
@@ -38,9 +39,8 @@ namespace Ba2Explorer
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-
             mainViewModel.OpenArchive("D:/Games/Fallout 4/Data/Fallout4 - Sounds.ba2");
-            mainViewModel.ExtractFiles("D:/A", mainViewModel.ArchiveInfo.Files);
+            //mainViewModel.ExtractFiles("D:/A", mainViewModel.ArchiveInfo.Files);
         }
 
         private void OpenCommandExecuted(object sender, ExecutedRoutedEventArgs e)
@@ -66,7 +66,7 @@ namespace Ba2Explorer
         {
             string sel = ArchiveFilesList.SelectedItem as string;
 
-            mainViewModel.ArchiveInfo.ExtractSingle(sel);
+            mainViewModel.ArchiveInfo.ExtractFile(sel);
             e.Handled = true;
         }
 
@@ -75,6 +75,34 @@ namespace Ba2Explorer
             IList sels = ArchiveFilesList.SelectedItems;
 
             mainViewModel.ExtractFilesWithDialog(sels.OfType<string>().ToList());
+            e.Handled = true;
+        }
+
+        private void ArchiveFilesList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            // TODO handle multiple selection
+            if (this.ArchiveFilesList.SelectedItem == null)
+                return;
+
+            if (mainViewModel.ArchiveInfo.IsBusy)
+                return;
+
+            string selectedFilePath = (string)this.ArchiveFilesList.SelectedItem;
+
+            if (this.FilePreview.CanPreviewTarget(selectedFilePath))
+            {
+                using (MemoryStream stream = new MemoryStream()) {
+                    mainViewModel.ArchiveInfo.ExtractToStream(stream, selectedFilePath);
+
+                    this.FilePreview.SetPreviewTarget(stream, selectedFilePath);
+                }
+
+            }
+            else
+            {
+                this.FilePreview.SetUnknownPreviewTarget(selectedFilePath);
+            }
+
             e.Handled = true;
         }
     }

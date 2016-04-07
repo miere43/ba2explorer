@@ -34,7 +34,8 @@
             </MenuItem>
         </Menu>
 
-        <ListView x:Name="ArchiveFilesList" Grid.Row="2" Grid.Column="0" DataContext="{Binding ArchiveInfo}" ItemsSource="{Binding Files}">
+        <ListView x:Name="ArchiveFilesList" Grid.Row="2" Grid.Column="0" DataContext="{Binding ArchiveInfo}" ItemsSource="{Binding Files}"
+                  SelectionChanged="ArchiveFilesList_SelectionChanged">
             <ListView.ContextMenu>
                 <ContextMenu>
                     <MenuItem Header="Extract" Command="local:AppCommands.ExtractSingle" />
@@ -44,6 +45,7 @@
         </ListView>
 
         <local:FilePreview
+            x:Name="FilePreview"
             Grid.Row="2"
             Grid.Column="2">
             

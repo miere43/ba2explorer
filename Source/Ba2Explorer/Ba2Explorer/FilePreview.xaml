@@ -14,7 +14,11 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
-        
+
+        <TextBlock Grid.Row="0"
+                   x:Name="PreviewTextField"
+        />
+
         <TextBlock
             Grid.Row="1"
             Margin="4"

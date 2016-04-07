@@ -120,12 +120,12 @@ namespace Ba2Explorer.ViewModel
                         if (OnFinishedSuccessfully != null)
                             OnFinishedSuccessfully(this, null);
                     }
-                    catch (OperationCanceledException ex)
+                    catch (OperationCanceledException)
                     {
                         if (OnCanceled != null)
                             OnCanceled(this, null);
                     }
-                    catch (BA2ExtractionException ex)
+                    catch (BA2ExtractionException)
                     {
                         if (OnExtractionError != null)
                             OnExtractionError(this, null);

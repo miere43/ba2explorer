@@ -25,7 +25,19 @@ namespace Ba2Explorer.ViewModel
     /// </summary>
     public class MainViewModel : ViewModelBase
     {
-        public ArchiveInfo ArchiveInfo { get; set; }
+        private ArchiveInfo archiveInfo;
+        public ArchiveInfo ArchiveInfo
+        {
+            get
+            {
+                return archiveInfo;
+            }
+            private set
+            {
+                archiveInfo = value;
+                RaisePropertyChanged();
+            }
+        }
 
         public MainWindow Window { get; set; }
 
@@ -68,7 +80,7 @@ namespace Ba2Explorer.ViewModel
         /// </summary>
         public MainViewModel()
         {
-            ArchiveInfo = new ArchiveInfo();
+            ArchiveInfo = null;
 
             //ArchiveList = new ObservableCollection<ArchiveFilename>(
             //    CreateFromStrings(new List<string>()
@@ -103,7 +115,13 @@ namespace Ba2Explorer.ViewModel
 
         public void OpenArchive(string path)
         {
-            ArchiveInfo.Open(path);
+            if (ArchiveInfo != null)
+            {
+                ArchiveInfo.Dispose();
+                ArchiveInfo = null;
+            }
+
+            ArchiveInfo = ArchiveInfo.Open(path);
         }
 
         public void ExtractFiles(string path, IEnumerable<string> files)
