@@ -48,7 +48,7 @@ namespace Ba2Explorer
 
             this.Title = "Extracting " + ViewModel.ArchiveInfo.FileName;
 
-            Debug.WriteLine("file extr activated");
+            // Debug.WriteLine("file extr activated");
             ViewModel.ExtractFiles();
         }
 

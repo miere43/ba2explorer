@@ -15,10 +15,17 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <TextBlock Grid.Row="0"
-                   x:Name="PreviewTextField"
-                   TextWrapping="Wrap"
-                   TextTrimming="CharacterEllipsis" />
+        <ScrollViewer>
+            <TextBlock Grid.Row="0"
+                       x:Name="PreviewTextField"
+                       TextWrapping="Wrap"
+                       Visibility="Collapsed"
+                       TextTrimming="CharacterEllipsis" />
+        </ScrollViewer>
+
+        <Image
+            x:Name="PreviewImageBox"
+            Visibility="Collapsed"/>
 
         <TextBlock
             Grid.Row="1"
