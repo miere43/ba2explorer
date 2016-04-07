@@ -83,7 +83,7 @@ namespace Ba2Explorer
         {
             extension = extension.TrimStart('.');
 
-            if (extension == "txt")
+            if (extension.Equals("txt", StringComparison.OrdinalIgnoreCase))
             {
                 return FileType.Text;
             }

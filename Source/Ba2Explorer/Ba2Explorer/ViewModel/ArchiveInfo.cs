@@ -21,7 +21,12 @@ namespace Ba2Explorer.ViewModel
     /// <seealso cref="GalaSoft.MvvmLight.ObservableObject" />
     public sealed class ArchiveInfo : ObservableObject, IDisposable
     {
+        private BA2Archive archive;
+
+        #region Properties
+
         private ObservableCollection<string> files;
+        private bool isBusy = false;
 
         /// <summary>
         /// Gets filenames in archive.
@@ -35,26 +40,6 @@ namespace Ba2Explorer.ViewModel
                 RaisePropertyChanged();
             }
         }
-
-        private bool isOpened = false;
-
-        /// <summary>
-        /// Gets a value indicating whether archive is opened.
-        /// </summary>
-        /// <value>
-        /// <c>true</c> if this instance is opened; otherwise, <c>false</c>.
-        /// </value>
-        public bool IsOpened
-        {
-            get { return isOpened; }
-            private set
-            {
-                isOpened = true;
-                RaisePropertyChanged();
-            }
-        }
-
-        private bool isBusy = false;
 
         /// <summary>
         /// Gets a value indicating whether this instance is busy.
@@ -90,17 +75,16 @@ namespace Ba2Explorer.ViewModel
             get { return (int)archive.TotalFiles; }
         }
 
-        private BA2Archive archive;
-
-        void ThrowIfBusy()
-        {
-            if (IsBusy)
-                throw new InvalidOperationException("I'am busy!");
-        }
+        #endregion
 
         public ArchiveInfo()
         {
 
+        }
+
+        ~ArchiveInfo()
+        {
+            Dispose();
         }
 
         public void ExtractToStream(Stream stream, string fileName)
@@ -122,7 +106,7 @@ namespace Ba2Explorer.ViewModel
             }
         }
 
-        public void ExtractFile(string fileName)
+        public void ExtractFileWithDialog(string fileName)
         {
             ThrowIfBusy();
 
@@ -247,6 +231,12 @@ namespace Ba2Explorer.ViewModel
             }
 
             return info;
+        }
+
+        void ThrowIfBusy()
+        {
+            if (IsBusy)
+                throw new InvalidOperationException("Archive is already busy extracting files.");
         }
 
         public void Dispose()

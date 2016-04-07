@@ -39,7 +39,7 @@ namespace Ba2Explorer
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            mainViewModel.OpenArchive("D:/Games/Fallout 4/Data/Fallout4 - Sounds.ba2");
+            mainViewModel.OpenArchive("D:/Games/Fallout 4/Data/DLCRobot - Main.ba2");
             //mainViewModel.ExtractFiles("D:/A", mainViewModel.ArchiveInfo.Files);
         }
 
@@ -51,7 +51,7 @@ namespace Ba2Explorer
 
         private void ExtractCanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
-            if (!mainViewModel.ArchiveInfo.IsOpened)
+            if (mainViewModel.ArchiveInfo == null)
             {
                 e.CanExecute = false;
                 e.Handled = true;
@@ -66,7 +66,7 @@ namespace Ba2Explorer
         {
             string sel = ArchiveFilesList.SelectedItem as string;
 
-            mainViewModel.ArchiveInfo.ExtractFile(sel);
+            mainViewModel.ArchiveInfo.ExtractFileWithDialog(sel);
             e.Handled = true;
         }
 

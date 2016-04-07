@@ -113,6 +113,9 @@ namespace Ba2Explorer.ViewModel
             OpenArchive(dialog.FileName);
         }
 
+        /// <summary>
+        /// Opens the archive from file path.
+        /// </summary>
         public void OpenArchive(string path)
         {
             if (ArchiveInfo != null)
@@ -124,11 +127,11 @@ namespace Ba2Explorer.ViewModel
             ArchiveInfo = ArchiveInfo.Open(path);
         }
 
-        public void ExtractFiles(string path, IEnumerable<string> files)
+        private void ExtractFilesWithDialog(string destinationFolder, IEnumerable<string> files)
         {
             FileExtractionWindow window = new FileExtractionWindow();
             window.ViewModel.ArchiveInfo = this.ArchiveInfo;
-            window.ViewModel.DestinationFolder = path;
+            window.ViewModel.DestinationFolder = destinationFolder;
             window.ViewModel.FilesToExtract = files;
             window.ShowInTaskbar = true;
             window.Owner = this.Window;
@@ -145,12 +148,17 @@ namespace Ba2Explorer.ViewModel
             try
             {
                 var dialog = new System.Windows.Forms.FolderBrowserDialog();
-                dialog.Description = "Save files to folder";
+                dialog.Description = "Extract files to folder...";
                 dialog.ShowNewFolderButton = true;
 
-                if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                var result = dialog.ShowDialog();
+                if (result == System.Windows.Forms.DialogResult.OK)
                 {
-                    ExtractFiles(dialog.SelectedPath, files);
+                    ExtractFilesWithDialog(dialog.SelectedPath, files);
+                }
+                else
+                {
+                    return;
                 }
             }
             catch (Exception e)
