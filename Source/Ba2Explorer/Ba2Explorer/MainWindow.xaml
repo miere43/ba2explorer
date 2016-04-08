@@ -21,6 +21,7 @@
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
@@ -36,7 +37,7 @@
             </MenuItem>
         </Menu>
 
-        <ListView x:Name="ArchiveFilesList" Grid.Row="1" Grid.Column="0" DataContext="{Binding ArchiveInfo}" ItemsSource="{Binding Files}"
+        <ListView x:Name="ArchiveFilesList" Grid.Row="2" Grid.Column="0" DataContext="{Binding ArchiveInfo}" ItemsSource="{Binding Files}"
                   SelectionChanged="ArchiveFilesList_SelectionChanged">
             <ListView.ContextMenu>
                 <ContextMenu>
@@ -46,13 +47,28 @@
             </ListView.ContextMenu>
         </ListView>
 
-        <GridSplitter Grid.Row="1" Grid.Column="0" Width="4"/>
+        <GridSplitter Grid.Row="1" Grid.RowSpan="2" Grid.Column="0" Width="4" />
 
         <local:FilePreview
             x:Name="FilePreview"
             Grid.Row="1"
-            Grid.Column="1">
-            
-        </local:FilePreview>
+            Grid.RowSpan="2"
+            Grid.Column="1" />
+
+        <Grid 
+            Grid.Row="1"
+            Grid.Column="0"
+            Margin="6">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <!-- TODO change to AccessText -->
+            <TextBlock Grid.Row="0" Grid.Column="0">Filter: </TextBlock>
+            <TextBox x:Name="FilterText" TextChanged="FilterText_TextChanged" Grid.Row="0" Grid.Column="1" Margin="4,0,4,0"></TextBox>
+        </Grid>
     </Grid>
 </Window>

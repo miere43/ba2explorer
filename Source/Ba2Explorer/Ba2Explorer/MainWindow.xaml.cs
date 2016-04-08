@@ -27,6 +27,8 @@ namespace Ba2Explorer
     {
         private MainViewModel mainViewModel;
 
+        private CollectionView archiveFilesFilter;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -50,6 +52,8 @@ namespace Ba2Explorer
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
             mainViewModel.OpenArchive("D:/Games/Fallout 4/Data/DLCRobot - Textures.ba2");
+            archiveFilesFilter = (CollectionView)CollectionViewSource.GetDefaultView(this.ArchiveFilesList.ItemsSource);
+            archiveFilesFilter.Filter = ArchiveFileFilter;
             //mainViewModel.ExtractFiles("D:/A", mainViewModel.ArchiveInfo.Files);
         }
 
@@ -102,6 +106,22 @@ namespace Ba2Explorer
             this.FilePreview.TrySetPreviewAsync(selectedFilePath);
 
             e.Handled = true;
+        }
+
+        private bool ArchiveFileFilter(object item)
+        {
+            if (String.IsNullOrWhiteSpace(this.FilterText.Text))
+                return true;
+            else
+            {
+                string filePath = (string)item;
+                return filePath.IndexOf(this.FilterText.Text, StringComparison.OrdinalIgnoreCase) >= 0;
+            }
+        }
+
+        private void FilterText_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            CollectionViewSource.GetDefaultView(this.ArchiveFilesList.ItemsSource).Refresh();
         }
     }
 }
