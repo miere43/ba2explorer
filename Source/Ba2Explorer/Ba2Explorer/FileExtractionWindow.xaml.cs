@@ -36,6 +36,7 @@ namespace Ba2Explorer
 
             this.Loaded += FileExtractionWindow_Loaded;
 
+
             base.OnInitialized(e);
         }
 

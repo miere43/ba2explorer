@@ -21,8 +21,7 @@
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="1*" />
-            <RowDefinition Height="2*" />
+            <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
         <Menu Grid.Row="0" Grid.ColumnSpan="2">
@@ -32,9 +31,12 @@
                 <Separator />
                 <MenuItem Header="Exit" />
             </MenuItem>
+            <MenuItem Header="Settings">
+                
+            </MenuItem>
         </Menu>
 
-        <ListView x:Name="ArchiveFilesList" Grid.Row="2" Grid.Column="0" DataContext="{Binding ArchiveInfo}" ItemsSource="{Binding Files}"
+        <ListView x:Name="ArchiveFilesList" Grid.Row="1" Grid.Column="0" DataContext="{Binding ArchiveInfo}" ItemsSource="{Binding Files}"
                   SelectionChanged="ArchiveFilesList_SelectionChanged">
             <ListView.ContextMenu>
                 <ContextMenu>
@@ -44,10 +46,12 @@
             </ListView.ContextMenu>
         </ListView>
 
+        <GridSplitter Grid.Row="1" Grid.Column="0" Width="4"/>
+
         <local:FilePreview
             x:Name="FilePreview"
-            Grid.Row="2"
-            Grid.Column="2">
+            Grid.Row="1"
+            Grid.Column="1">
             
         </local:FilePreview>
     </Grid>

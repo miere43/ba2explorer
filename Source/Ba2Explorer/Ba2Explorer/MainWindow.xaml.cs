@@ -34,12 +34,22 @@ namespace Ba2Explorer
             mainViewModel = (MainViewModel)DataContext;
             mainViewModel.Window = this;
 
+            mainViewModel.PropertyChanged += (sender, args) =>
+            {
+                if (args.PropertyName == nameof(ArchiveInfo))
+                {
+                    this.FilePreview.SetArchive(mainViewModel.ArchiveInfo);
+                }
+            };
+
             this.Loaded += MainWindow_Loaded;
+
         }
+
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            mainViewModel.OpenArchive("D:/Games/Fallout 4/Data/DLCRobot - Main.ba2");
+            mainViewModel.OpenArchive("D:/Games/Fallout 4/Data/DLCRobot - Textures.ba2");
             //mainViewModel.ExtractFiles("D:/A", mainViewModel.ArchiveInfo.Files);
         }
 
@@ -89,19 +99,7 @@ namespace Ba2Explorer
 
             string selectedFilePath = (string)this.ArchiveFilesList.SelectedItem;
 
-            if (this.FilePreview.CanPreviewTarget(selectedFilePath))
-            {
-                using (MemoryStream stream = new MemoryStream()) {
-                    mainViewModel.ArchiveInfo.ExtractToStream(stream, selectedFilePath);
-
-                    this.FilePreview.SetPreviewTarget(stream, selectedFilePath);
-                }
-
-            }
-            else
-            {
-                this.FilePreview.SetUnknownPreviewTarget(selectedFilePath);
-            }
+            this.FilePreview.TrySetPreviewAsync(selectedFilePath);
 
             e.Handled = true;
         }

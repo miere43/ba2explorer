@@ -1,9 +1,11 @@
-﻿using S16.Drawing;
+﻿using Ba2Explorer.ViewModel;
+using S16.Drawing;
 using System;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
@@ -14,6 +16,10 @@ namespace Ba2Explorer
 {
     public partial class FilePreview : UserControl
     {
+        private ArchiveInfo archiveInfo;
+
+        private string previewFilePath;
+
         private enum FileType
         {
             Unknown,
@@ -24,6 +30,17 @@ namespace Ba2Explorer
         public FilePreview()
         {
             InitializeComponent();
+        }
+
+        ~FilePreview()
+        {
+
+        }
+
+        public void SetArchive(ArchiveInfo archive)
+        {
+            this.archiveInfo = archive;
+            this.previewFilePath = null;
         }
 
         public bool CanPreviewTarget(string filePath)
@@ -39,28 +56,43 @@ namespace Ba2Explorer
             SetUnknownPreview(filePath);
         }
 
-        public void SetPreviewTarget(Stream stream, string filePath)
+        public async Task<bool> TrySetPreviewAsync(string filePath)
         {
-            if (stream == null)
-                throw new ArgumentNullException(nameof(stream));
             if (String.IsNullOrWhiteSpace(filePath))
                 throw new ArgumentException(nameof(filePath));
 
-            FileType fileType = ResolveFileTypeFromExtension(Path.GetExtension(filePath));
-            switch (fileType)
+            if (!this.IsEnabled || !archiveInfo.Contains(filePath))
+                return false;
+
+            this.previewFilePath = filePath;
+            FileType type = ResolveFileTypeFromExtension(Path.GetExtension(previewFilePath));
+
+            if (type == FileType.Unknown)
             {
-                case FileType.Unknown:
-                    SetUnknownPreview(filePath);
-                    break;
-                case FileType.Text:
-                    SetTextPreview(stream);
-                    break;
-                case FileType.DdsImage:
-                    SetDdsImagePreview(stream);
-                    break;
-                default:
-                    throw new NotSupportedException($"Preview of file with type \"{fileType}\" is not supported.");
+                SetUnknownPreview(filePath);
+                return true;
             }
+
+            using (MemoryStream stream = new MemoryStream())
+            {
+                await archiveInfo.ExtractToStreamAsync(filePath, stream);
+
+                switch (type)
+                {
+                    case FileType.Text:
+                        SetTextPreview(stream);
+                        break;
+                    case FileType.DdsImage:
+                        SetDdsImagePreview(stream);
+                        break;
+                    case FileType.Unknown:
+                       throw new InvalidOperationException();
+                    default:
+                       throw new NotSupportedException($"Preview of file with type \"{type}\" is not supported.");
+                }
+            }
+
+            return true;
         }
 
         private void SetDdsImagePreview(Stream stream)

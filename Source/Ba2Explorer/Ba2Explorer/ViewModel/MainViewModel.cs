@@ -100,6 +100,15 @@ namespace Ba2Explorer.ViewModel
             ////}
         }
 
+        public void SetTitle(string title)
+        {
+            if (title == null)
+                Window.Title = "BA2 Explorer";
+            else
+                Window.Title = "BA2 Explorer - " + title.Trim();
+        }
+
+
         public void OpenArchiveWithDialog()
         {
             OpenFileDialog dialog = new OpenFileDialog();
@@ -125,6 +134,7 @@ namespace Ba2Explorer.ViewModel
             }
 
             ArchiveInfo = ArchiveInfo.Open(path);
+            SetTitle(ArchiveInfo.FileName);
         }
 
         private void ExtractFilesWithDialog(string destinationFolder, IEnumerable<string> files)
@@ -139,6 +149,7 @@ namespace Ba2Explorer.ViewModel
             window.ShowDialog();
             window.Activate();
         }
+
 
         public void ExtractFilesWithDialog(IEnumerable<string> files)
         {

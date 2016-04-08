@@ -2,6 +2,7 @@
 using GalaSoft.MvvmLight;
 using Microsoft.Win32;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -22,6 +23,12 @@ namespace Ba2Explorer.ViewModel
     public sealed class ArchiveInfo : ObservableObject, IDisposable
     {
         private BA2Archive archive;
+
+        private object extractionLock = new object();
+
+        private BlockingCollection<object> extractionStack;
+
+        bool disposed = false;
 
         #region Properties
 
@@ -79,12 +86,44 @@ namespace Ba2Explorer.ViewModel
 
         public ArchiveInfo()
         {
-
+            extractionStack = new BlockingCollection<object>();
         }
 
         ~ArchiveInfo()
         {
             Dispose();
+        }
+
+        public bool Contains(string filePath)
+        {
+            return archive.ContainsFile(filePath);
+        }
+
+        public void QueueExtractFile(string filePath, CancellationToken token)
+        {
+            extractionStack.Add(filePath);
+        }
+
+        //public void ServeAsync()
+        //{
+        //    while (extractionStack.)
+        //}
+
+        /// <summary>
+        /// Tries to extract file to stream, if archive is busy extracting another file,
+        /// it will wait all queued extractions finishes.
+        /// </summary>
+        public async Task ExtractToStreamAsync(string filePath, Stream stream)
+        {
+            ThrowIfDisposed();
+
+            await Task.Run(() =>
+            {
+                lock (extractionLock)
+                {
+                    archive.ExtractToStream(filePath, stream);
+                }
+            });
         }
 
         public void ExtractToStream(Stream stream, string fileName)
@@ -166,7 +205,7 @@ namespace Ba2Explorer.ViewModel
             }
         }
 
-        public void ExtractFiles(IEnumerable<string> files)
+        public void ExtractFilesWithDialog(IEnumerable<string> files)
         {
             ThrowIfBusy();
 
@@ -239,12 +278,22 @@ namespace Ba2Explorer.ViewModel
                 throw new InvalidOperationException("Archive is already busy extracting files.");
         }
 
+        void ThrowIfDisposed()
+        {
+            if (disposed)
+                throw new ObjectDisposedException("ArchiveInfo is disposed.");
+        }
+
         public void Dispose()
         {
             ThrowIfBusy();
 
+            if (extractionStack != null)
+                extractionStack.Dispose();
             if (archive != null)
                 archive.Dispose();
+
+            disposed = true;
         }
     }
 }
