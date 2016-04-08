@@ -28,6 +28,7 @@
             Visibility="Collapsed"/>
 
         <TextBlock
+            x:Name="PreviewText"
             Grid.Row="1"
             Margin="4"
             HorizontalAlignment="Center">Preview</TextBlock>

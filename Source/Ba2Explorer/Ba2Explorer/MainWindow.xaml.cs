@@ -47,7 +47,6 @@ namespace Ba2Explorer
             };
 
             this.Loaded += MainWindow_Loaded;
-
         }
 
 

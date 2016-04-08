@@ -114,12 +114,18 @@ namespace Ba2Explorer
                 Int32Rect.Empty,
                 BitmapSizeOptions.FromEmptyOptions());
 
-            image.Dispose();
-            Win32Util.DeleteObject(hBitmap);
-
             this.PreviewImageBox.Source = source;
             this.PreviewImageBox.Visibility = Visibility.Visible;
             this.PreviewTextField.Visibility = Visibility.Collapsed;
+
+            this.PreviewText.Inlines.Clear();
+            this.PreviewText.Inlines.Add(new Run("Preview "));
+            Run imageInfo = new Run('(' + image.BitmapImage.Width.ToString() + 'x' + image.BitmapImage.Height.ToString() + ')');
+            imageInfo.Foreground = Brushes.Gray;
+            this.PreviewText.Inlines.Add(imageInfo);
+
+            image.Dispose();
+            Win32Util.DeleteObject(hBitmap);
         }
 
         private void SetUnknownPreview(string filePath)
@@ -132,6 +138,7 @@ namespace Ba2Explorer
 
             this.PreviewImageBox.Visibility = Visibility.Collapsed;
             this.PreviewTextField.Visibility = Visibility.Visible;
+            this.PreviewText.Text = "Preview";
         }
 
         private void SetTextPreview(Stream stream)
@@ -145,6 +152,8 @@ namespace Ba2Explorer
             this.PreviewTextField.Text = text;
             this.PreviewImageBox.Visibility = Visibility.Collapsed;
             this.PreviewTextField.Visibility = Visibility.Visible;
+
+            this.PreviewText.Text = "Preview";
         }
 
         private FileType ResolveFileTypeFromExtension(string extension)
