@@ -4,6 +4,7 @@ using System.Text;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 using System.IO;
+using System.Threading.Tasks;
 
 //
 // copied from
@@ -46,6 +47,11 @@ namespace S16.Drawing
             {
                 this.Parse(reader);
             }
+        }
+
+        public static async Task<DdsImage> LoadAsync(Stream ddsImage)
+        {
+            return await Task.Run(() => new DdsImage(ddsImage));
         }
 
         private DdsImage(System.Drawing.Bitmap bitmap)

@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -83,7 +84,7 @@ namespace Ba2Explorer
                         SetTextPreview(stream);
                         break;
                     case FileType.DdsImage:
-                        SetDdsImagePreview(stream);
+                        await SetDdsImagePreview(stream);
                         break;
                     case FileType.Unknown:
                        throw new InvalidOperationException();
@@ -95,20 +96,19 @@ namespace Ba2Explorer
             return true;
         }
 
-        private void SetDdsImagePreview(Stream stream)
+        private async Task SetDdsImagePreview(Stream stream)
         {
             stream.Seek(0, SeekOrigin.Begin);
 
-            DdsImage image = new DdsImage(stream);
+             DdsImage image = await DdsImage.LoadAsync(stream);
             if (!image.IsValid)
             {
                 image.Dispose();
-                // TODO
                 return;
             }
 
             IntPtr hBitmap = image.BitmapImage.GetHbitmap();
-            var source = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(
+            BitmapSource source = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(
                 hBitmap,
                 IntPtr.Zero,
                 Int32Rect.Empty,
