@@ -38,9 +38,11 @@ namespace Ba2Explorer
 
             mainViewModel.PropertyChanged += (sender, args) =>
             {
-                if (args.PropertyName == nameof(ArchiveInfo))
+                if (args.PropertyName == nameof(ArchiveInfo) && mainViewModel.ArchiveInfo != null)
                 {
                     this.FilePreview.SetArchive(mainViewModel.ArchiveInfo);
+                    archiveFilesFilter = (CollectionView)CollectionViewSource.GetDefaultView(this.ArchiveFilesList.ItemsSource);
+                    archiveFilesFilter.Filter = ArchiveFileFilter;
                 }
             };
 
@@ -52,8 +54,6 @@ namespace Ba2Explorer
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
             mainViewModel.OpenArchive("D:/Games/Fallout 4/Data/DLCRobot - Textures.ba2");
-            archiveFilesFilter = (CollectionView)CollectionViewSource.GetDefaultView(this.ArchiveFilesList.ItemsSource);
-            archiveFilesFilter.Filter = ArchiveFileFilter;
             //mainViewModel.ExtractFiles("D:/A", mainViewModel.ArchiveInfo.Files);
         }
 
