@@ -10,6 +10,7 @@
 
     <Window.CommandBindings>
         <CommandBinding Command="Open" Executed="OpenCommandExecuted" />
+        <CommandBinding Command="Close" CanExecute="CloseCanExecute" Executed="CloseCommandExecuted" />
         <CommandBinding Command="local:AppCommands.ExtractSingle" CanExecute="ExtractCanExecute" Executed="ExtractSingleCommandExecuted" />
         <CommandBinding Command="local:AppCommands.ExtractAll" CanExecute="ExtractCanExecute" Executed="ExtractAllCommandExecuted" />
     </Window.CommandBindings>

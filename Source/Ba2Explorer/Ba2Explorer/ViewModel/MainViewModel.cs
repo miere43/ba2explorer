@@ -129,8 +129,7 @@ namespace Ba2Explorer.ViewModel
         {
             if (ArchiveInfo != null)
             {
-                ArchiveInfo.Dispose();
-                ArchiveInfo = null;
+                CloseArchive();
             }
 
             ArchiveInfo = ArchiveInfo.Open(path);
@@ -150,6 +149,12 @@ namespace Ba2Explorer.ViewModel
             window.Activate();
         }
 
+        public void CloseArchive()
+        {
+            // TODO add checks
+            ArchiveInfo.Dispose();
+            ArchiveInfo = null;
+        }
 
         public void ExtractFilesWithDialog(IEnumerable<string> files)
         {
