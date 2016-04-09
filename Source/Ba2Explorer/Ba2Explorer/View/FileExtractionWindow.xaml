@@ -1,9 +1,10 @@
-﻿<Window x:Class="Ba2Explorer.FileExtractionWindow"
+﻿<Window x:Class="Ba2Explorer.View.FileExtractionWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Ba2Explorer"
+        xmlns:converters="clr-namespace:Ba2Explorer.View.Converters"
         mc:Ignorable="d"
         DataContext="{Binding Source={StaticResource Locator}, Path=FileExtraction}"
         Title="Extracting..." Height="150" Width="300" WindowStartupLocation="CenterOwner">
@@ -14,7 +15,7 @@
     </Window.CommandBindings>
 
     <Window.Resources>
-        <local:InverseBooleanConverter x:Key="InverseBoolConverter" />
+        <converters:InverseBooleanConverter x:Key="InverseBoolConverter" />
     </Window.Resources>
     
     <Grid>
@@ -43,8 +44,8 @@
             Maximum="1" />
 
         <StackPanel HorizontalAlignment="Center" Grid.Row="2" Grid.Column="0" Orientation="Horizontal" Grid.ColumnSpan="2">
-            <Button Command="Open" Margin="8" Padding="6,3" IsCancel="False" x:Name="OpenFolder" Content="Open folder" />
-            <Button IsEnabled="{Binding IsExtracting}" Command="Stop" Margin="8" Padding="6,3" IsCancel="True" x:Name="Cancel" Content="Cancel" />
+            <Button Command="Open" Margin="6" Padding="6,3" IsCancel="False" x:Name="OpenFolder" Content="Open folder" />
+            <Button IsEnabled="{Binding IsExtracting}" Command="Stop" Margin="6" Padding="6,3" IsCancel="True" x:Name="Cancel" Content="Cancel" />
         </StackPanel>
     </Grid>
 </Window>

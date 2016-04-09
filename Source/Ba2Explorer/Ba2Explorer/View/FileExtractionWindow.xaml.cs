@@ -16,7 +16,7 @@ using System.Diagnostics;
 using System.ComponentModel;
 using System.Windows.Interop;
 
-namespace Ba2Explorer
+namespace Ba2Explorer.View
 {
     /// <summary>
     /// Логика взаимодействия для FileExtractionWindow.xaml

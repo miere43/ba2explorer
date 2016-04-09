@@ -4,6 +4,8 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Ba2Explorer"
+        xmlns:view="clr-namespace:Ba2Explorer.View"
+        xmlns:commands="clr-namespace:Ba2Explorer.View.Commands"
         mc:Ignorable="d"
         DataContext="{Binding Source={StaticResource Locator}, Path=Main}"
         Title="BA2 Explorer" Height="350" Width="525">
@@ -11,8 +13,8 @@
     <Window.CommandBindings>
         <CommandBinding Command="Open" Executed="OpenCommandExecuted" />
         <CommandBinding Command="Close" CanExecute="CloseCanExecute" Executed="CloseCommandExecuted" />
-        <CommandBinding Command="local:AppCommands.ExtractSingle" CanExecute="ExtractCanExecute" Executed="ExtractSingleCommandExecuted" />
-        <CommandBinding Command="local:AppCommands.ExtractAll" CanExecute="ExtractCanExecute" Executed="ExtractAllCommandExecuted" />
+        <CommandBinding Command="commands:AppCommands.ExtractSingle" CanExecute="ExtractCanExecute" Executed="ExtractSingleCommandExecuted" />
+        <CommandBinding Command="commands:AppCommands.ExtractAll" CanExecute="ExtractCanExecute" Executed="ExtractAllCommandExecuted" />
     </Window.CommandBindings>
 
     <Grid>
@@ -42,15 +44,15 @@
                   SelectionChanged="ArchiveFilesList_SelectionChanged">
             <ListView.ContextMenu>
                 <ContextMenu>
-                    <MenuItem Header="Extract" Command="local:AppCommands.ExtractSingle" />
-                    <MenuItem Header="Extract selected" Command="local:AppCommands.ExtractAll" />
+                    <MenuItem Header="Extract" Command="commands:AppCommands.ExtractSingle" />
+                    <MenuItem Header="Extract selected" Command="commands:AppCommands.ExtractAll" />
                 </ContextMenu>
             </ListView.ContextMenu>
         </ListView>
 
         <GridSplitter Grid.Row="1" Grid.RowSpan="2" Grid.Column="0" Width="4" />
 
-        <local:FilePreview
+        <view:FilePreview
             x:Name="FilePreview"
             Grid.Row="1"
             Grid.RowSpan="2"

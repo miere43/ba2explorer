@@ -8,6 +8,7 @@ using System.IO;
 using System;
 using System.Diagnostics.Contracts;
 using Microsoft.Win32;
+using Ba2Explorer.View;
 
 namespace Ba2Explorer.ViewModel
 {
@@ -100,6 +101,19 @@ namespace Ba2Explorer.ViewModel
             ////}
         }
 
+        /// <summary>
+        /// Unregisters this instance from the Messenger class.
+        /// <para>To cleanup additional resources, override this method, clean
+        /// up and then call base.Cleanup().</para>
+        /// </summary>
+        public override void Cleanup()
+        {
+            if (ArchiveInfo != null && !ArchiveInfo.IsDisposed)
+                ArchiveInfo.Dispose();
+
+            base.Cleanup();
+        }
+
         public void SetTitle(string title)
         {
             if (title == null)
@@ -107,7 +121,6 @@ namespace Ba2Explorer.ViewModel
             else
                 Window.Title = "BA2 Explorer - " + title.Trim();
         }
-
 
         public void OpenArchiveWithDialog()
         {
@@ -125,8 +138,11 @@ namespace Ba2Explorer.ViewModel
         /// <summary>
         /// Opens the archive from file path.
         /// </summary>
+        /// <exception cref="ArgumentException" />
         public void OpenArchive(string path)
         {
+            if (String.IsNullOrWhiteSpace(path))
+                throw new ArgumentException(nameof(path));
             if (ArchiveInfo != null)
             {
                 CloseArchive();
@@ -136,30 +152,25 @@ namespace Ba2Explorer.ViewModel
             SetTitle(ArchiveInfo.FileName);
         }
 
-        private void ExtractFilesWithDialog(string destinationFolder, IEnumerable<string> files)
-        {
-            FileExtractionWindow window = new FileExtractionWindow();
-            window.ViewModel.ArchiveInfo = this.ArchiveInfo;
-            window.ViewModel.DestinationFolder = destinationFolder;
-            window.ViewModel.FilesToExtract = files;
-            window.ShowInTaskbar = true;
-            window.Owner = this.Window;
-
-            window.ShowDialog();
-            window.Activate();
-        }
-
         public void CloseArchive()
         {
-            // TODO add checks
-            ArchiveInfo.Dispose();
+            if (ArchiveInfo == null)
+                return;
+
+            if (!ArchiveInfo.IsDisposed)
+            {
+                ArchiveInfo.Dispose();
+            }
+
             ArchiveInfo = null;
         }
 
         public void ExtractFilesWithDialog(IEnumerable<string> files)
         {
-            Contract.Ensures(ArchiveInfo.IsBusy == false);
-            Contract.Assert(files != null);
+            if (files == null)
+                throw new ArgumentNullException(nameof(files));
+            if (ArchiveInfo.IsBusy)
+                throw new InvalidOperationException("Cannot extract files because archive is busy.");
 
             try
             {
@@ -183,5 +194,34 @@ namespace Ba2Explorer.ViewModel
                 MessageBox.Show(e.Message);
             }
         }
+
+        #region Private methods
+
+        /// <summary>
+        /// Extracts the files with dialog.
+        /// </summary>
+        /// <param name="destinationFolder">The destination folder.</param>
+        /// <param name="files">The files.</param>
+        /// <exception cref="System.ArgumentException"></exception>
+        /// <exception cref="System.ArgumentNullException"></exception>
+        private void ExtractFilesWithDialog(string destinationFolder, IEnumerable<string> files)
+        {
+            if (String.IsNullOrWhiteSpace(destinationFolder))
+                throw new ArgumentException(nameof(destinationFolder));
+            if (files == null)
+                throw new ArgumentNullException(nameof(files));
+
+            FileExtractionWindow window = new FileExtractionWindow();
+            window.ViewModel.ArchiveInfo = this.ArchiveInfo;
+            window.ViewModel.DestinationFolder = destinationFolder;
+            window.ViewModel.FilesToExtract = files;
+            window.ShowInTaskbar = true;
+            window.Owner = this.Window;
+
+            window.ShowDialog();
+            window.Activate();
+        }
+
+        #endregion
     }
 }

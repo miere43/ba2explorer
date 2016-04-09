@@ -79,27 +79,26 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="AppCommands.cs" />
+    <Compile Include="View\Commands\AppCommands.cs" />
     <Compile Include="ArchiveFilename.cs" />
-    <Compile Include="ExtractSingleCommand.cs" />
-    <Compile Include="FileExtractionWindow.xaml.cs">
+    <Compile Include="View\FileExtractionWindow.xaml.cs">
       <DependentUpon>FileExtractionWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="FilePreview.xaml.cs">
+    <Compile Include="View\FilePreview.xaml.cs">
       <DependentUpon>FilePreview.xaml</DependentUpon>
     </Compile>
-    <Compile Include="InverseBooleanConverter.cs" />
+    <Compile Include="View\Converters\InverseBooleanConverter.cs" />
     <Compile Include="Thirdparty\DdsImage.cs" />
     <Compile Include="ViewModel\ArchiveInfo.cs" />
     <Compile Include="ViewModel\FileExtractionViewModel.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
     <Compile Include="ViewModel\ViewModelLocator.cs" />
     <Compile Include="Win32Util.cs" />
-    <Page Include="FileExtractionWindow.xaml">
+    <Page Include="View\FileExtractionWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="FilePreview.xaml">
+    <Page Include="View\FilePreview.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -150,10 +149,7 @@
       <Name>Ba2Tools</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Controls\" />
-    <Folder Include="View\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

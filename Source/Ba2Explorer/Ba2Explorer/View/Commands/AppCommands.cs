@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
-namespace Ba2Explorer
+namespace Ba2Explorer.View.Commands
 {
     public static class AppCommands
     {

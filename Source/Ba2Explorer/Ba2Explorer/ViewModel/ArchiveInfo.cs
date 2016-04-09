@@ -28,12 +28,28 @@ namespace Ba2Explorer.ViewModel
 
         private BlockingCollection<object> extractionStack;
 
-        bool disposed = false;
+
 
         #region Properties
 
         private ObservableCollection<string> files;
+
         private bool isBusy = false;
+
+        private bool isDisposed = false;
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is disposed.
+        /// </summary>
+        public bool IsDisposed
+        {
+            get { return isDisposed; }
+            private set
+            {
+                isDisposed = value;
+                RaisePropertyChanged();
+            }
+        }
 
         /// <summary>
         /// Gets filenames in archive.
@@ -51,9 +67,6 @@ namespace Ba2Explorer.ViewModel
         /// <summary>
         /// Gets a value indicating whether this instance is busy.
         /// </summary>
-        /// <value>
-        /// <c>true</c> if this instance is busy; otherwise, <c>false</c>.
-        /// </value>
         public bool IsBusy
         {
             get { return isBusy; }
@@ -280,7 +293,7 @@ namespace Ba2Explorer.ViewModel
 
         void ThrowIfDisposed()
         {
-            if (disposed)
+            if (IsDisposed)
                 throw new ObjectDisposedException("ArchiveInfo is disposed.");
         }
 
@@ -293,7 +306,7 @@ namespace Ba2Explorer.ViewModel
             if (archive != null)
                 archive.Dispose();
 
-            disposed = true;
+            IsDisposed = true;
         }
     }
 }

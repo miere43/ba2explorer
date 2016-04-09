@@ -2,6 +2,7 @@
 using S16.Drawing;
 using System;
 using System.Diagnostics;
+using System.Diagnostics.Contracts;
 using System.IO;
 using System.Reflection;
 using System.Text;
@@ -13,15 +14,18 @@ using System.Windows.Documents;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
-namespace Ba2Explorer
+namespace Ba2Explorer.View
 {
+    /// <summary>
+    /// Control to preview various files from archive.
+    /// </summary>
     public partial class FilePreview : UserControl
     {
         private ArchiveInfo archiveInfo;
 
         private string previewFilePath;
 
-        private enum FileType
+        enum FileType
         {
             Unknown,
             Text,
@@ -33,15 +37,25 @@ namespace Ba2Explorer
             InitializeComponent();
         }
 
-        ~FilePreview()
-        {
-
-        }
-
         public void SetArchive(ArchiveInfo archive)
         {
+            if (archive == null)
+                throw new ArgumentNullException(nameof(archive));
+
             this.archiveInfo = archive;
+            this.archiveInfo.PropertyChanged += ArchiveInfo_PropertyChanged;
             this.previewFilePath = null;
+        }
+
+        void ArchiveInfo_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            Contract.Ensures(sender == archiveInfo);
+
+            if (e.PropertyName == nameof(ArchiveInfo.IsDisposed) && archiveInfo.IsDisposed == true)
+            {
+                SetDefaultPreview();
+                this.archiveInfo.PropertyChanged -= ArchiveInfo_PropertyChanged;
+            }
         }
 
         public bool CanPreviewTarget(string filePath)
@@ -51,6 +65,8 @@ namespace Ba2Explorer
 
         public void SetUnknownPreviewTarget(string filePath)
         {
+            EnsureArchiveAttached();
+
             if (String.IsNullOrWhiteSpace(filePath))
                 throw new ArgumentException(nameof(filePath));
 
@@ -59,6 +75,8 @@ namespace Ba2Explorer
 
         public async Task<bool> TrySetPreviewAsync(string filePath)
         {
+            EnsureArchiveAttached();
+
             if (String.IsNullOrWhiteSpace(filePath))
                 throw new ArgumentException(nameof(filePath));
 
@@ -96,8 +114,29 @@ namespace Ba2Explorer
             return true;
         }
 
-        private async Task SetDdsImagePreview(Stream stream)
+        #region Private methods
+
+        void SetDefaultPreview()
         {
+            this.PreviewText.Text = "Preview";
+            this.PreviewImageBox.Source = null;
+            this.PreviewImageBox.Visibility = Visibility.Collapsed;
+            this.PreviewTextField.Text = null;
+            this.PreviewTextField.Visibility = Visibility.Collapsed;
+        }
+
+        void SetTextWithTip(TextBlock obj, string text, string tip)
+        {
+            obj.Inlines.Clear();
+            obj.Inlines.Add(text);
+            Run grayedText = new Run(" (" + tip + ")");
+            grayedText.Foreground = Brushes.Gray;
+            obj.Inlines.Add(grayedText);
+        }
+
+        async Task SetDdsImagePreview(Stream stream)
+        {
+            Contract.Requires(stream != null);
             stream.Seek(0, SeekOrigin.Begin);
 
              DdsImage image = await DdsImage.LoadAsync(stream);
@@ -118,31 +157,30 @@ namespace Ba2Explorer
             this.PreviewImageBox.Visibility = Visibility.Visible;
             this.PreviewTextField.Visibility = Visibility.Collapsed;
 
-            this.PreviewText.Inlines.Clear();
-            this.PreviewText.Inlines.Add(new Run("Preview "));
-            Run imageInfo = new Run('(' + image.BitmapImage.Width.ToString() + 'x' + image.BitmapImage.Height.ToString() + ')');
-            imageInfo.Foreground = Brushes.Gray;
-            this.PreviewText.Inlines.Add(imageInfo);
+            SetTextWithTip(this.PreviewText, "Preview",
+                image.BitmapImage.Width + "x" + image.BitmapImage.Height);
 
             image.Dispose();
             Win32Util.DeleteObject(hBitmap);
         }
 
-        private void SetUnknownPreview(string filePath)
+
+        void SetUnknownPreview(string filePath)
         {
-            this.PreviewTextField.Inlines.Clear();
-            this.PreviewTextField.Inlines.Add("Cannot preview " + Path.GetFileName(filePath));
-            var grayedText = new Run(" (unsupported)");
-            grayedText.Foreground = Brushes.Gray;
-            this.PreviewTextField.Inlines.Add(grayedText);
+            Contract.Requires(!String.IsNullOrWhiteSpace(filePath));
+
+            SetTextWithTip(this.PreviewTextField,
+                "Cannot preview " + Path.GetFileName(filePath), "unsupported");
 
             this.PreviewImageBox.Visibility = Visibility.Collapsed;
             this.PreviewTextField.Visibility = Visibility.Visible;
             this.PreviewText.Text = "Preview";
         }
 
-        private void SetTextPreview(Stream stream)
+        void SetTextPreview(Stream stream)
         {
+            Contract.Requires(stream != null);
+
             byte[] buffer = new byte[stream.Length];
             int readed = stream.Read(buffer, 0, (int)stream.Length);
             Debug.Assert(readed == stream.Length);
@@ -156,8 +194,10 @@ namespace Ba2Explorer
             this.PreviewText.Text = "Preview";
         }
 
-        private FileType ResolveFileTypeFromExtension(string extension)
+        FileType ResolveFileTypeFromExtension(string extension)
         {
+            Contract.Requires(!String.IsNullOrWhiteSpace(extension));
+
             extension = extension.TrimStart('.');
 
             if (extension.Equals("txt", StringComparison.OrdinalIgnoreCase))
@@ -171,5 +211,17 @@ namespace Ba2Explorer
 
             return FileType.Unknown;
         }
+
+        #endregion
+
+        #region Helper methods
+
+        void EnsureArchiveAttached()
+        {
+            if (archiveInfo == null || archiveInfo.IsDisposed)
+                throw new InvalidOperationException("ArchiveInfo should be set with SetArchive() method.");
+        }
+
+        #endregion
     }
 }

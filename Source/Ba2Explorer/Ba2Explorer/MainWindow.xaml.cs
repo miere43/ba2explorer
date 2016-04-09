@@ -34,8 +34,13 @@ namespace Ba2Explorer
             };
 
             this.Loaded += MainWindow_Loaded;
+            this.Closed += MainWindow_Closed;
         }
 
+        private void MainWindow_Closed(object sender, EventArgs e)
+        {
+            this.mainViewModel.Cleanup();
+        }
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
