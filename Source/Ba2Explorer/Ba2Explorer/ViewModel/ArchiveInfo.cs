@@ -1,18 +1,14 @@
-﻿using Ba2Tools;
-using GalaSoft.MvvmLight;
-using Microsoft.Win32;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.Diagnostics.Contracts;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using Microsoft.Win32;
+using GalaSoft.MvvmLight;
+using Ba2Tools;
 
 namespace Ba2Explorer.ViewModel
 {
@@ -248,19 +244,6 @@ namespace Ba2Explorer.ViewModel
         public static ArchiveInfo Open(string path)
         {
             ArchiveInfo info = null;
-
-            //if (archive != null && IsOpened)
-            //{
-            //    if (IsBusy)
-            //        throw new ArgumentException();
-
-            //    archive.Dispose();
-            //    archive = null;
-            //    IsOpened = false;
-            //    Files = null;
-            //    FilePath = null;
-            //    FileName = null;
-            //}
 
             try
             {

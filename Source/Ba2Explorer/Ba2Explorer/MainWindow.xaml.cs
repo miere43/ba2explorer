@@ -7,6 +7,8 @@ using System.Windows.Data;
 using System.Windows.Input;
 using Ba2Explorer.ViewModel;
 using System.Collections;
+using Nett;
+using Ba2Explorer.Settings;
 
 namespace Ba2Explorer
 {
@@ -18,6 +20,8 @@ namespace Ba2Explorer
 
         public MainWindow()
         {
+            AppSettings.Load("D:/test.toml");
+
             InitializeComponent();
 
             mainViewModel = (MainViewModel)DataContext;
@@ -33,13 +37,36 @@ namespace Ba2Explorer
                 }
             };
 
+            var settings = AppSettings.Instance.MainWindow;
+            this.Width = settings.WindowWidth;
+            this.Height = settings.WindowHeight;
+            this.Topmost = settings.Topmost;
+            if (AppSettings.Instance.Global.IsFirstLaunch)
+            {
+                this.Top = settings.WindowTop;
+                this.Left = settings.WindowLeft;
+            }
+
+            settings.OnSaving += Settings_OnSaving;
+
             this.Loaded += MainWindow_Loaded;
             this.Closed += MainWindow_Closed;
+        }
+
+        private void Settings_OnSaving(object sender, EventArgs e)
+        {
+            MainWindowSettings s = (MainWindowSettings)sender;
+            s.Topmost = this.Topmost;
+            s.WindowLeft = this.Left;
+            s.WindowTop = this.Top;
+            s.WindowWidth = this.Width;
+            s.WindowHeight = this.Height;
         }
 
         private void MainWindow_Closed(object sender, EventArgs e)
         {
             this.mainViewModel.Cleanup();
+            AppSettings.Save("D:/test.toml");
         }
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)

@@ -79,6 +79,13 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Settings.cs" />
+    <Compile Include="Settings\AppSettings.cs" />
+    <Compile Include="Settings\AppSettingsAttribute.cs" />
+    <Compile Include="Settings\AppSettingsBase.cs" />
+    <Compile Include="Settings\GlobalSettings.cs" />
+    <Compile Include="Settings\IAppSettings.cs" />
+    <Compile Include="Settings\MainWindowSettings.cs" />
     <Compile Include="View\Commands\AppCommands.cs" />
     <Compile Include="ArchiveFilename.cs" />
     <Compile Include="View\FileExtractionWindow.xaml.cs">
@@ -93,6 +100,9 @@
     <Compile Include="ViewModel\FileExtractionViewModel.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
     <Compile Include="ViewModel\ViewModelLocator.cs" />
+    <Compile Include="View\SettingsWindow.xaml.cs">
+      <DependentUpon>SettingsWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Win32Util.cs" />
     <Page Include="View\FileExtractionWindow.xaml">
       <SubType>Designer</SubType>
@@ -114,6 +124,10 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="View\SettingsWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">
@@ -147,6 +161,10 @@
     <ProjectReference Include="..\..\..\Third-party\Ba2Tools\Source\Ba2Tools\Ba2Tools.csproj">
       <Project>{4716f53b-db26-4b24-b5df-f0ee73938f1a}</Project>
       <Name>Ba2Tools</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Third-party\Nett\Source\Nett\Nett.csproj">
+      <Project>{11e1bd88-fab6-407d-b3ef-42a291d4aa14}</Project>
+      <Name>Nett</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup />

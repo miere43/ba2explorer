@@ -1,3 +1,7 @@
 [submodule "Third-party/Ba2Tools"]
 	path = Third-party/Ba2Tools
 	url = https://github.com/miere43/Ba2Tools
+[submodule "Third-party/Nett"]
+	path = Third-party/Nett
+	url = https://github.com/paiden/Nett
+	branch = topic/convert
