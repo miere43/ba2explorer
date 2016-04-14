@@ -23,12 +23,20 @@ namespace Ba2Explorer.View.Commands
             get { return extractAll; }
         }
 
+        private static RoutedUICommand openSettings;
+
+        public static RoutedUICommand OpenSettings
+        {
+            get { return openSettings; }
+        }
+
         static AppCommands()
         {
             Type t = typeof(AppCommands);
 
             extractSingle = new RoutedUICommand("ExtractSingle", "ExtractSingle", t);
             extractAll = new RoutedUICommand("ExtractAll", "ExtractAll", t);
+            openSettings = new RoutedUICommand("OpenSettings", "OpenSettings", t);
         }
     }
 }

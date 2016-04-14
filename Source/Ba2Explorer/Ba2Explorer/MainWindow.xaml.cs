@@ -20,7 +20,7 @@ namespace Ba2Explorer
 
         public MainWindow()
         {
-            AppSettings.Load("D:/test.toml");
+            AppSettings.Load("prefs.toml");
 
             InitializeComponent();
 
@@ -51,6 +51,8 @@ namespace Ba2Explorer
 
             this.Loaded += MainWindow_Loaded;
             this.Closed += MainWindow_Closed;
+
+            // OpenSettingsExecuted(null, null);
         }
 
         private void Settings_OnSaving(object sender, EventArgs e)
@@ -66,7 +68,7 @@ namespace Ba2Explorer
         private void MainWindow_Closed(object sender, EventArgs e)
         {
             this.mainViewModel.Cleanup();
-            AppSettings.Save("D:/test.toml");
+            AppSettings.Save("prefs.toml");
         }
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
@@ -132,6 +134,8 @@ namespace Ba2Explorer
         {
             e.Handled = true;
             mainViewModel.CloseArchive();
+
+            GC.Collect(2);
         }
 
         private void ExtractCanExecute(object sender, CanExecuteRoutedEventArgs e)
@@ -164,5 +168,13 @@ namespace Ba2Explorer
         }
 
         #endregion
+
+        private void OpenSettingsExecuted(object sender, ExecutedRoutedEventArgs e)
+        {
+            var settings = new View.SettingsWindow();
+            if (this.Topmost)
+                settings.Topmost = true;
+            settings.ShowDialog();
+        }
     }
 }

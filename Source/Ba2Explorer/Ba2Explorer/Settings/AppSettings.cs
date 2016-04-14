@@ -4,10 +4,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace Ba2Explorer.Settings
 {
-    internal class AppSettings
+    public class AppSettings
     {
         internal static AppSettings Instance { get; private set; }
 
@@ -32,7 +33,16 @@ namespace Ba2Explorer.Settings
             {
                 builder.AllowImplicitConversions(TomlConfig.ConversionLevel.DotNetImplicit);
             });
-            var settings = Toml.ReadFile<AppSettings>(path, config);
+
+            AppSettings settings;
+            try
+            {
+                settings = Toml.ReadFile<AppSettings>(path, config);
+            }
+            catch (Exception)
+            {
+                settings = new AppSettings();
+            }
             settings.Loaded();
 
             return settings;
@@ -40,7 +50,19 @@ namespace Ba2Explorer.Settings
 
         public static void Save(string path)
         {
-            Toml.WriteFile<AppSettings>(AppSettings.Instance, path);
+            if (Instance == null)
+                throw new InvalidOperationException("Settings are not instantiated.");
+
+            Instance.Saving();
+
+            try
+            {
+                Toml.WriteFile<AppSettings>(AppSettings.Instance, path);
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show($"Cannot save prefs: {e.Message}");
+            }
         }
 
         private void Saving()

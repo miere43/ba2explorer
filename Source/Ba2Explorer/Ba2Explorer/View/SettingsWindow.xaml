@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Ba2Explorer.View"
         mc:Ignorable="d"
-        Title="BA2 Explorer - Settings" Height="300" Width="300">
+        Title="BA2 Explorer - Settings" Height="280" Width="400">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
@@ -15,8 +15,7 @@
             <ColumnDefinition Width="3*" />
         </Grid.ColumnDefinitions>
 
-        <TreeView>
-            <TreeViewItem Header="Hello" />
+        <TreeView x:Name="SettingsTreeView">
         </TreeView>
     </Grid>
 </Window>

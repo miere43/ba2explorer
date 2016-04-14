@@ -16,11 +16,16 @@
         </Grid.ColumnDefinitions>
 
         <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
-            <TextBlock Grid.Row="0"
+            <VirtualizingStackPanel>
+                <TextBlock Grid.Row="0"
                        x:Name="PreviewTextField"
+                       Margin="4"
+                       ScrollViewer.VerticalScrollBarVisibility="Auto"
+                       ScrollViewer.HorizontalScrollBarVisibility="Auto"
                        TextWrapping="Wrap"
                        Visibility="Collapsed"
                        TextTrimming="CharacterEllipsis" />
+            </VirtualizingStackPanel>
         </ScrollViewer>
 
         <Image

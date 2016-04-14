@@ -15,6 +15,7 @@
         <CommandBinding Command="Close" CanExecute="CloseCanExecute" Executed="CloseCommandExecuted" />
         <CommandBinding Command="commands:AppCommands.ExtractSingle" CanExecute="ExtractCanExecute" Executed="ExtractSingleCommandExecuted" />
         <CommandBinding Command="commands:AppCommands.ExtractAll" CanExecute="ExtractCanExecute" Executed="ExtractAllCommandExecuted" />
+        <CommandBinding Command="commands:AppCommands.OpenSettings" Executed="OpenSettingsExecuted" />
     </Window.CommandBindings>
 
     <Grid>
@@ -35,12 +36,12 @@
                 <Separator />
                 <MenuItem Header="Exit" />
             </MenuItem>
-            <MenuItem Header="Settings">
+            <MenuItem Command="commands:AppCommands.OpenSettings" Header="Settings">
                 
             </MenuItem>
         </Menu>
 
-        <ListView x:Name="ArchiveFilesList" Grid.Row="2" Grid.Column="0" DataContext="{Binding ArchiveInfo}" ItemsSource="{Binding Files}"
+        <ListView BorderThickness="0,1,0,0" x:Name="ArchiveFilesList" Grid.Row="2" Grid.Column="0" DataContext="{Binding ArchiveInfo}" ItemsSource="{Binding Files}"
                   SelectionChanged="ArchiveFilesList_SelectionChanged">
             <ListView.ContextMenu>
                 <ContextMenu>
@@ -50,7 +51,7 @@
             </ListView.ContextMenu>
         </ListView>
 
-        <GridSplitter Grid.Row="1" Grid.RowSpan="2" Grid.Column="0" Width="4" />
+        <GridSplitter Background="#4A5573" Grid.Row="1" Grid.RowSpan="2" Grid.Column="0" Width="2" />
 
         <view:FilePreview
             x:Name="FilePreview"
@@ -61,7 +62,7 @@
         <Grid 
             Grid.Row="1"
             Grid.Column="0"
-            Margin="6">
+            Margin="6,6">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
@@ -71,7 +72,7 @@
             </Grid.ColumnDefinitions>
             <!-- TODO change to AccessText -->
             <TextBlock Grid.Row="0" Grid.Column="0">Filter: </TextBlock>
-            <TextBox x:Name="FilterText" TextChanged="FilterText_TextChanged" Grid.Row="0" Grid.Column="1" Margin="4,0,4,0"></TextBox>
+            <TextBox x:Name="FilterText" TextChanged="FilterText_TextChanged" Grid.Row="0" Grid.Column="1" Margin="4,0,2,0"></TextBox>
         </Grid>
     </Grid>
 </Window>

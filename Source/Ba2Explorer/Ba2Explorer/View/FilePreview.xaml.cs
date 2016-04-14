@@ -1,6 +1,7 @@
 ﻿using Ba2Explorer.ViewModel;
 using S16.Drawing;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.IO;
@@ -21,6 +22,8 @@ namespace Ba2Explorer.View
     /// </summary>
     public partial class FilePreview : UserControl
     {
+        private readonly static IReadOnlyDictionary<string, string> extensionDescriptions;
+
         private ArchiveInfo archiveInfo;
 
         private string previewFilePath;
@@ -29,12 +32,50 @@ namespace Ba2Explorer.View
         {
             Unknown,
             Text,
+            Xml,
             DdsImage
         }
 
         public FilePreview()
         {
             InitializeComponent();
+        }
+
+        static FilePreview()
+        {
+            extensionDescriptions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                { ".pex", "Papyrus Compiled Script" },
+                { ".psc", "Papyrus Script Source Code" },
+                { ".nif", "Model Data" },
+                { ".bgsm", "Material Data" },
+                { ".bgem", "Material Data" },
+                { ".hkx", "Havok Data" },
+                { ".dlstrings", "Localization Strings" },
+                { ".ilstrings", "Localization Strings" },
+                { ".strings", "Localization Strings" },
+                { ".swf", "Flash File" },
+                { ".wav", "Sound File" },
+                { ".xwm", "Sound File" },
+                { ".lod", "LOD Terrain " },
+                { ".btr", "Terrain LOD (NIF Model)" },
+                { ".bto", "Object LOD (NIF Model)" },
+                { ".bin", "Binary File" }
+                // ssf
+                // tri - trishapes?
+                // hko - havok object?
+                // obj
+                // sclp - sculpt data?
+                // log - text?
+                // max
+                // lst - tree lod info
+                // vvd
+                // dat
+                // xwm - sound
+                // gfx
+                // uvd
+                // fuz - voices?
+            };
         }
 
         public void SetArchive(ArchiveInfo archive)
@@ -98,6 +139,7 @@ namespace Ba2Explorer.View
 
                 switch (type)
                 {
+                    case FileType.Xml:
                     case FileType.Text:
                         SetTextPreview(stream);
                         break;
@@ -139,7 +181,7 @@ namespace Ba2Explorer.View
             Contract.Requires(stream != null);
             stream.Seek(0, SeekOrigin.Begin);
 
-             DdsImage image = await DdsImage.LoadAsync(stream);
+            DdsImage image = await DdsImage.LoadAsync(stream);
             if (!image.IsValid)
             {
                 image.Dispose();
@@ -169,8 +211,14 @@ namespace Ba2Explorer.View
         {
             Contract.Requires(!String.IsNullOrWhiteSpace(filePath));
 
+            string fileName = Path.GetFileName(filePath);
+            string ext = Path.GetExtension(fileName);
+
+            string desc = null;
+            extensionDescriptions.TryGetValue(ext, out desc);
+
             SetTextWithTip(this.PreviewTextField,
-                "Cannot preview " + Path.GetFileName(filePath), "unsupported");
+                "Cannot preview " + Path.GetFileName(filePath), desc == null ? "unsupported" : desc);
 
             this.PreviewImageBox.Visibility = Visibility.Collapsed;
             this.PreviewTextField.Visibility = Visibility.Visible;
@@ -203,6 +251,10 @@ namespace Ba2Explorer.View
             if (extension.Equals("txt", StringComparison.OrdinalIgnoreCase))
             {
                 return FileType.Text;
+            }
+            else if (extension.Equals("xml", StringComparison.OrdinalIgnoreCase))
+            {
+                return FileType.Xml;
             }
             else if (extension.Equals("dds", StringComparison.OrdinalIgnoreCase))
             {
