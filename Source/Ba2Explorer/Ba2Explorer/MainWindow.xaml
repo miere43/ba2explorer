@@ -7,6 +7,7 @@
         xmlns:view="clr-namespace:Ba2Explorer.View"
         xmlns:commands="clr-namespace:Ba2Explorer.View.Commands"
         mc:Ignorable="d"
+        xml:lang="en-US"
         DataContext="{Binding Source={StaticResource Locator}, Path=Main}"
         Title="BA2 Explorer" Height="350" Width="525">
 
@@ -50,7 +51,7 @@
                 </ContextMenu>
             </ListView.ContextMenu>
         </ListView>
-
+        
         <GridSplitter Background="#4A5573" Grid.Row="1" Grid.RowSpan="2" Grid.Column="0" Width="2" />
 
         <view:FilePreview

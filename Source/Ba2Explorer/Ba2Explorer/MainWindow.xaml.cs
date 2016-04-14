@@ -73,7 +73,7 @@ namespace Ba2Explorer
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            // mainViewModel.OpenArchive("D:/Games/Fallout 4/Data/DLCRobot - Textures.ba2");
+            // mainViewModel.OpenArchive("D:/Games/Fallout 4/Data/Fallout4 - Sounds.ba2");
             //mainViewModel.ExtractFiles("D:/A", mainViewModel.ArchiveInfo.Files);
         }
 

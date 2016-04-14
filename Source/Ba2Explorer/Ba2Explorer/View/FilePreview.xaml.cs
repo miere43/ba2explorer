@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.IO;
+using System.Media;
 using System.Reflection;
 using System.Text;
 using System.Threading;
@@ -28,12 +29,15 @@ namespace Ba2Explorer.View
 
         private string previewFilePath;
 
+        private SoundPlayer soundPlayer;
+
         enum FileType
         {
             Unknown,
             Text,
+            Wav,
             Xml,
-            DdsImage
+            Dds
         }
 
         public FilePreview()
@@ -143,8 +147,11 @@ namespace Ba2Explorer.View
                     case FileType.Text:
                         SetTextPreview(stream);
                         break;
-                    case FileType.DdsImage:
+                    case FileType.Dds:
                         await SetDdsImagePreview(stream);
+                        break;
+                    case FileType.Wav:
+                        SetWavSoundPreview(stream);
                         break;
                     case FileType.Unknown:
                        throw new InvalidOperationException();
@@ -158,25 +165,68 @@ namespace Ba2Explorer.View
 
         #region Private methods
 
-        void SetDefaultPreview()
+        private void ChangeControlsVisibilityForFileType(FileType fileType)
         {
-            this.PreviewText.Text = "Preview";
-            this.PreviewImageBox.Source = null;
-            this.PreviewImageBox.Visibility = Visibility.Collapsed;
-            this.PreviewTextField.Text = null;
-            this.PreviewTextField.Visibility = Visibility.Collapsed;
+            if (fileType != FileType.Wav)
+                SoundPlayerElement.StopSound();
+
+            switch (fileType)
+            {
+                case FileType.Xml:
+                case FileType.Text:
+                case FileType.Unknown:
+                    PreviewImageBox.Visibility = Visibility.Collapsed;
+                    TextBlockScrollViewer.Visibility = Visibility.Visible;
+                    SoundPlayerElement.Visibility = Visibility.Collapsed;
+                    break;
+                case FileType.Wav:
+                    PreviewImageBox.Visibility = Visibility.Collapsed;
+                    TextBlockScrollViewer.Visibility = Visibility.Collapsed;
+                    SoundPlayerElement.Visibility = Visibility.Visible;
+                    break;
+                case FileType.Dds:
+                    PreviewImageBox.Visibility = Visibility.Visible;
+                    TextBlockScrollViewer.Visibility = Visibility.Collapsed;
+                    SoundPlayerElement.Visibility = Visibility.Collapsed;
+                    break;
+            }
         }
 
-        void SetTextWithTip(TextBlock obj, string text, string tip)
+        /// <summary>
+        /// Set's target text block text to text with grayed tooltip near it.
+        /// </summary>
+        /// <param name="textBlock">The TextBlock object.</param>
+        /// <param name="text">The text.</param>
+        /// <param name="tip">The tip.</param>
+        private void SetTextWithTip(TextBlock textBlock, string text, string tip)
         {
-            obj.Inlines.Clear();
-            obj.Inlines.Add(text);
+            Contract.Requires(textBlock != null);
+            Contract.Requires(text != null);
+            Contract.Requires(tip != null);
+
+            textBlock.Inlines.Clear();
+            textBlock.Inlines.Add(text);
             Run grayedText = new Run(" (" + tip + ")");
             grayedText.Foreground = Brushes.Gray;
-            obj.Inlines.Add(grayedText);
+            textBlock.Inlines.Add(grayedText);
         }
 
-        async Task SetDdsImagePreview(Stream stream)
+        private void SetWavSoundPreview(Stream stream)
+        {
+            Contract.Requires(stream != null);
+
+            stream.Seek(0, SeekOrigin.Begin);
+            SoundPlayerElement.SoundSource = stream;
+
+            ChangeControlsVisibilityForFileType(FileType.Wav);
+        }
+
+        /// <summary>
+        /// Set's preview to DDS image.
+        /// TODO: catch loading exceptions.
+        /// </summary>
+        /// <param name="stream">DDS image stream.</param>
+        private async Task SetDdsImagePreview(Stream stream)
         {
             Contract.Requires(stream != null);
             stream.Seek(0, SeekOrigin.Begin);
@@ -196,8 +246,7 @@ namespace Ba2Explorer.View
                 BitmapSizeOptions.FromEmptyOptions());
 
             this.PreviewImageBox.Source = source;
-            this.PreviewImageBox.Visibility = Visibility.Visible;
-            this.PreviewTextField.Visibility = Visibility.Collapsed;
+            ChangeControlsVisibilityForFileType(FileType.Dds);
 
             SetTextWithTip(this.PreviewText, "Preview",
                 image.BitmapImage.Width + "x" + image.BitmapImage.Height);
@@ -206,8 +255,24 @@ namespace Ba2Explorer.View
             Win32Util.DeleteObject(hBitmap);
         }
 
+        /// <summary>
+        /// Set's preview with no preview text.
+        /// </summary>
+        private void SetDefaultPreview()
+        {
+            this.PreviewText.Text = "Preview";
+            this.PreviewImageBox.Source = null;
+            this.PreviewTextField.Text = null;
 
-        void SetUnknownPreview(string filePath)
+            ChangeControlsVisibilityForFileType(FileType.Unknown);
+        }
+
+        /// <summary>
+        /// Set's preview to text label with text that
+        /// file previewer cannot show preview for
+        /// file.
+        /// </summary>
+        private void SetUnknownPreview(string filePath)
         {
             Contract.Requires(!String.IsNullOrWhiteSpace(filePath));
 
@@ -220,12 +285,15 @@ namespace Ba2Explorer.View
             SetTextWithTip(this.PreviewTextField,
                 "Cannot preview " + Path.GetFileName(filePath), desc == null ? "unsupported" : desc);
 
-            this.PreviewImageBox.Visibility = Visibility.Collapsed;
-            this.PreviewTextField.Visibility = Visibility.Visible;
             this.PreviewText.Text = "Preview";
+            ChangeControlsVisibilityForFileType(FileType.Unknown);
         }
 
-        void SetTextPreview(Stream stream)
+        /// <summary>
+        /// Set's preview to text label with text
+        /// readed from stream with ASCII encoding.
+        /// </summary>
+        private void SetTextPreview(Stream stream)
         {
             Contract.Requires(stream != null);
 
@@ -236,13 +304,16 @@ namespace Ba2Explorer.View
             string text = Encoding.ASCII.GetString(buffer);
 
             this.PreviewTextField.Text = text;
-            this.PreviewImageBox.Visibility = Visibility.Collapsed;
-            this.PreviewTextField.Visibility = Visibility.Visible;
-
             this.PreviewText.Text = "Preview";
+
+            ChangeControlsVisibilityForFileType(FileType.Text);
         }
 
-        FileType ResolveFileTypeFromExtension(string extension)
+        /// <summary>
+        /// Resolves extension to FileType enum.
+        /// </summary>
+        /// <param name="extension">Extension, can start with dot.</param>
+        private FileType ResolveFileTypeFromExtension(string extension)
         {
             Contract.Requires(!String.IsNullOrWhiteSpace(extension));
 
@@ -256,9 +327,13 @@ namespace Ba2Explorer.View
             {
                 return FileType.Xml;
             }
+            else if (extension.Equals("wav", StringComparison.OrdinalIgnoreCase))
+            {
+                return FileType.Wav;
+            }
             else if (extension.Equals("dds", StringComparison.OrdinalIgnoreCase))
             {
-                return FileType.DdsImage;
+                return FileType.Dds;
             }
 
             return FileType.Unknown;
@@ -275,5 +350,6 @@ namespace Ba2Explorer.View
         }
 
         #endregion
+
     }
 }

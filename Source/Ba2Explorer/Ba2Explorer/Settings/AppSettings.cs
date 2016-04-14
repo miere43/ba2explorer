@@ -16,6 +16,8 @@ namespace Ba2Explorer.Settings
 
         public MainWindowSettings MainWindow { get; set; }
 
+        public FilePreviewSettings FilePreview { get; set; }
+
         public AppSettings()
         {
             if (Instance != null)
@@ -65,21 +67,55 @@ namespace Ba2Explorer.Settings
             }
         }
 
+        private IEnumerator<IAppSettings> SettingsPropertiesEnumerator()
+        {
+            foreach (var prop in typeof(AppSettings).GetProperties())
+            {
+                if (prop.PropertyType.BaseType != typeof(AppSettingsBase) &&
+                prop.PropertyType.BaseType != typeof(IAppSettings))
+                {
+                    continue;
+                }
+
+                IAppSettings settings = (IAppSettings)prop.GetValue(this);
+                if (settings == null)
+                {
+                    settings = (IAppSettings)prop.PropertyType.GetConstructor(Type.EmptyTypes).Invoke(new object[0]);
+                    prop.SetValue(this, settings);
+                }
+
+                yield return settings;
+            }
+        }
+
         private void Saving()
         {
-            Global.Saving();
-            MainWindow.Saving();
+            var enumerator = SettingsPropertiesEnumerator();
+            while (enumerator.MoveNext())
+            {
+                enumerator.Current.Saving();
+            }
         }
 
         private void Loaded()
         {
-            if (Global == null)
-                Global = new GlobalSettings();
-            Global.Loaded();
+            var enumerator = SettingsPropertiesEnumerator();
+            while (enumerator.MoveNext())
+            {
+                enumerator.Current.Loaded();
+            }
 
-            if (MainWindow == null)
-                MainWindow = new MainWindowSettings();
-            MainWindow.Loaded();
+            //if (Global == null)
+            //    Global = new GlobalSettings();
+            //Global.Loaded();
+
+            //if (MainWindow == null)
+            //    MainWindow = new MainWindowSettings();
+            //MainWindow.Loaded();
+
+            //if (FilePreview == null)
+            //    FilePreview = new FilePreviewSettings();
+            //FilePreview.Loaded();
         }
     }
 }

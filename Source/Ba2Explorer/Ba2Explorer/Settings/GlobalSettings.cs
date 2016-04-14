@@ -12,6 +12,8 @@ namespace Ba2Explorer.Settings
 
         public bool IsFirstLaunch { get; set; } = true;
 
+        public string Culture { get; set; } = "en-US";
+
         public override void Saving()
         {
             IsFirstLaunch = false;
