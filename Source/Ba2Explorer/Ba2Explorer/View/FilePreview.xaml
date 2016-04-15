@@ -16,8 +16,12 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <view:SoundPlayerElement x:Name="SoundPlayerElement"></view:SoundPlayerElement>
-
+        <view:SoundPlayerElement
+            Visibility="Collapsed"
+            x:Name="SoundPlayerControl">
+            
+        </view:SoundPlayerElement>
+        
         <ScrollViewer Visibility="Hidden" x:Name="TextBlockScrollViewer" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
             <VirtualizingStackPanel>
                 <TextBlock Grid.Row="0"
@@ -26,7 +30,6 @@
                        ScrollViewer.VerticalScrollBarVisibility="Auto"
                        ScrollViewer.HorizontalScrollBarVisibility="Auto"
                        TextWrapping="Wrap"
-                       Visibility="Collapsed"
                        TextTrimming="CharacterEllipsis" />
             </VirtualizingStackPanel>
         </ScrollViewer>

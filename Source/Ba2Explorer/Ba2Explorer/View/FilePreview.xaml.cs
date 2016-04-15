@@ -29,8 +29,6 @@ namespace Ba2Explorer.View
 
         private string previewFilePath;
 
-        private SoundPlayer soundPlayer;
-
         enum FileType
         {
             Unknown,
@@ -153,8 +151,6 @@ namespace Ba2Explorer.View
                     case FileType.Wav:
                         SetWavSoundPreview(stream);
                         break;
-                    case FileType.Unknown:
-                       throw new InvalidOperationException();
                     default:
                        throw new NotSupportedException($"Preview of file with type \"{type}\" is not supported.");
                 }
@@ -168,7 +164,7 @@ namespace Ba2Explorer.View
         private void ChangeControlsVisibilityForFileType(FileType fileType)
         {
             if (fileType != FileType.Wav)
-                SoundPlayerElement.StopSound();
+                SoundPlayerControl.StopSound();
 
             switch (fileType)
             {
@@ -177,17 +173,17 @@ namespace Ba2Explorer.View
                 case FileType.Unknown:
                     PreviewImageBox.Visibility = Visibility.Collapsed;
                     TextBlockScrollViewer.Visibility = Visibility.Visible;
-                    SoundPlayerElement.Visibility = Visibility.Collapsed;
+                    SoundPlayerControl.Visibility = Visibility.Collapsed;
                     break;
                 case FileType.Wav:
                     PreviewImageBox.Visibility = Visibility.Collapsed;
                     TextBlockScrollViewer.Visibility = Visibility.Collapsed;
-                    SoundPlayerElement.Visibility = Visibility.Visible;
+                    SoundPlayerControl.Visibility = Visibility.Visible;
                     break;
                 case FileType.Dds:
                     PreviewImageBox.Visibility = Visibility.Visible;
                     TextBlockScrollViewer.Visibility = Visibility.Collapsed;
-                    SoundPlayerElement.Visibility = Visibility.Collapsed;
+                    SoundPlayerControl.Visibility = Visibility.Collapsed;
                     break;
             }
         }
@@ -216,7 +212,7 @@ namespace Ba2Explorer.View
             Contract.Requires(stream != null);
 
             stream.Seek(0, SeekOrigin.Begin);
-            SoundPlayerElement.SoundSource = stream;
+            SoundPlayerControl.SoundSource = stream;
 
             ChangeControlsVisibilityForFileType(FileType.Wav);
         }

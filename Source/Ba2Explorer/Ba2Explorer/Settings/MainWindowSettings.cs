@@ -22,6 +22,11 @@ namespace Ba2Explorer.Settings
         [TomlComment("Should window be located above all opened windows? (bool)")]
         public bool Topmost { get; set; } = false;
 
+        public List<string> LatestFiles = null;
+
+        /// <summary>
+        /// Called by AppSettings class when settings are loaded.
+        /// </summary>
         public override void Loaded()
         {
             if (WindowWidth <= 0)
@@ -32,6 +37,8 @@ namespace Ba2Explorer.Settings
                 WindowLeft = 32;
             if (WindowTop < -WindowHeight)
                 WindowTop = 32;
+            if (LatestFiles == null)
+                LatestFiles = new List<string>();
 
             base.Loaded();
         }

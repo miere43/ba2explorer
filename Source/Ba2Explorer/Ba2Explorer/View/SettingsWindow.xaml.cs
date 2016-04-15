@@ -16,8 +16,9 @@ using Ba2Explorer.Settings;
 namespace Ba2Explorer.View
 {
     /// <summary>
-    /// Логика взаимодействия для SettingsWindow.xaml
+    /// Settings window.
     /// </summary>
+    /// <see cref="Ba2Explorer.Settings.AppSettings"/>
     public partial class SettingsWindow : Window
     {
         public SettingsWindow()

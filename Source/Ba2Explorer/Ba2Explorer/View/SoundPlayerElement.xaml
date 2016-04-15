@@ -25,5 +25,4 @@
             <TextBlock TextAlignment="Center" TextWrapping="Wrap" Margin="0,4,0,0" Foreground="Gray">Sorry, options like volume control are not supported :(</TextBlock>
         </StackPanel>
     </Grid>
-
 </UserControl>

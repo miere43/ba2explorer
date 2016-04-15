@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Ba2Explorer.Settings
 {
@@ -12,11 +8,17 @@ namespace Ba2Explorer.Settings
 
         public event EventHandler OnLoaded = delegate { };
 
+        /// <summary>
+        /// Called by AppSettings class when settings are going to be saved.
+        /// </summary>
         public virtual void Saving()
         {
             OnSaving(this, null);
         }
 
+        /// <summary>
+        /// Called by AppSettings class when settings are loaded.
+        /// </summary>
         public virtual void Loaded()
         {
             OnLoaded(this, null);

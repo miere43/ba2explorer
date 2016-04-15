@@ -35,6 +35,8 @@
                 <MenuItem Command="Open" Header="Open" />
                 <MenuItem Command="Close" Header="Close" />
                 <Separator />
+                <MenuItem Header="Latest files" />
+                <Separator />
                 <MenuItem Header="Exit" />
             </MenuItem>
             <MenuItem Command="commands:AppCommands.OpenSettings" Header="Settings">

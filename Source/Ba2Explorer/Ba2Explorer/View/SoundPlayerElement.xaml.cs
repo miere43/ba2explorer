@@ -1,20 +1,9 @@
 ﻿using Ba2Explorer.Settings;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Media;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace Ba2Explorer.View
 {
@@ -70,10 +59,13 @@ namespace Ba2Explorer.View
             InitializeComponent();
             soundPlayer = new SoundPlayer();
 
-            this.AutoplaySoundCheckbox.IsChecked =
-                AppSettings.Instance.FilePreview.SoundPlayerAutoplaySounds;
+            if (!System.ComponentModel.DesignerProperties.GetIsInDesignMode(this))
+            {
+                this.AutoplaySoundCheckbox.IsChecked =
+                    AppSettings.Instance.FilePreview.SoundPlayerAutoplaySounds;
 
-            AppSettings.Instance.FilePreview.OnSaving += FilePreviewSettingsBeforeSave;
+                AppSettings.Instance.FilePreview.OnSaving += FilePreviewSettingsBeforeSave;
+            } 
 
             SoundSourceChanged(); // No source by default.
         }
