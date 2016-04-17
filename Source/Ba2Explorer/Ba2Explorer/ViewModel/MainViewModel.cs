@@ -9,6 +9,7 @@ using System;
 using System.Diagnostics.Contracts;
 using Microsoft.Win32;
 using Ba2Explorer.View;
+using Ba2Explorer.Logging;
 
 namespace Ba2Explorer.ViewModel
 {
@@ -132,6 +133,9 @@ namespace Ba2Explorer.ViewModel
             dialog.CheckFileExists = true;
             dialog.ShowDialog();
 
+            if (String.IsNullOrWhiteSpace(dialog.FileName))
+                return;
+
             OpenArchive(dialog.FileName);
         }
 
@@ -150,6 +154,8 @@ namespace Ba2Explorer.ViewModel
 
             ArchiveInfo = ArchiveInfo.Open(path);
             SetTitle(ArchiveInfo.FileName);
+
+            App.Logger.Log("Opened archive {0}", LogPriority.Info, path);
         }
 
         public void CloseArchive()
@@ -190,6 +196,7 @@ namespace Ba2Explorer.ViewModel
             }
             catch (Exception e)
             {
+                App.Logger.Log("ExtractFilesWithDialog failed: {0}", LogPriority.Error, e.Message);
                 // todo;
                 MessageBox.Show(e.Message);
             }

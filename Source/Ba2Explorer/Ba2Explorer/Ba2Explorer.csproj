@@ -95,12 +95,17 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Logging\FileLogger.cs" />
+    <Compile Include="Logging\ILogger.cs" />
+    <Compile Include="Logging\LogPriority.cs" />
+    <Compile Include="Logging\NullLogger.cs" />
     <Compile Include="Settings\AppSettings.cs" />
     <Compile Include="Settings\AppSettingsAttribute.cs" />
     <Compile Include="Settings\AppSettingsBase.cs" />
     <Compile Include="Settings\FilePreviewSettings.cs" />
     <Compile Include="Settings\GlobalSettings.cs" />
     <Compile Include="Settings\IAppSettings.cs" />
+    <Compile Include="Settings\LogSettings.cs" />
     <Compile Include="Settings\MainWindowSettings.cs" />
     <Compile Include="View\Commands\AppCommands.cs" />
     <Compile Include="ArchiveFilename.cs" />

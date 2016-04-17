@@ -20,8 +20,6 @@ namespace Ba2Explorer
 
         public MainWindow()
         {
-            AppSettings.Load("prefs.toml");
-
             InitializeComponent();
 
             mainViewModel = (MainViewModel)DataContext;
@@ -29,8 +27,9 @@ namespace Ba2Explorer
 
             mainViewModel.PropertyChanged += (sender, args) =>
             {
-                if (args.PropertyName == nameof(ArchiveInfo) && mainViewModel.ArchiveInfo != null)
+                if (mainViewModel.ArchiveInfo != null && args.PropertyName == nameof(ArchiveInfo))
                 {
+                    // todo string.intern(nameof(archiveinfo)) ?
                     this.FilePreview.SetArchive(mainViewModel.ArchiveInfo);
                     archiveFilesFilter = (CollectionView)CollectionViewSource.GetDefaultView(this.ArchiveFilesList.ItemsSource);
                     archiveFilesFilter.Filter = ArchiveFileFilter;
@@ -41,6 +40,7 @@ namespace Ba2Explorer
             this.Width = settings.WindowWidth;
             this.Height = settings.WindowHeight;
             this.Topmost = settings.Topmost;
+
             if (AppSettings.Instance.Global.IsFirstLaunch)
             {
                 this.Top = settings.WindowTop;
@@ -68,7 +68,6 @@ namespace Ba2Explorer
         private void MainWindow_Closed(object sender, EventArgs e)
         {
             this.mainViewModel.Cleanup();
-            AppSettings.Save("prefs.toml");
         }
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)

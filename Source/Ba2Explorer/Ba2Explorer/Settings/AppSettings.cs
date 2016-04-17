@@ -23,6 +23,9 @@ namespace Ba2Explorer.Settings
 
         public FilePreviewSettings FilePreview { get; set; }
 
+        [TomlComment("Logger required to identify problems and doesn't cause much speed loss.")]
+        public LogSettings Logger { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="AppSettings"/> class. Should not be called directly from code!
         /// </summary>
