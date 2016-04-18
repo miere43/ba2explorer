@@ -2,7 +2,13 @@
 
 namespace Ba2Explorer.Settings
 {
-    public interface IAppSettings
+    /// <summary>
+    /// Represents a simple interface for serializing/deserializing
+    /// application settings.
+    /// 
+    /// Should be used with AppSettings class.
+    /// </summary>
+    internal interface IAppSettings
     {
         event EventHandler OnSaving;
 

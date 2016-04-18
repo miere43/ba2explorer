@@ -1,6 +1,6 @@
 ﻿namespace Ba2Explorer.Settings
 {
-    public class GlobalSettings : AppSettingsBase
+    internal class GlobalSettings : AppSettingsBase
     {
         public int Version { get; set; } = -1;
 

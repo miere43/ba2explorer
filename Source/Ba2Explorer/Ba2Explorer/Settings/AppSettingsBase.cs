@@ -2,10 +2,16 @@
 
 namespace Ba2Explorer.Settings
 {
-    public class AppSettingsBase : IAppSettings
+    internal class AppSettingsBase : IAppSettings
     {
+        /// <summary>
+        /// Event raised just before settings being saved.
+        /// </summary>
         public event EventHandler OnSaving = delegate { };
 
+        /// <summary>
+        /// Event raised just after settings being loaded.
+        /// </summary>
         public event EventHandler OnLoaded = delegate { };
 
         /// <summary>

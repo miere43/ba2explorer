@@ -100,7 +100,6 @@
     <Compile Include="Logging\LogPriority.cs" />
     <Compile Include="Logging\NullLogger.cs" />
     <Compile Include="Settings\AppSettings.cs" />
-    <Compile Include="Settings\AppSettingsAttribute.cs" />
     <Compile Include="Settings\AppSettingsBase.cs" />
     <Compile Include="Settings\FilePreviewSettings.cs" />
     <Compile Include="Settings\GlobalSettings.cs" />
@@ -124,8 +123,8 @@
     <Compile Include="View\SettingsWindow.xaml.cs">
       <DependentUpon>SettingsWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="View\SoundPlayerElement.xaml.cs">
-      <DependentUpon>SoundPlayerElement.xaml</DependentUpon>
+    <Compile Include="View\AudioPlayerControl.xaml.cs">
+      <DependentUpon>AudioPlayerControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Win32Util.cs" />
     <Page Include="View\FileExtractionWindow.xaml">
@@ -152,7 +151,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="View\SoundPlayerElement.xaml">
+    <Page Include="View\AudioPlayerControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

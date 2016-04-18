@@ -1,13 +1,8 @@
 ﻿using Nett;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Ba2Explorer.Settings
 {
-    public class LogSettings : AppSettingsBase
+    internal class LogSettings : AppSettingsBase
     {
         public bool LoggerEnabled { get; set; } = true;
 

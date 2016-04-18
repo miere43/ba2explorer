@@ -14,6 +14,7 @@
     <Window.CommandBindings>
         <CommandBinding Command="Open" Executed="OpenCommandExecuted" />
         <CommandBinding Command="Close" CanExecute="CloseCanExecute" Executed="CloseCommandExecuted" />
+        <CommandBinding Command="commands:AppCommands.ExitApp" Executed="ExitAppExecuted" />
         <CommandBinding Command="commands:AppCommands.ExtractSingle" CanExecute="ExtractCanExecute" Executed="ExtractSingleCommandExecuted" />
         <CommandBinding Command="commands:AppCommands.ExtractAll" CanExecute="ExtractCanExecute" Executed="ExtractAllCommandExecuted" />
         <CommandBinding Command="commands:AppCommands.OpenSettings" Executed="OpenSettingsExecuted" />
@@ -37,10 +38,13 @@
                 <Separator />
                 <MenuItem Header="Latest files" />
                 <Separator />
-                <MenuItem Header="Exit" />
+                <MenuItem Command="commands:AppCommands.ExitApp" Header="Exit" />
             </MenuItem>
-            <MenuItem Command="commands:AppCommands.OpenSettings" Header="Settings">
+            <MenuItem IsEnabled="False" Command="commands:AppCommands.OpenSettings" Header="Settings">
                 
+            </MenuItem>
+            <MenuItem Header="Debug">
+                <MenuItem Header="Collect garbage" Click="CollectGCExecuted" />
             </MenuItem>
         </Menu>
 

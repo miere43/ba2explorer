@@ -92,6 +92,11 @@ namespace Ba2Explorer.ViewModel
             //        @"3\b\c",
             //    }));
 
+#if DEBUG
+            if (IsInDesignMode)
+                PrepareDesignTimeData();
+#endif
+
             ////if (IsInDesignMode)
             ////{
             ////    // Code runs in Blend --> create design time data.
@@ -100,6 +105,12 @@ namespace Ba2Explorer.ViewModel
             ////{
             ////    // Code runs "for real"
             ////}
+        }
+
+
+        [Conditional("DEBUG")]
+        private void PrepareDesignTimeData()
+        {
         }
 
         /// <summary>

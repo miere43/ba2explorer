@@ -13,7 +13,7 @@ namespace Ba2Explorer.Settings
     /// 
     /// This is singleton class.
     /// </summary>
-    public class AppSettings
+    internal class AppSettings
     {
         internal static AppSettings Instance { get; private set; }
 

@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace Ba2Explorer.Logging
 {
+    /// <summary>
+    /// Represents a logger which logs messages into nowhere.
+    /// </summary>
     internal class NullLogger : ILogger
     {
         public void Log(string message, LogPriority priority)

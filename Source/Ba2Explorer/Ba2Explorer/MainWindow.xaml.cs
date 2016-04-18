@@ -9,6 +9,8 @@ using Ba2Explorer.ViewModel;
 using System.Collections;
 using Nett;
 using Ba2Explorer.Settings;
+using System.Diagnostics;
+using System.IO;
 
 namespace Ba2Explorer
 {
@@ -41,7 +43,7 @@ namespace Ba2Explorer
             this.Height = settings.WindowHeight;
             this.Topmost = settings.Topmost;
 
-            if (AppSettings.Instance.Global.IsFirstLaunch)
+            if (!AppSettings.Instance.Global.IsFirstLaunch)
             {
                 this.Top = settings.WindowTop;
                 this.Left = settings.WindowLeft;
@@ -51,6 +53,7 @@ namespace Ba2Explorer
 
             this.Loaded += MainWindow_Loaded;
             this.Closed += MainWindow_Closed;
+
 
             // OpenSettingsExecuted(null, null);
         }
@@ -72,6 +75,7 @@ namespace Ba2Explorer
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
+
             // mainViewModel.OpenArchive("D:/Games/Fallout 4/Data/Fallout4 - Sounds.ba2");
             //mainViewModel.ExtractFiles("D:/A", mainViewModel.ArchiveInfo.Files);
         }
@@ -166,8 +170,6 @@ namespace Ba2Explorer
             e.Handled = true;
         }
 
-        #endregion
-
         private void OpenSettingsExecuted(object sender, ExecutedRoutedEventArgs e)
         {
             var settings = new View.SettingsWindow();
@@ -175,5 +177,24 @@ namespace Ba2Explorer
                 settings.Topmost = true;
             settings.ShowDialog();
         }
+
+        private void ExitAppExecuted(object sender, ExecutedRoutedEventArgs e)
+        {
+            this.Close();
+        }
+
+        private void CollectGCExecuted(object sender, RoutedEventArgs e)
+        {
+            long memoryBefore = GC.GetTotalMemory(false);
+            GC.Collect(GC.MaxGeneration);
+            long memoryAfter = GC.GetTotalMemory(false);
+
+            MessageBox.Show(String.Format("Collected {0} generations.\n\nBefore: {1:n2} MB\nAfter: {2:n2} MB",
+                GC.MaxGeneration,
+                memoryBefore / 1024.0d / 1024.0d,
+                memoryAfter  / 1024.0d / 1024.0d));
+        }
+
+        #endregion
     }
 }

@@ -23,7 +23,9 @@ namespace Ba2Explorer.View
     /// </summary>
     public partial class FilePreview : UserControl
     {
-        private readonly static IReadOnlyDictionary<string, string> extensionDescriptions;
+        private static IReadOnlyDictionary<string, string> extensionDescriptions;
+
+        private static object staticInitLock = new object();
 
         private ArchiveInfo archiveInfo;
 
@@ -41,43 +43,12 @@ namespace Ba2Explorer.View
         public FilePreview()
         {
             InitializeComponent();
+            LazyStaticInit();
         }
 
-        static FilePreview()
+        ~FilePreview()
         {
-            extensionDescriptions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-            {
-                { ".pex", "Papyrus Compiled Script" },
-                { ".psc", "Papyrus Script Source Code" },
-                { ".nif", "Model Data" },
-                { ".bgsm", "Material Data" },
-                { ".bgem", "Material Data" },
-                { ".hkx", "Havok Data" },
-                { ".dlstrings", "Localization Strings" },
-                { ".ilstrings", "Localization Strings" },
-                { ".strings", "Localization Strings" },
-                { ".swf", "Flash File" },
-                { ".wav", "Sound File" },
-                { ".xwm", "Sound File" },
-                { ".lod", "LOD Terrain " },
-                { ".btr", "Terrain LOD (NIF Model)" },
-                { ".bto", "Object LOD (NIF Model)" },
-                { ".bin", "Binary File" }
-                // ssf
-                // tri - trishapes?
-                // hko - havok object?
-                // obj
-                // sclp - sculpt data?
-                // log - text?
-                // max
-                // lst - tree lod info
-                // vvd
-                // dat
-                // xwm - sound
-                // gfx
-                // uvd
-                // fuz - voices?
-            };
+            DetachArchive();
         }
 
         public void SetArchive(ArchiveInfo archive)
@@ -85,22 +56,15 @@ namespace Ba2Explorer.View
             if (archive == null)
                 throw new ArgumentNullException(nameof(archive));
 
+            DetachArchive();
+
             this.archiveInfo = archive;
             this.archiveInfo.PropertyChanged += ArchiveInfo_PropertyChanged;
-            this.previewFilePath = null;
         }
 
-        void ArchiveInfo_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
-        {
-            Contract.Ensures(sender == archiveInfo);
-
-            if (e.PropertyName == nameof(ArchiveInfo.IsDisposed) && archiveInfo.IsDisposed == true)
-            {
-                SetDefaultPreview();
-                this.archiveInfo.PropertyChanged -= ArchiveInfo_PropertyChanged;
-            }
-        }
-
+        /// <summary>
+        /// Returns true if preview of file is supported.
+        /// </summary>
         public bool CanPreviewTarget(string filePath)
         {
             return ResolveFileTypeFromExtension(Path.GetExtension(filePath)) != FileType.Unknown;
@@ -116,6 +80,10 @@ namespace Ba2Explorer.View
             SetUnknownPreview(filePath);
         }
 
+        /// <summary>
+        /// Tries to set preview for selected file in archive.
+        /// </summary>
+        /// <param name="filePath">Path to file from archive.</param>
         public async Task<bool> TrySetPreviewAsync(string filePath)
         {
             EnsureArchiveAttached();
@@ -164,7 +132,7 @@ namespace Ba2Explorer.View
         private void ChangeControlsVisibilityForFileType(FileType fileType)
         {
             if (fileType != FileType.Wav)
-                SoundPlayerControl.StopSound();
+                SoundPlayerControl.StopAudio();
 
             switch (fileType)
             {
@@ -337,15 +305,81 @@ namespace Ba2Explorer.View
 
         #endregion
 
-        #region Helper methods
+        #region Maintenance methods
 
-        void EnsureArchiveAttached()
+        private void DetachArchive()
+        {
+            if (archiveInfo == null)
+                return;
+
+            this.previewFilePath = null;
+            this.archiveInfo.PropertyChanged -= ArchiveInfo_PropertyChanged;
+            this.archiveInfo = null;
+        }
+
+        /// <summary>
+        /// Lazily initializes static properties of FilePreview class.
+        /// </summary>
+        private static void LazyStaticInit()
+        {
+            lock (staticInitLock)
+            {
+                if (extensionDescriptions != null)
+                    return;
+
+                extensionDescriptions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    { ".pex", "Papyrus Compiled Script" },
+                    { ".psc", "Papyrus Script Source Code" },
+                    { ".nif", "Model Data" },
+                    { ".bgsm", "Material Data" },
+                    { ".bgem", "Material Data" },
+                    { ".hkx", "Havok Data" },
+                    { ".dlstrings", "Localization Strings" },
+                    { ".ilstrings", "Localization Strings" },
+                    { ".strings", "Localization Strings" },
+                    { ".swf", "Flash File" },
+                    { ".wav", "Sound File" },
+                    { ".xwm", "Sound File" },
+                    { ".lod", "LOD Terrain " },
+                    { ".btr", "Terrain LOD (NIF Model)" },
+                    { ".bto", "Object LOD (NIF Model)" },
+                    { ".bin", "Binary File" }
+                    // ssf
+                    // tri - trishapes?
+                    // hko - havok object?
+                    // obj
+                    // sclp - sculpt data?
+                    // log - text?
+                    // max
+                    // lst - tree lod info
+                    // vvd
+                    // dat
+                    // xwm - sound
+                    // gfx
+                    // uvd
+                    // fuz - voices?
+                };
+            }
+        }
+
+        private void ArchiveInfo_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            Contract.Ensures(sender == archiveInfo);
+
+            if (e.PropertyName == nameof(ArchiveInfo.IsDisposed) && archiveInfo.IsDisposed == true)
+            {
+                SetDefaultPreview();
+                this.archiveInfo.PropertyChanged -= ArchiveInfo_PropertyChanged;
+            }
+        }
+
+        private void EnsureArchiveAttached()
         {
             if (archiveInfo == null || archiveInfo.IsDisposed)
                 throw new InvalidOperationException("ArchiveInfo should be set with SetArchive() method.");
         }
 
         #endregion
-
     }
 }
