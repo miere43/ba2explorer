@@ -54,7 +54,6 @@ namespace Ba2Explorer
             this.Loaded += MainWindow_Loaded;
             this.Closed += MainWindow_Closed;
 
-
             // OpenSettingsExecuted(null, null);
         }
 
@@ -196,5 +195,18 @@ namespace Ba2Explorer
         }
 
         #endregion
+
+        private void LatestFilesItemExecuted(object sender, RoutedEventArgs e)
+        {
+            MenuItem obj = sender as MenuItem;
+            if (obj.Items.CurrentPosition == -1)
+                return;
+
+            string item = obj.Items.CurrentItem as string;
+            if (item == null)
+                return;
+
+            mainViewModel.OpenArchive(item);
+        }
     }
 }

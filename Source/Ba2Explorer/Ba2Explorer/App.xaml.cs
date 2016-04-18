@@ -35,14 +35,53 @@ namespace Ba2Explorer
             }
 
             Logger = logger;
+
+            this.DispatcherUnhandledException += App_DispatcherUnhandledException;
+        }
+
+        private void App_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
+        {
+            if (logger != null)
+            {
+                try
+                {
+                    logger.Log(LogPriority.Error, "!!! Unhandled exception, dispatcher: {0}", e.Dispatcher.ToString());
+                    LogException(e.Exception);
+                }
+                catch { }
+            }
+
+            e.Handled = false;
+        }
+
+        private void LogException(Exception e)
+        {
+            if (e == null)
+            {
+                logger.Log(LogPriority.Error, "Null exception.");
+            }
+            else
+            {
+                logger.Log(LogPriority.Error, "!!! Catched unhandled {0} exception.", e.GetType().FullName);
+                logger.Log(LogPriority.Error, "!!! Unhandled exception: message: {0}\n\n target site: {1}\n\n stack trace: {2}\n\nsource: {3}",
+                    e.Message,
+                    e.TargetSite,
+                    e.StackTrace,
+                    e.Source);
+
+                if (e.InnerException != null)
+                    LogException(e.InnerException);
+            }
         }
 
         private void Application_Exit(object sender, ExitEventArgs e)
         {
             AppSettings.Save("prefs.toml");
-            Logger.Log("App closed", LogPriority.Info);
+            Logger.Log(LogPriority.Info, "App closed");
 
             logger.Dispose();
+            logger = null;
+            this.DispatcherUnhandledException -= App_DispatcherUnhandledException;
         }
     }
 }

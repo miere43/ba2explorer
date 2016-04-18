@@ -195,7 +195,20 @@ namespace Ba2Explorer.View
             Contract.Requires(stream != null);
             stream.Seek(0, SeekOrigin.Begin);
 
-            DdsImage image = await DdsImage.LoadAsync(stream);
+            DdsImage image = null;
+            try
+            {
+                image = await DdsImage.LoadAsync(stream);
+            }
+            catch (Exception e)
+            {
+                if (image != null)
+                    image.Dispose();
+
+                this.SetErrorPreview("Error during settings up preview: " + e.Message);
+                return;
+            }
+
             if (!image.IsValid)
             {
                 image.Dispose();
@@ -217,6 +230,14 @@ namespace Ba2Explorer.View
 
             image.Dispose();
             Win32Util.DeleteObject(hBitmap);
+        }
+
+        private void SetErrorPreview(string error)
+        {
+            this.PreviewTextField.Text = error;
+            this.PreviewText.Text = "Preview";
+
+            this.ChangeControlsVisibilityForFileType(FileType.Text);
         }
 
         /// <summary>

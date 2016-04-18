@@ -6,6 +6,7 @@
         xmlns:local="clr-namespace:Ba2Explorer"
         xmlns:view="clr-namespace:Ba2Explorer.View"
         xmlns:commands="clr-namespace:Ba2Explorer.View.Commands"
+        xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
         mc:Ignorable="d"
         xml:lang="en-US"
         DataContext="{Binding Source={StaticResource Locator}, Path=Main}"
@@ -19,6 +20,15 @@
         <CommandBinding Command="commands:AppCommands.ExtractAll" CanExecute="ExtractCanExecute" Executed="ExtractAllCommandExecuted" />
         <CommandBinding Command="commands:AppCommands.OpenSettings" Executed="OpenSettingsExecuted" />
     </Window.CommandBindings>
+
+    <Window.Resources>
+        <!-- Make LatestArchives going latest on top, oldest on bottom -->
+        <CollectionViewSource x:Key="LatestArchivesSortedItems" Source="{Binding LatestArchives}">
+            <CollectionViewSource.SortDescriptions>
+                <scm:SortDescription Direction="Descending" />
+            </CollectionViewSource.SortDescriptions>
+        </CollectionViewSource>
+    </Window.Resources>
 
     <Grid>
         <Grid.ColumnDefinitions>
@@ -36,7 +46,11 @@
                 <MenuItem Command="Open" Header="Open" />
                 <MenuItem Command="Close" Header="Close" />
                 <Separator />
-                <MenuItem Header="Latest files" />
+                <MenuItem
+                    IsEnabled="{Binding HasLatestArchives}"
+                    ItemsSource="{Binding Source={StaticResource LatestArchivesSortedItems}}"
+                    Click="LatestFilesItemExecuted"
+                    Header="Recent Archives" />
                 <Separator />
                 <MenuItem Command="commands:AppCommands.ExitApp" Header="Exit" />
             </MenuItem>

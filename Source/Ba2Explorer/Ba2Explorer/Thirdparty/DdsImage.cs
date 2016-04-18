@@ -78,6 +78,7 @@ namespace S16.Drawing
                 pixelFormat = this.GetFormat(header, ref blocksize);
                 if (pixelFormat == PixelFormat.UNKNOWN)
                 {
+                    this.m_isValid = false;
                     throw new InvalidFileHeaderException();
                 }
 

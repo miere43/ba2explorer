@@ -10,6 +10,7 @@ using System.Diagnostics.Contracts;
 using Microsoft.Win32;
 using Ba2Explorer.View;
 using Ba2Explorer.Logging;
+using Ba2Explorer.Settings;
 
 namespace Ba2Explorer.ViewModel
 {
@@ -42,6 +43,25 @@ namespace Ba2Explorer.ViewModel
         }
 
         public MainWindow Window { get; set; }
+
+        private ObservableCollection<string> latestArchives;
+        public ObservableCollection<string> LatestArchives
+        {
+            get { return latestArchives; }
+            set
+            {
+                latestArchives = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public bool HasLatestArchives
+        {
+            get
+            {
+                return LatestArchives != null && LatestArchives.Count > 0;
+            }
+        }
 
         //private bool CharCmp(char c)
         //{
@@ -105,6 +125,9 @@ namespace Ba2Explorer.ViewModel
             ////{
             ////    // Code runs "for real"
             ////}
+
+            LatestArchives = AppSettings.Instance.MainWindow.GetLatestFiles();
+            LatestArchives.CollectionChanged += (sender, args) => RaisePropertyChanged(nameof(HasLatestArchives));
         }
 
 
@@ -148,6 +171,7 @@ namespace Ba2Explorer.ViewModel
                 return;
 
             OpenArchive(dialog.FileName);
+            AppSettings.Instance.MainWindow.PushLatestFile(dialog.FileName, this.LatestArchives);
         }
 
         /// <summary>
@@ -158,6 +182,12 @@ namespace Ba2Explorer.ViewModel
         {
             if (String.IsNullOrWhiteSpace(path))
                 throw new ArgumentException(nameof(path));
+
+            // Requested same archive.
+            if (archiveInfo != null)
+                if (path.Equals(this.archiveInfo.FilePath, StringComparison.OrdinalIgnoreCase))
+                    return;
+
             if (ArchiveInfo != null)
             {
                 CloseArchive();
@@ -166,7 +196,7 @@ namespace Ba2Explorer.ViewModel
             ArchiveInfo = ArchiveInfo.Open(path);
             SetTitle(ArchiveInfo.FileName);
 
-            App.Logger.Log("Opened archive {0}", LogPriority.Info, path);
+            App.Logger.Log(LogPriority.Info, "Opened archive {0}", path);
         }
 
         public void CloseArchive()
@@ -180,6 +210,7 @@ namespace Ba2Explorer.ViewModel
             }
 
             ArchiveInfo = null;
+            SetTitle(null);
         }
 
         public void ExtractFilesWithDialog(IEnumerable<string> files)
@@ -207,7 +238,7 @@ namespace Ba2Explorer.ViewModel
             }
             catch (Exception e)
             {
-                App.Logger.Log("ExtractFilesWithDialog failed: {0}", LogPriority.Error, e.Message);
+                App.Logger.Log(LogPriority.Error, "ExtractFilesWithDialog failed: {0}", e.Message);
                 // todo;
                 MessageBox.Show(e.Message);
             }

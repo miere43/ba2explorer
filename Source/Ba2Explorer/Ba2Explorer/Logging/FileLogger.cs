@@ -46,7 +46,7 @@ namespace Ba2Explorer.Logging
             Dispose(false);
         }
 
-        public void Log(string message, LogPriority priority)
+        public void Log(LogPriority priority, string message)
         {
             ThrowIfDisposed();
 
@@ -56,7 +56,7 @@ namespace Ba2Explorer.Logging
                 message);
         }
 
-        public void Log(string format, LogPriority priority, params object[] args)
+        public void Log(LogPriority priority, string format, params object[] args)
         {
             ThrowIfDisposed();
 

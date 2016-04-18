@@ -24,8 +24,6 @@ namespace Ba2Explorer.ViewModel
 
         private BlockingCollection<object> extractionStack;
 
-
-
         #region Properties
 
         private ObservableCollection<string> files;

@@ -11,8 +11,8 @@ namespace Ba2Explorer.Logging
     /// </summary>
     internal interface ILogger : IDisposable
     {
-        void Log(string message, LogPriority priority);
+        void Log(LogPriority priority, string message);
 
-        void Log(string format, LogPriority priority, params object[] args);
+        void Log(LogPriority priority, string format, params object[] args);
     }
 }
