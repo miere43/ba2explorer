@@ -56,7 +56,7 @@ namespace Ba2Explorer.View
             this.Dispatcher.Invoke(() =>
             {
                 this.Cancel.Content = "Canceled";
-                this.Title = "Canceled extraction of " + ViewModel.ArchiveInfo.FileName;
+                this.Title = "Canceled " + ViewModel.ArchiveInfo.FileName;
             });
         }
 
@@ -68,8 +68,13 @@ namespace Ba2Explorer.View
                 ExtractionProgress.Value = 1.0d;
                 ViewModel.OnFinishedSuccessfully -= ViewModel_OnFinished;
                 ViewModel.ExtractionProgress.ProgressChanged -= ExtractionProgress_ProgressChanged;
-                this.Title = "Finished extracting " + ViewModel.ArchiveInfo.FileName;
+                SetExtractingWindowTitle(ExtractionProgress.Value);
             });
+        }
+
+        private void SetExtractingWindowTitle(double percent)
+        {
+            this.Title = String.Format("{0:P0} - {1}", percent, ViewModel.ArchiveInfo.FileName);
         }
 
         private void SetExtractingText(int actual, int excepted)
@@ -81,6 +86,7 @@ namespace Ba2Explorer.View
         {
             ExtractionProgress.Value = (double)e / ViewModel.FilesToExtract.Count();
             SetExtractingText(e, ViewModel.FilesToExtract.Count());
+            SetExtractingWindowTitle(ExtractionProgress.Value);
         }
 
         private void CanStopExtraction(object sender, CanExecuteRoutedEventArgs e)

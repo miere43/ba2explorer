@@ -18,30 +18,35 @@ namespace Ba2Explorer.Settings
         [TomlComment("Should window be located above all opened windows? (bool)")]
         public bool Topmost { get; set; } = false;
 
-        public List<string> LatestFiles { get; set; } = null;
+        public List<string> RecentArchives { get; set; } = null;
 
-        private const int maxLatestFiles = 5;
+        private const int maxRecentArchives = 5;
 
-        public void PushLatestFile(string filePath, IList<string> to)
+        /// <summary>
+        /// Pushes archive file path to settings' internal
+        /// recent archives list as well as pushing it to
+        /// specified list.
+        /// </summary>
+        public void PushRecentArchive(string archivePath, IList<string> to)
         {
-            if (filePath == null)
-                throw new ArgumentNullException(nameof(filePath));
+            if (archivePath == null)
+                throw new ArgumentNullException(nameof(archivePath));
             if (to == null)
                 throw new ArgumentNullException(nameof(to));
 
-            if (LatestFiles == null)
-                LatestFiles = new List<string>();
+            if (RecentArchives == null)
+                RecentArchives = new List<string>(maxRecentArchives);
 
-            PushLatestFileInternal(filePath, this.LatestFiles);
-            PushLatestFileInternal(filePath, to);
+            PushRecentArchiveInternal(archivePath, this.RecentArchives);
+            PushRecentArchiveInternal(archivePath, to);
         }
 
-        private void PushLatestFileInternal(string filePath, IList<string> to)
+        private void PushRecentArchiveInternal(string archivePath, IList<string> to)
         {
-            int sameIndex = to.IndexOf(filePath);
+            int sameIndex = to.IndexOf(archivePath);
             if (sameIndex == -1)
             {
-                if (to.Count >= maxLatestFiles)
+                if (to.Count >= maxRecentArchives)
                     to.RemoveAt(0);
             }
             else
@@ -49,7 +54,7 @@ namespace Ba2Explorer.Settings
                 to.RemoveAt(sameIndex);
             }
 
-            to.Add(filePath);
+            to.Add(archivePath);
         }
 
         /// <summary>
@@ -57,7 +62,7 @@ namespace Ba2Explorer.Settings
         /// </summary>
         public ObservableCollection<string> GetLatestFiles()
         {
-            return new ObservableCollection<string>(this.LatestFiles);
+            return new ObservableCollection<string>(this.RecentArchives);
         }
 
         /// <summary>
@@ -73,8 +78,8 @@ namespace Ba2Explorer.Settings
                 WindowLeft = 32;
             if (WindowTop < -WindowHeight)
                 WindowTop = 32;
-            if (LatestFiles == null)
-                LatestFiles = new List<string>();
+            if (RecentArchives == null)
+                RecentArchives = new List<string>(maxRecentArchives);
 
             base.Loaded();
         }

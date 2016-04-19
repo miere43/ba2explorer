@@ -9,8 +9,8 @@ namespace Ba2Explorer.View.Commands
 {
     public static class AppCommands
     {
-        private static RoutedUICommand extractSingle;
-        public static RoutedUICommand ExtractSingle { get { return extractSingle; } }
+        private static RoutedUICommand extractSelected;
+        public static RoutedUICommand ExtractSelected { get { return extractSelected; } }
 
         private static RoutedUICommand extractAll;
         public static RoutedUICommand ExtractAll { get { return extractAll; } }
@@ -25,10 +25,10 @@ namespace Ba2Explorer.View.Commands
         {
             Type t = typeof(AppCommands);
 
-            extractSingle = new RoutedUICommand("ExtractSingle", "ExtractSingle", t);
-            extractAll    = new RoutedUICommand("ExtractAll",    "ExtractAll",    t);
-            openSettings  = new RoutedUICommand("OpenSettings",  "OpenSettings",  t);
-            exitApp       = new RoutedUICommand("ExitApp",       "ExitApp",       t);
+            extractSelected = new RoutedUICommand("ExtractSelected", "ExtractSelected", t);
+            extractAll      = new RoutedUICommand("ExtractAll",      "ExtractAll",      t);
+            openSettings    = new RoutedUICommand("OpenSettings",    "OpenSettings",    t);
+            exitApp         = new RoutedUICommand("ExitApp",         "ExitApp",         t);
         }
     }
 }

@@ -7,6 +7,7 @@
         xmlns:view="clr-namespace:Ba2Explorer.View"
         xmlns:commands="clr-namespace:Ba2Explorer.View.Commands"
         xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
+        xmlns:conv="clr-namespace:Ba2Explorer.View.Converters"
         mc:Ignorable="d"
         xml:lang="en-US"
         DataContext="{Binding Source={StaticResource Locator}, Path=Main}"
@@ -16,18 +17,19 @@
         <CommandBinding Command="Open" Executed="OpenCommandExecuted" />
         <CommandBinding Command="Close" CanExecute="CloseCanExecute" Executed="CloseCommandExecuted" />
         <CommandBinding Command="commands:AppCommands.ExitApp" Executed="ExitAppExecuted" />
-        <CommandBinding Command="commands:AppCommands.ExtractSingle" CanExecute="ExtractCanExecute" Executed="ExtractSingleCommandExecuted" />
-        <CommandBinding Command="commands:AppCommands.ExtractAll" CanExecute="ExtractCanExecute" Executed="ExtractAllCommandExecuted" />
+        <CommandBinding Command="commands:AppCommands.ExtractSelected" CanExecute="ExtractCanExecute" Executed="ExtractSelectedExecuted" />
+        <CommandBinding Command="commands:AppCommands.ExtractAll" CanExecute="ExtractAllCanExecute" Executed="ExtractAllCommandExecuted" />
         <CommandBinding Command="commands:AppCommands.OpenSettings" Executed="OpenSettingsExecuted" />
     </Window.CommandBindings>
 
     <Window.Resources>
         <!-- Make LatestArchives going latest on top, oldest on bottom -->
-        <CollectionViewSource x:Key="LatestArchivesSortedItems" Source="{Binding LatestArchives}">
+        <CollectionViewSource x:Key="RecentArchivesSortedItems" Source="{Binding RecentArchives}">
             <CollectionViewSource.SortDescriptions>
                 <scm:SortDescription Direction="Descending" />
             </CollectionViewSource.SortDescriptions>
         </CollectionViewSource>
+        <conv:ObjectToBooleanConverter x:Key="ObjectToBooleanConverter" />
     </Window.Resources>
 
     <Grid>
@@ -43,20 +45,26 @@
 
         <Menu Grid.Row="0" Grid.ColumnSpan="2">
             <MenuItem Header="File">
-                <MenuItem Command="Open" Header="Open" />
-                <MenuItem Command="Close" Header="Close" />
+                <MenuItem Header="Open" Command="Open"  />
+                <MenuItem Header="Close" Command="Close"  />
                 <Separator />
                 <MenuItem
                     IsEnabled="{Binding HasLatestArchives}"
-                    ItemsSource="{Binding Source={StaticResource LatestArchivesSortedItems}}"
-                    Click="LatestFilesItemExecuted"
-                    Header="Recent Archives" />
+                    x:Name="RecentArchivesMenuItem"
+                    ItemsSource="{Binding Source={StaticResource RecentArchivesSortedItems}}"
+                    Click="RecentArchivesItemExecuted"
+                    Header="Recent Archives">
+                    
+                </MenuItem>
                 <Separator />
                 <MenuItem Command="commands:AppCommands.ExitApp" Header="Exit" />
             </MenuItem>
-            <MenuItem IsEnabled="False" Command="commands:AppCommands.OpenSettings" Header="Settings">
-                
+            <MenuItem Header="Archive" IsEnabled="{Binding ArchiveInfo, Converter={StaticResource ObjectToBooleanConverter}}">
+                <MenuItem Header="Close" Command="Close" />
+                <Separator />
+                <MenuItem Header="Extract All" Command="commands:AppCommands.ExtractAll" />
             </MenuItem>
+            <MenuItem Header="Settings" IsEnabled="False" Command="commands:AppCommands.OpenSettings"  />
             <MenuItem Header="Debug">
                 <MenuItem Header="Collect garbage" Click="CollectGCExecuted" />
             </MenuItem>
@@ -66,8 +74,7 @@
                   SelectionChanged="ArchiveFilesList_SelectionChanged">
             <ListView.ContextMenu>
                 <ContextMenu>
-                    <MenuItem Header="Extract" Command="commands:AppCommands.ExtractSingle" />
-                    <MenuItem Header="Extract selected" Command="commands:AppCommands.ExtractAll" />
+                    <MenuItem Header="Extract" Command="commands:AppCommands.ExtractSelected" />
                 </ContextMenu>
             </ListView.ContextMenu>
         </ListView>

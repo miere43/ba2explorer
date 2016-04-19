@@ -11,6 +11,7 @@ using Nett;
 using Ba2Explorer.Settings;
 using System.Diagnostics;
 using System.IO;
+using System.Collections.Generic;
 
 namespace Ba2Explorer
 {
@@ -153,19 +154,33 @@ namespace Ba2Explorer
             e.Handled = true;
         }
 
-        private void ExtractSingleCommandExecuted(object sender, ExecutedRoutedEventArgs e)
+        private void ExtractSelectedExecuted(object sender, ExecutedRoutedEventArgs e)
         {
-            string sel = ArchiveFilesList.SelectedItem as string;
+            if (ArchiveFilesList.SelectedItems.Count == 1)
+            {
+                string sel = ArchiveFilesList.SelectedItem as string;
 
-            mainViewModel.ArchiveInfo.ExtractFileWithDialog(sel);
-            e.Handled = true;
+                mainViewModel.ExtractFileWithDialog(sel);
+                e.Handled = true;
+            }
+            else if (ArchiveFilesList.SelectedItems.Count > 1)
+            {
+                IList sels = ArchiveFilesList.SelectedItems;
+
+                mainViewModel.ExtractFilesWithDialog(sels.Cast<string>());
+                e.Handled = true;
+            }
         }
 
         private void ExtractAllCommandExecuted(object sender, ExecutedRoutedEventArgs e)
         {
-            IList sels = ArchiveFilesList.SelectedItems;
+            mainViewModel.ExtractFilesWithDialog(mainViewModel.ArchiveInfo.Files);
+            e.Handled = true;
+        }
 
-            mainViewModel.ExtractFilesWithDialog(sels.OfType<string>().ToList());
+        private void ExtractAllCanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = mainViewModel.ArchiveInfo != null && !mainViewModel.ArchiveInfo.IsBusy;
             e.Handled = true;
         }
 
@@ -196,9 +211,10 @@ namespace Ba2Explorer
 
         #endregion
 
-        private void LatestFilesItemExecuted(object sender, RoutedEventArgs e)
+        private void RecentArchivesItemExecuted(object sender, RoutedEventArgs e)
         {
             MenuItem obj = sender as MenuItem;
+
             if (obj.Items.CurrentPosition == -1)
                 return;
 

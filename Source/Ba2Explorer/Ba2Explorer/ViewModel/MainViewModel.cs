@@ -44,22 +44,22 @@ namespace Ba2Explorer.ViewModel
 
         public MainWindow Window { get; set; }
 
-        private ObservableCollection<string> latestArchives;
-        public ObservableCollection<string> LatestArchives
+        private ObservableCollection<string> recentArchives;
+        public ObservableCollection<string> RecentArchives
         {
-            get { return latestArchives; }
+            get { return recentArchives; }
             set
             {
-                latestArchives = value;
+                recentArchives = value;
                 RaisePropertyChanged();
             }
         }
 
-        public bool HasLatestArchives
+        public bool HasRecentArchives
         {
             get
             {
-                return LatestArchives != null && LatestArchives.Count > 0;
+                return RecentArchives != null && RecentArchives.Count > 0;
             }
         }
 
@@ -126,8 +126,8 @@ namespace Ba2Explorer.ViewModel
             ////    // Code runs "for real"
             ////}
 
-            LatestArchives = AppSettings.Instance.MainWindow.GetLatestFiles();
-            LatestArchives.CollectionChanged += (sender, args) => RaisePropertyChanged(nameof(HasLatestArchives));
+            RecentArchives = AppSettings.Instance.MainWindow.GetLatestFiles();
+            RecentArchives.CollectionChanged += (sender, args) => RaisePropertyChanged(nameof(HasRecentArchives));
         }
 
 
@@ -162,16 +162,20 @@ namespace Ba2Explorer.ViewModel
             OpenFileDialog dialog = new OpenFileDialog();
 
             dialog.Title = "Open archive";
-            dialog.CheckPathExists = true;
             dialog.Filter = "BA2 Archives|*.ba2|All files|*.*";
+            dialog.CheckPathExists = true;
             dialog.CheckFileExists = true;
+
+            if (!String.IsNullOrWhiteSpace(AppSettings.Instance.Global.OpenArchiveLatestFolder))
+                dialog.InitialDirectory = AppSettings.Instance.Global.OpenArchiveLatestFolder;
+
             dialog.ShowDialog();
 
             if (String.IsNullOrWhiteSpace(dialog.FileName))
                 return;
 
             OpenArchive(dialog.FileName);
-            AppSettings.Instance.MainWindow.PushLatestFile(dialog.FileName, this.LatestArchives);
+            AppSettings.Instance.MainWindow.PushRecentArchive(dialog.FileName, this.RecentArchives);
         }
 
         /// <summary>
@@ -196,6 +200,7 @@ namespace Ba2Explorer.ViewModel
             ArchiveInfo = ArchiveInfo.Open(path);
             SetTitle(ArchiveInfo.FileName);
 
+            AppSettings.Instance.Global.OpenArchiveLatestFolder = Path.GetDirectoryName(path);
             App.Logger.Log(LogPriority.Info, "Opened archive {0}", path);
         }
 
@@ -213,6 +218,30 @@ namespace Ba2Explorer.ViewModel
             SetTitle(null);
         }
 
+        public void ExtractFileWithDialog(string fileName)
+        {
+            SaveFileDialog dialog = new SaveFileDialog();
+            dialog.CheckPathExists = true;
+            dialog.OverwritePrompt = true;
+            dialog.ValidateNames = true;
+            dialog.Title = "Extract file as...";
+            dialog.FileName = Path.GetFileName(fileName);
+
+            if (!String.IsNullOrWhiteSpace(AppSettings.Instance.Global.ExtractionLatestFolder))
+                dialog.InitialDirectory = AppSettings.Instance.Global.ExtractionLatestFolder;
+
+            string ext = Path.GetExtension(dialog.SafeFileName).ToLower();
+            dialog.Filter = "Specified file|*" + ext + "|All files|*.*";
+
+            var result = dialog.ShowDialog();
+
+            if (result.HasValue && result.Value == true)
+            {
+                ArchiveInfo.ExtractFile(fileName, dialog.FileName);
+                AppSettings.Instance.Global.ExtractionLatestFolder = Path.GetDirectoryName(dialog.FileName);
+            }
+        }
+
         public void ExtractFilesWithDialog(IEnumerable<string> files)
         {
             if (files == null)
@@ -226,10 +255,14 @@ namespace Ba2Explorer.ViewModel
                 dialog.Description = "Extract files to folder...";
                 dialog.ShowNewFolderButton = true;
 
+                if (!String.IsNullOrWhiteSpace(AppSettings.Instance.Global.ExtractionLatestFolder))
+                    dialog.SelectedPath = AppSettings.Instance.Global.ExtractionLatestFolder;
+
                 var result = dialog.ShowDialog();
                 if (result == System.Windows.Forms.DialogResult.OK)
                 {
-                    ExtractFilesWithDialog(dialog.SelectedPath, files);
+                    ExtractFiles(dialog.SelectedPath, files);
+                    AppSettings.Instance.Global.ExtractionLatestFolder = dialog.SelectedPath;
                 }
                 else
                 {
@@ -253,12 +286,14 @@ namespace Ba2Explorer.ViewModel
         /// <param name="files">The files.</param>
         /// <exception cref="System.ArgumentException"></exception>
         /// <exception cref="System.ArgumentNullException"></exception>
-        private void ExtractFilesWithDialog(string destinationFolder, IEnumerable<string> files)
+        private void ExtractFiles(string destinationFolder, IEnumerable<string> files)
         {
             if (String.IsNullOrWhiteSpace(destinationFolder))
                 throw new ArgumentException(nameof(destinationFolder));
             if (files == null)
                 throw new ArgumentNullException(nameof(files));
+
+            AppSettings.Instance.Global.ExtractionLatestFolder = Path.GetDirectoryName(destinationFolder);
 
             FileExtractionWindow window = new FileExtractionWindow();
             window.ViewModel.ArchiveInfo = this.ArchiveInfo;

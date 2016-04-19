@@ -152,34 +152,21 @@ namespace Ba2Explorer.ViewModel
             }
         }
 
-        public void ExtractFileWithDialog(string fileName)
+        public void ExtractFile(string fileName, string destFileName)
         {
             ThrowIfBusy();
 
             try
             {
-                SaveFileDialog dialog = new SaveFileDialog();
-                dialog.CheckPathExists = true;
-                dialog.OverwritePrompt = true;
-                dialog.ValidateNames = true;
-                dialog.Title = "Extract file as...";
-                dialog.FileName = Path.GetFileName(fileName);
-
-                string ext = Path.GetExtension(dialog.SafeFileName);
-
-                dialog.Filter = "Specified file|*" + ext + "|All files|*.*";
-                dialog.ShowDialog();
-
-                using (FileStream stream = File.Create(dialog.FileName))
+                using (FileStream stream = File.Create(destFileName))
                 {
                     IsBusy = true;
                     archive.ExtractToStream(fileName, stream);
                 }
-
-                // MessageBox.Show("OK!");
             }
             catch (Exception e)
             {
+                App.Logger.Log(Logging.LogPriority.Error, "ArchiveInfo.ExtractFile() ex: {0}", e.Message);
                 // todo;
                 MessageBox.Show(e.Message);
             }

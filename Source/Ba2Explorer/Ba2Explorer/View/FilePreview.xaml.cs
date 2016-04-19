@@ -355,7 +355,7 @@ namespace Ba2Explorer.View
                     { ".nif", "Model Data" },
                     { ".bgsm", "Material Data" },
                     { ".bgem", "Material Data" },
-                    { ".hkx", "Havok Data" },
+                    { ".hkx", "Havok Animation Data" },
                     { ".dlstrings", "Localization Strings" },
                     { ".ilstrings", "Localization Strings" },
                     { ".strings", "Localization Strings" },

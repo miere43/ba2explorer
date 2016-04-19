@@ -8,6 +8,10 @@
 
         public string Culture { get; set; } = "en-US";
 
+        public string OpenArchiveLatestFolder { get; set; } = "";
+
+        public string ExtractionLatestFolder { get; set; } = "";
+
         public override void Saving()
         {
             IsFirstLaunch = false;

@@ -106,8 +106,10 @@
     <Compile Include="Settings\IAppSettings.cs" />
     <Compile Include="Settings\LogSettings.cs" />
     <Compile Include="Settings\MainWindowSettings.cs" />
+    <Compile Include="Utility\Fallout4Data.cs" />
     <Compile Include="View\Commands\AppCommands.cs" />
     <Compile Include="ArchiveFilename.cs" />
+    <Compile Include="View\Converters\ObjectToBooleanConverter.cs" />
     <Compile Include="View\FileExtractionWindow.xaml.cs">
       <DependentUpon>FileExtractionWindow.xaml</DependentUpon>
     </Compile>
