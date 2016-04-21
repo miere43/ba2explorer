@@ -11,6 +11,7 @@ using Microsoft.Win32;
 using Ba2Explorer.View;
 using Ba2Explorer.Logging;
 using Ba2Explorer.Settings;
+using System.Text;
 
 namespace Ba2Explorer.ViewModel
 {
@@ -225,7 +226,7 @@ namespace Ba2Explorer.ViewModel
             dialog.OverwritePrompt = true;
             dialog.ValidateNames = true;
             dialog.Title = "Extract file as...";
-            dialog.FileName = Path.GetFileName(fileName);
+            dialog.FileName = LowerFileNameExtension(Path.GetFileName(fileName));
 
             if (!String.IsNullOrWhiteSpace(AppSettings.Instance.Global.ExtractionLatestFolder))
                 dialog.InitialDirectory = AppSettings.Instance.Global.ExtractionLatestFolder;
@@ -304,6 +305,21 @@ namespace Ba2Explorer.ViewModel
 
             window.ShowDialog();
             window.Activate();
+        }
+
+        private string LowerFileNameExtension(string fileName)
+        {
+            int index = fileName.LastIndexOf('.');
+            if (index == -1 || index == fileName.Length)
+                return fileName;
+
+            StringBuilder builder = new StringBuilder(fileName, 0, fileName.Length, fileName.Length);
+            for (int i = index + 1; i < fileName.Length; i++)
+            {
+                builder[i] = Char.ToLower(builder[i]);
+            }
+
+            return builder.ToString();
         }
 
         #endregion

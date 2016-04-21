@@ -6,7 +6,7 @@ namespace Ba2Explorer.View.Converters
     /// <summary>
     /// Returns true when object is not null, false otherwise.
     /// </summary>
-    [ValueConversion(typeof(object), typeof(object))]
+    [ValueConversion(typeof(object), typeof(bool))]
     public class ObjectToBooleanConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter,
