@@ -1,5 +1,6 @@
 * Iterate over all TODO comments in code.
 * Associate .ba2 file extension with BA2 Explorer
+* Create documentation for all public methods.
 
 ## Main window
 * Change ListView to TreeView

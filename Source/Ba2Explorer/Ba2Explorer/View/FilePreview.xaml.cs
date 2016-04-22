@@ -1,4 +1,5 @@
-﻿using Ba2Explorer.ViewModel;
+﻿using Ba2Explorer.Utility;
+using Ba2Explorer.ViewModel;
 using S16.Drawing;
 using System;
 using System.Collections.Generic;
@@ -30,6 +31,8 @@ namespace Ba2Explorer.View
         private ArchiveInfo archiveInfo;
 
         private string previewFilePath;
+
+        private EncodedStringConverter stringConverter = new EncodedStringConverter();
 
         enum FileType
         {
@@ -276,7 +279,8 @@ namespace Ba2Explorer.View
 
         /// <summary>
         /// Set's preview to text label with text
-        /// readed from stream with ASCII encoding.
+        /// readed from stream with auto-detected
+        /// or ASCII encoding.
         /// </summary>
         private void SetTextPreview(Stream stream)
         {
@@ -286,7 +290,7 @@ namespace Ba2Explorer.View
             int readed = stream.Read(buffer, 0, (int)stream.Length);
             Debug.Assert(readed == stream.Length);
 
-            string text = Encoding.ASCII.GetString(buffer);
+            string text = stringConverter.GetConvertedString(buffer, Encoding.ASCII);
 
             this.PreviewTextField.Text = text;
             this.PreviewText.Text = "Preview";

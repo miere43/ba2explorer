@@ -106,6 +106,7 @@
     <Compile Include="Settings\IAppSettings.cs" />
     <Compile Include="Settings\LogSettings.cs" />
     <Compile Include="Settings\MainWindowSettings.cs" />
+    <Compile Include="Utility\EncodedStringConverter.cs" />
     <Compile Include="Utility\Fallout4Data.cs" />
     <Compile Include="Utility\OpenAppUtil.cs" />
     <Compile Include="View\Commands\AppCommands.cs" />

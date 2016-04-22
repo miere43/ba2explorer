@@ -198,6 +198,8 @@ namespace Ba2Explorer.ViewModel
                 CloseArchive(false);
             }
 
+            // TODO:
+            // check for errors
             ArchiveInfo = ArchiveInfo.Open(path);
             SetTitle(ArchiveInfo.FileName);
 
@@ -205,6 +207,11 @@ namespace Ba2Explorer.ViewModel
             App.Logger.Log(LogPriority.Info, "Opened archive {0}", path);
         }
 
+        /// <summary>
+        /// Closes archive and optionally changes application
+        /// title back to normal.
+        /// </summary>
+        /// <param name="resetTitle">Reset title to normal?</param>
         public void CloseArchive(bool resetTitle)
         {
             if (ArchiveInfo == null)
@@ -216,7 +223,8 @@ namespace Ba2Explorer.ViewModel
             }
 
             ArchiveInfo = null;
-            if (resetTitle) SetTitle(null);
+            if (resetTitle)
+                SetTitle(null);
         }
 
         public void ExtractFileWithDialog(string fileName)
