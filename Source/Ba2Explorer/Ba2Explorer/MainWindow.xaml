@@ -54,7 +54,6 @@
                     ItemsSource="{Binding Source={StaticResource RecentArchivesSortedItems}}"
                     Click="RecentArchivesItemExecuted"
                     Header="Recent Archives">
-                    
                 </MenuItem>
                 <Separator />
                 <MenuItem Command="commands:AppCommands.ExitApp" Header="Exit" />

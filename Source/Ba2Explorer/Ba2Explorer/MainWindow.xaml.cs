@@ -137,7 +137,7 @@ namespace Ba2Explorer
         private void CloseCommandExecuted(object sender, ExecutedRoutedEventArgs e)
         {
             e.Handled = true;
-            mainViewModel.CloseArchive();
+            mainViewModel.CloseArchive(true);
 
             GC.Collect(2);
         }
@@ -211,12 +211,9 @@ namespace Ba2Explorer
 
         private void RecentArchivesItemExecuted(object sender, RoutedEventArgs e)
         {
-            MenuItem obj = sender as MenuItem;
+            MenuItem selection = e.OriginalSource as MenuItem;
 
-            if (obj.Items.CurrentPosition == -1)
-                return;
-
-            string item = obj.Items.CurrentItem as string;
+            string item = (string)selection.Header;
             if (item == null)
                 return;
 

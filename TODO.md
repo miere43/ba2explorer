@@ -1,12 +1,12 @@
 * Iterate over all TODO comments in code.
-* Make lower case file extension of extracted file 
 * Associate .ba2 file extension with BA2 Explorer
-
-## Fix
-* Fix Recent Archives: when clicking archive path not valid archive path being actually selected.
 
 ## Main window
 * Change ListView to TreeView
 * Open more than one archive.
 * "Archive" menu:
 	* "Find" - find file
+
+### File preview control
+* Make truly async previewer. fo4-interface.ba2 -> interface\translate_en.txt should not interrupt main thread.
+* Read text files as UTF-8

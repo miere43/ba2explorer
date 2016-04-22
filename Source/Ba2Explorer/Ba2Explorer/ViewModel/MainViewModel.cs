@@ -155,7 +155,7 @@ namespace Ba2Explorer.ViewModel
             if (title == null)
                 Window.Title = "BA2 Explorer";
             else
-                Window.Title = "BA2 Explorer - " + title.Trim();
+                Window.Title = "BA2 Explorer • " + title.Trim();
         }
 
         public void OpenArchiveWithDialog()
@@ -195,7 +195,7 @@ namespace Ba2Explorer.ViewModel
 
             if (ArchiveInfo != null)
             {
-                CloseArchive();
+                CloseArchive(false);
             }
 
             ArchiveInfo = ArchiveInfo.Open(path);
@@ -205,7 +205,7 @@ namespace Ba2Explorer.ViewModel
             App.Logger.Log(LogPriority.Info, "Opened archive {0}", path);
         }
 
-        public void CloseArchive()
+        public void CloseArchive(bool resetTitle)
         {
             if (ArchiveInfo == null)
                 return;
@@ -216,7 +216,7 @@ namespace Ba2Explorer.ViewModel
             }
 
             ArchiveInfo = null;
-            SetTitle(null);
+            if (resetTitle) SetTitle(null);
         }
 
         public void ExtractFileWithDialog(string fileName)
