@@ -107,6 +107,7 @@
     <Compile Include="Settings\LogSettings.cs" />
     <Compile Include="Settings\MainWindowSettings.cs" />
     <Compile Include="Utility\Fallout4Data.cs" />
+    <Compile Include="Utility\OpenAppUtil.cs" />
     <Compile Include="View\Commands\AppCommands.cs" />
     <Compile Include="ArchiveFilename.cs" />
     <Compile Include="View\Converters\ObjectToBooleanConverter.cs" />

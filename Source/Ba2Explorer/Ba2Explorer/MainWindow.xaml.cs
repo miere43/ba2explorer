@@ -12,6 +12,7 @@ using Ba2Explorer.Settings;
 using System.Diagnostics;
 using System.IO;
 using System.Collections.Generic;
+using Ba2Explorer.Utility;
 
 namespace Ba2Explorer
 {
@@ -186,10 +187,7 @@ namespace Ba2Explorer
 
         private void OpenSettingsExecuted(object sender, ExecutedRoutedEventArgs e)
         {
-            var settings = new View.SettingsWindow();
-            if (this.Topmost)
-                settings.Topmost = true;
-            settings.ShowDialog();
+            OpenAppUtil.RunFileSafe("prefs.toml");
         }
 
         private void ExitAppExecuted(object sender, ExecutedRoutedEventArgs e)

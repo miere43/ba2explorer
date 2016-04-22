@@ -64,9 +64,9 @@
                 <Separator />
                 <MenuItem Header="Extract All" Command="commands:AppCommands.ExtractAll" />
             </MenuItem>
-            <MenuItem Header="Settings" IsEnabled="False" Command="commands:AppCommands.OpenSettings"  />
+            <MenuItem Header="Settings" Command="commands:AppCommands.OpenSettings"  />
             <MenuItem Header="Debug">
-                <MenuItem Header="Collect garbage" Click="CollectGCExecuted" />
+                <MenuItem Header="Collect Garbage" Click="CollectGCExecuted" />
             </MenuItem>
         </Menu>
 
