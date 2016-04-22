@@ -28,6 +28,10 @@ namespace Ba2Explorer.View
 
         private static object staticInitLock = new object();
 
+        private FontFamily defaultTextFontFamily;
+
+        private FontFamily textFileFontFamily;
+
         private ArchiveInfo archiveInfo;
 
         private string previewFilePath;
@@ -47,6 +51,8 @@ namespace Ba2Explorer.View
         {
             InitializeComponent();
             LazyStaticInit();
+            defaultTextFontFamily = PreviewTextField.FontFamily;
+            textFileFontFamily = new FontFamily("Consolas");
         }
 
         ~FilePreview()
@@ -157,6 +163,11 @@ namespace Ba2Explorer.View
                     SoundPlayerControl.Visibility = Visibility.Collapsed;
                     break;
             }
+
+            if (fileType == FileType.Unknown)
+                PreviewTextField.FontFamily = defaultTextFontFamily;
+            else
+                PreviewTextField.FontFamily = textFileFontFamily;
         }
 
         /// <summary>
