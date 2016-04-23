@@ -12,8 +12,20 @@ using System.Windows;
 
 namespace Ba2Explorer.ViewModel
 {
-    public class FileExtractionViewModel : ViewModelBase
+    public sealed class FileExtractionViewModel : ViewModelBase
     {
+        private CancellationTokenSource cancellationToken;
+
+        public event EventHandler OnFinishedSuccessfully;
+
+        public event EventHandler OnCanceled;
+
+        public event EventHandler OnExtractionError;
+
+        public Progress<int> ExtractionProgress { get; set; }
+
+        #region Properties
+
         private ArchiveInfo archiveInfo;
         public ArchiveInfo ArchiveInfo
         {
@@ -29,7 +41,7 @@ namespace Ba2Explorer.ViewModel
         public bool IsExtracting
         {
             get { return isExtracting; }
-            set
+            private set
             {
                 isExtracting = value;
                 Debug.WriteLine("changed to " + isExtracting);
@@ -41,7 +53,7 @@ namespace Ba2Explorer.ViewModel
         public bool IsExtractionFinished
         {
             get { return isExtractionFinished; }
-            set
+            private set
             {
                 isExtractionFinished = value;
                 RaisePropertyChanged();
@@ -52,9 +64,20 @@ namespace Ba2Explorer.ViewModel
         public bool IsExtractionCancelled
         {
             get { return isExtractionCancelled; }
-            set
+            private set
             {
                 isExtractionCancelled = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        private bool isFinishedSuccessfully = false;
+        public bool IsFinishedSuccessfully
+        {
+            get { return isFinishedSuccessfully; }
+            private set
+            {
+                isFinishedSuccessfully = value;
                 RaisePropertyChanged();
             }
         }
@@ -81,9 +104,7 @@ namespace Ba2Explorer.ViewModel
             }
         }
 
-        public Progress<int> ExtractionProgress { get; set; }
-
-        private CancellationTokenSource cancellationToken;
+#endregion
 
         public FileExtractionViewModel()
         {
@@ -98,49 +119,23 @@ namespace Ba2Explorer.ViewModel
             cancellationToken.Cancel();
         }
 
-        public event EventHandler OnFinishedSuccessfully;
-
-        public event EventHandler OnCanceled;
-
-        public event EventHandler OnExtractionError;
-
-        public void ExtractFiles()
+        public async Task ExtractFiles()
         {
-            Contract.Ensures(IsExtracting == false);
-
-            Debug.WriteLine("begin extr");
             try
             {
-                var task = Task.Run(() => 
-                {
-                    try
-                    {
-                        IsExtracting = true;
-                        ArchiveInfo.ExtractFiles(FilesToExtract, DestinationFolder, cancellationToken.Token, ExtractionProgress);
-                        if (OnFinishedSuccessfully != null)
-                            OnFinishedSuccessfully(this, null);
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        if (OnCanceled != null)
-                            OnCanceled(this, null);
-                    }
-                    catch (BA2ExtractionException)
-                    {
-                        if (OnExtractionError != null)
-                            OnExtractionError(this, null);
-                    }
-                    finally
-                    {
-                        IsExtracting = false;
-                    }
-                });
-            } 
+                IsExtracting = true;
+                await ArchiveInfo.ExtractFilesAsync(FilesToExtract, DestinationFolder, ExtractionProgress, Timeout.InfiniteTimeSpan,
+                    cancellationToken.Token);
+                IsFinishedSuccessfully = true;
+                OnFinishedSuccessfully?.Invoke(this, null);
+            }
             catch (OperationCanceledException)
             {
-                // todo;
-                MessageBox.Show("cancelled.");
-                IsExtracting = false;
+                OnCanceled?.Invoke(this, null);
+            }
+            catch (BA2ExtractionException)
+            {
+                OnExtractionError?.Invoke(this, null);
             }
             finally
             {

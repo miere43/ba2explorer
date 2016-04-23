@@ -22,5 +22,9 @@ namespace Ba2Explorer.Logging
         public void Dispose()
         {
         }
+
+        public void LogException(LogPriority priority, string source, Exception e)
+        {
+        }
     }
 }

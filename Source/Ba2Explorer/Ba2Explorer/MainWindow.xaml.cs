@@ -22,6 +22,8 @@ namespace Ba2Explorer
 
         private CollectionView archiveFilesFilter;
 
+        private Action statusbarButtonAction;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -59,6 +61,34 @@ namespace Ba2Explorer
             // OpenSettingsExecuted(null, null);
         }
 
+        internal void ShowStatusBar(string text)
+        {
+            if (StatusBar.Visibility != Visibility.Visible)
+                StatusBar.Visibility = Visibility.Visible;
+
+            StatusBarButton.Visibility = Visibility.Collapsed;
+            StatusBarTime.Text = DateTime.Now.ToShortTimeString();
+            StatusBarText.Text = text;
+        }
+
+        internal void ShowStatusBarWithButton(string statusbarText, string buttonText, Action buttonClickAction)
+        {
+            ShowStatusBar(statusbarText);
+            StatusBarButton.Visibility = Visibility.Visible;
+            StatusBarButton.Content = buttonText;
+            statusbarButtonAction = buttonClickAction;
+        }
+
+        internal void CollapseStatusBar()
+        {
+            StatusBar.Visibility = Visibility.Collapsed;
+        }
+
+        private void StatusBarButton_Click(object sender, RoutedEventArgs e)
+        {
+            statusbarButtonAction?.Invoke();
+        }
+
         private void Settings_OnSaving(object sender, EventArgs e)
         {
             MainWindowSettings s = (MainWindowSettings)sender;
@@ -85,9 +115,6 @@ namespace Ba2Explorer
         {
             // TODO handle multiple selection
             if (this.ArchiveFilesList.SelectedItem == null)
-                return;
-
-            if (mainViewModel.ArchiveInfo.IsBusy)
                 return;
 
             string selectedFilePath = (string)this.ArchiveFilesList.SelectedItem;
@@ -155,13 +182,13 @@ namespace Ba2Explorer
             e.Handled = true;
         }
 
-        private void ExtractSelectedExecuted(object sender, ExecutedRoutedEventArgs e)
+        private async void ExtractSelectedExecuted(object sender, ExecutedRoutedEventArgs e)
         {
             if (ArchiveFilesList.SelectedItems.Count == 1)
             {
                 string sel = ArchiveFilesList.SelectedItem as string;
 
-                mainViewModel.ExtractFileWithDialog(sel);
+                await mainViewModel.ExtractFileWithDialog(sel);
                 e.Handled = true;
             }
             else if (ArchiveFilesList.SelectedItems.Count > 1)
@@ -181,7 +208,7 @@ namespace Ba2Explorer
 
         private void ExtractAllCanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
-            e.CanExecute = mainViewModel.ArchiveInfo != null && !mainViewModel.ArchiveInfo.IsBusy;
+            e.CanExecute = mainViewModel.ArchiveInfo != null;
             e.Handled = true;
         }
 

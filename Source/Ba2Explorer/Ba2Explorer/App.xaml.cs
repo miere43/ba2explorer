@@ -46,7 +46,7 @@ namespace Ba2Explorer
                 try
                 {
                     logger.Log(LogPriority.Error, "!!! Unhandled exception, dispatcher: {0}", e.Dispatcher.ToString());
-                    LogException(e.Exception);
+                    LogException(logger, e.Exception);
                 }
                 catch { }
             }
@@ -54,11 +54,11 @@ namespace Ba2Explorer
             e.Handled = false;
         }
 
-        private void LogException(Exception e)
+        internal static void LogException(ILogger logger, Exception e)
         {
             if (e == null)
             {
-                logger.Log(LogPriority.Error, "Null exception.");
+                logger.Log(LogPriority.Error, "Exception instance is null.");
             }
             else
             {
@@ -70,7 +70,10 @@ namespace Ba2Explorer
                     e.Source);
 
                 if (e.InnerException != null)
-                    LogException(e.InnerException);
+                {
+                    logger.Log(LogPriority.Error, "!!! Inner exception: ");
+                    LogException(logger, e.InnerException);
+                }
             }
         }
 

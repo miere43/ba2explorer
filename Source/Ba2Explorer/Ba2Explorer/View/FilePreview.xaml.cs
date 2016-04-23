@@ -114,7 +114,7 @@ namespace Ba2Explorer.View
 
             using (MemoryStream stream = new MemoryStream())
             {
-                await archiveInfo.ExtractToStreamAsync(filePath, stream);
+                await archiveInfo.ExtractToStreamAsync(stream, filePath, Timeout.InfiniteTimeSpan, CancellationToken.None);
 
                 switch (type)
                 {

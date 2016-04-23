@@ -9,6 +9,7 @@ using System.Windows;
 using Microsoft.Win32;
 using GalaSoft.MvvmLight;
 using Ba2Tools;
+using Ba2Explorer.Logging;
 
 namespace Ba2Explorer.ViewModel
 {
@@ -20,15 +21,11 @@ namespace Ba2Explorer.ViewModel
     {
         private BA2Archive archive;
 
-        private object extractionLock = new object();
-
-        private BlockingCollection<object> extractionStack;
+        private SemaphoreSlim accessSemaphore;
 
         #region Properties
 
         private ObservableCollection<string> files;
-
-        private bool isBusy = false;
 
         private bool isDisposed = false;
 
@@ -57,20 +54,7 @@ namespace Ba2Explorer.ViewModel
                 RaisePropertyChanged();
             }
         }
-
-        /// <summary>
-        /// Gets a value indicating whether this instance is busy.
-        /// </summary>
-        public bool IsBusy
-        {
-            get { return isBusy; }
-            private set
-            {
-                isBusy = value;
-                RaisePropertyChanged();
-            }
-        }
-
+                                                                                                                            
         /// <summary>
         /// Opened archive file name.
         /// </summary>
@@ -93,11 +77,13 @@ namespace Ba2Explorer.ViewModel
 
         public ArchiveInfo()
         {
-            extractionStack = new BlockingCollection<object>();
+            accessSemaphore = new SemaphoreSlim(1, 1);
         }
 
         ~ArchiveInfo()
         {
+            // TODO:
+            // implement proper dispose.
             Dispose();
         }
 
@@ -105,125 +91,136 @@ namespace Ba2Explorer.ViewModel
         {
             return archive.ContainsFile(filePath);
         }
-
-        public void QueueExtractFile(string filePath, CancellationToken token)
-        {
-            extractionStack.Add(filePath);
-        }
-
-        //public void ServeAsync()
-        //{
-        //    while (extractionStack.)
-        //}
-
         /// <summary>
-        /// Tries to extract file to stream, if archive is busy extracting another file,
-        /// it will wait all queued extractions finishes.
+        /// Extracts file to stream, aborting the process after certain timeout or when
+        /// cancellation token signal received.
         /// </summary>
-        public async Task ExtractToStreamAsync(string filePath, Stream stream)
+        /// <param name="stream">Destination stream where file would be extracted.</param>
+        /// <param name="fileName">File name in archive to extract into stream.</param>
+        /// <param name="timeout">Maximum time to wait until aborting extraction.
+        /// Use Timeout.InfiniteTimeSpan to wait indefinitely.</param>
+        /// <param name="cancellationToken">The cancellation token to observe.</param>
+        /// <returns>False when <c>fileName</c> was not found in archive or error during extraction happened, or true otherwise.</returns>
+        public Task<bool> ExtractToStreamAsync(Stream stream, string fileName, TimeSpan timeout, CancellationToken cancellationToken)
         {
-            ThrowIfDisposed();
+            if (fileName == null)
+                throw new ArgumentNullException(nameof(fileName));
+            if (stream == null)
+                throw new ArgumentNullException(nameof(stream));
 
-            await Task.Run(() =>
-            {
-                lock (extractionLock)
+            return Task.Run(() => {
+                var index = archive.GetIndexFromFilename(fileName);
+                if (index == -1)
+                    return false;
+
+                try
                 {
-                    archive.ExtractToStream(filePath, stream);
+                    accessSemaphore.Wait(timeout, cancellationToken);
+                    return archive.ExtractToStream(index, stream);
+                }
+                catch (OperationCanceledException)
+                {
+                    throw;
+                }
+                catch (Exception e)
+                {
+                    App.Logger.Log(LogPriority.Error, "ArchiveInfo.ExtractToStreamAsync exception: {0}", e.Message);
+                    throw;
+                }
+                finally
+                {
+                    accessSemaphore.Release();
                 }
             });
         }
 
-        public void ExtractToStream(Stream stream, string fileName)
+        /// <summary>
+        /// Extracts file from archive to file in filesystem, aborting the process after certain timeout or when cancellation
+        /// token signal received.
+        /// </summary>
+        /// <param name="stream">Destination stream where file would be extracted.</param>
+        /// <param name="fileName">File name in archive to extract into stream.</param>
+        /// <param name="timeout">Maximum time to wait until aborting extraction.
+        /// Use Timeout.InfiniteTimeSpan to wait indefinitely.</param>
+        /// <param name="cancellationToken">The cancellation token to observe.</param>
+        /// <returns>False when <c>fileName</c> was not found in archive or error during extraction happened, or true otherwise.</returns>
+        public Task<bool> ExtractFileAsync(string fileName, string destFileName, TimeSpan timeout, CancellationToken cancellationToken)
         {
-            ThrowIfBusy();
+            if (fileName == null)
+                throw new ArgumentNullException(nameof(fileName));
+            if (destFileName == null)
+                throw new ArgumentNullException(nameof(destFileName));
 
-            try
+            return Task.Run(() =>
             {
-                IsBusy = true;
-                archive.ExtractToStream(fileName, stream);
-            }
-            catch (Exception e)
-            {
-                MessageBox.Show(e.Message);
-            }
-            finally
-            {
-                IsBusy = false;
-            }
-        }
+                var index = archive.GetIndexFromFilename(fileName);
+                if (index == -1)
+                    return false;
 
-        public void ExtractFile(string fileName, string destFileName)
-        {
-            ThrowIfBusy();
-
-            try
-            {
-                using (FileStream stream = File.Create(destFileName))
+                try
                 {
-                    IsBusy = true;
-                    archive.ExtractToStream(fileName, stream);
+                    accessSemaphore.Wait(timeout, cancellationToken);
+                    using (FileStream stream = File.Create(destFileName))
+                    {
+                        return archive.ExtractToStream(index, stream);
+                    }
                 }
-            }
-            catch (Exception e)
-            {
-                App.Logger.Log(Logging.LogPriority.Error, "ArchiveInfo.ExtractFile() ex: {0}", e.Message);
-                // todo;
-                MessageBox.Show(e.Message);
-            }
-            finally
-            {
-                IsBusy = false;
-            }
-        }
-
-        public void ExtractFiles(
-            IEnumerable<string> files,
-            string destination,
-            CancellationToken cancellationToken,
-            IProgress<int> progress)
-        {
-            ThrowIfBusy();
-
-            try
-            {
-                IsBusy = true;
-                archive.ExtractFiles(files, destination, cancellationToken, progress, true);
-            }
-            catch (OperationCanceledException)
-            {
-                throw;
-            }
-            finally
-            {
-                IsBusy = false;
-            }
-        }
-
-        public void ExtractFilesWithDialog(IEnumerable<string> files)
-        {
-            ThrowIfBusy();
-
-            try
-            {
-                var dialog = new System.Windows.Forms.FolderBrowserDialog();
-                dialog.Description = "Save files to folder";
-                dialog.ShowNewFolderButton = true;
-
-                if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                catch (OperationCanceledException)
                 {
-                    IsBusy = true;
-                    archive.ExtractFiles(files, dialog.SelectedPath, true);
+                    throw;
                 }
-            }
-            catch (Exception e)
+                catch (Exception e)
+                {
+                    App.Logger.Log(LogPriority.Error, "ArchiveInfo.ExtractToFileAsync exception: {0}", e.Message);
+                    throw;
+                }
+                finally
+                {
+                    accessSemaphore.Release();
+                }
+            });
+        }
+
+        public Task<bool> ExtractFilesAsync(IEnumerable<string> files, string destFolder, IProgress<int> progress, TimeSpan timeout,
+            CancellationToken cancellationToken)
+        {
+            if (files == null)
+                throw new ArgumentNullException(nameof(files));
+            if (destFolder == null)
+                throw new ArgumentNullException(nameof(destFolder));
+
+            return Task.Run(() =>
             {
-                // todo;
-                MessageBox.Show(e.Message);
-            }
-            finally
-            {
-                IsBusy = false;
-            }
+                List<int> indexes = new List<int>();
+                foreach (var fileName in files)
+                {
+                    int index = archive.GetIndexFromFilename(fileName);
+                    if (index == -1)
+                        return false;
+
+                    indexes.Add(index);
+                }
+
+                try
+                {
+                    accessSemaphore.Wait(timeout, cancellationToken);
+                    archive.ExtractFiles(indexes, destFolder, cancellationToken, progress, true);
+                    return true;
+                }
+                catch (OperationCanceledException)
+                {
+                    throw;
+                }
+                catch (Exception e)
+                {
+                    App.Logger.LogException(LogPriority.Error, "ArchiveInfo.ExtractFilesAsync", e);
+                    throw;
+                }
+                finally
+                {
+                    accessSemaphore.Release();
+                }
+            });
         }
 
         public static ArchiveInfo Open(string path)
@@ -253,12 +250,6 @@ namespace Ba2Explorer.ViewModel
             return info;
         }
 
-        void ThrowIfBusy()
-        {
-            if (IsBusy)
-                throw new InvalidOperationException("Archive is already busy extracting files.");
-        }
-
         void ThrowIfDisposed()
         {
             if (IsDisposed)
@@ -267,12 +258,10 @@ namespace Ba2Explorer.ViewModel
 
         public void Dispose()
         {
-            ThrowIfBusy();
-
-            if (extractionStack != null)
-                extractionStack.Dispose();
             if (archive != null)
                 archive.Dispose();
+            if (accessSemaphore != null)
+                accessSemaphore.Dispose();
 
             IsDisposed = true;
         }

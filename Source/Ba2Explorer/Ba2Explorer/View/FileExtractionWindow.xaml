@@ -7,7 +7,7 @@
         xmlns:converters="clr-namespace:Ba2Explorer.View.Converters"
         mc:Ignorable="d"
         DataContext="{Binding Source={StaticResource Locator}, Path=FileExtraction}"
-        Title="Extracting..." Height="150" Width="300" WindowStartupLocation="CenterOwner">
+        Title="Extracting..." Height="144" Width="310" WindowStartupLocation="CenterOwner">
 
     <Window.CommandBindings>
         <CommandBinding Command="Stop" CanExecute="CanStopExtraction" Executed="StopExtraction" />
@@ -29,7 +29,7 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <TextBlock x:Name="MainText" Margin="6" VerticalAlignment="Center" Text="Extracting..." />
+        <TextBlock x:Name="MainText" Grid.ColumnSpan="2" Margin="6" VerticalAlignment="Center" Text="Please wait, starting soon…" />
         <ProgressBar
             Height="20"
             Grid.Row="1"

@@ -12,6 +12,9 @@ using Ba2Explorer.View;
 using Ba2Explorer.Logging;
 using Ba2Explorer.Settings;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows.Interop;
 
 namespace Ba2Explorer.ViewModel
 {
@@ -205,14 +208,15 @@ namespace Ba2Explorer.ViewModel
 
             AppSettings.Instance.Global.OpenArchiveLatestFolder = Path.GetDirectoryName(path);
             App.Logger.Log(LogPriority.Info, "Opened archive {0}", path);
+            Window.ShowStatusBar(path);
         }
 
         /// <summary>
         /// Closes archive and optionally changes application
         /// title back to normal.
         /// </summary>
-        /// <param name="resetTitle">Reset title to normal?</param>
-        public void CloseArchive(bool resetTitle)
+        /// <param name="resetUI">Reset user interface?</param>
+        public void CloseArchive(bool resetUI)
         {
             if (ArchiveInfo == null)
                 return;
@@ -223,11 +227,19 @@ namespace Ba2Explorer.ViewModel
             }
 
             ArchiveInfo = null;
-            if (resetTitle)
+            if (resetUI)
+            {
                 SetTitle(null);
+                Window.CollapseStatusBar();
+            }
         }
 
-        public void ExtractFileWithDialog(string fileName)
+        /// <summary>
+        /// Extracts file from archive to some file in user file system, asking him where to save file using SaveFileDialog.
+        /// </summary>
+        /// <param name="fileName">File name in archive.</param>
+        /// <returns>Task.</returns>
+        public async Task ExtractFileWithDialog(string fileName)
         {
             SaveFileDialog dialog = new SaveFileDialog();
             dialog.CheckPathExists = true;
@@ -246,8 +258,10 @@ namespace Ba2Explorer.ViewModel
 
             if (result.HasValue && result.Value == true)
             {
-                ArchiveInfo.ExtractFile(fileName, dialog.FileName);
+                await ArchiveInfo.ExtractFileAsync(fileName, dialog.FileName, Timeout.InfiniteTimeSpan, CancellationToken.None);
                 AppSettings.Instance.Global.ExtractionLatestFolder = Path.GetDirectoryName(dialog.FileName);
+                Window.ShowStatusBarWithButton($"File \"{fileName}\" extracted.", "Open file folder",
+                    () => ExplorerOpenPath(dialog.FileName, true));
             }
         }
 
@@ -255,8 +269,6 @@ namespace Ba2Explorer.ViewModel
         {
             if (files == null)
                 throw new ArgumentNullException(nameof(files));
-            if (ArchiveInfo.IsBusy)
-                throw new InvalidOperationException("Cannot extract files because archive is busy.");
 
             try
             {
@@ -289,6 +301,49 @@ namespace Ba2Explorer.ViewModel
         #region Private methods
 
         /// <summary>
+        /// Opens Explorer, which opens directory or selecting the file passed in <c>path</c> argument.
+        /// </summary>
+        private void ExplorerOpenPath(string path, bool isFile)
+        {
+            ProcessStartInfo info = new ProcessStartInfo();
+            info.ErrorDialog = true;
+            info.ErrorDialogParentHandle = new WindowInteropHelper(this.Window).Handle;
+            info.FileName = "explorer";
+            info.UseShellExecute = true;
+
+            bool failed = false;
+
+            if (isFile)
+            {
+                if (File.Exists(path)) {
+                    info.Arguments = @"/select," + path;
+                } else if (Directory.Exists(Path.GetDirectoryName(path))) {
+                    info.Arguments = Path.GetDirectoryName(path);
+                } else {
+                    failed = true;
+                }
+            }
+            else
+            {
+                if (Directory.Exists(path)) {
+                    info.Arguments = path;
+                } else {
+                    failed = true;
+                }
+            }
+
+            if (failed)
+            {
+                MessageBox.Show(this.Window, "Cannot open file folder: file nor folder are exist", "Error", MessageBoxButton.OK,
+                    MessageBoxImage.Warning, MessageBoxResult.OK, MessageBoxOptions.None);
+                return;
+            }
+
+            var process = Process.Start(info);
+            process.Dispose();
+        }
+
+        /// <summary>
         /// Extracts the files with dialog.
         /// </summary>
         /// <param name="destinationFolder">The destination folder.</param>
@@ -312,7 +367,12 @@ namespace Ba2Explorer.ViewModel
             window.Owner = this.Window;
 
             window.ShowDialog();
-            window.Activate();
+
+            if (window.ViewModel.IsFinishedSuccessfully)
+            {
+                Window.ShowStatusBarWithButton($"{ window.ViewModel.FilesToExtract.Count() } files were extracted.", "Open folder",
+                    () => ExplorerOpenPath(window.ViewModel.DestinationFolder, false));
+            }
         }
 
         private string LowerFileNameExtension(string fileName)

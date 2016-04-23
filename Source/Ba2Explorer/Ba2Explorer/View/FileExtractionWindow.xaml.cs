@@ -26,7 +26,6 @@ namespace Ba2Explorer.View
 
             this.Loaded += FileExtractionWindow_Loaded;
 
-
             base.OnInitialized(e);
         }
 
@@ -39,8 +38,8 @@ namespace Ba2Explorer.View
 
             this.Title = "Extracting " + ViewModel.ArchiveInfo.FileName;
 
-            // Debug.WriteLine("file extr activated");
-            ViewModel.ExtractFiles();
+            Debug.WriteLine("file extr activated");
+            var task = ViewModel.ExtractFiles();
         }
 
         private void ViewModel_OnExtractionError(object sender, EventArgs e)
@@ -64,7 +63,7 @@ namespace Ba2Explorer.View
         {
             this.Dispatcher.Invoke(() =>
             {
-                SetExtractingText(ViewModel.FilesToExtract.Count(), ViewModel.FilesToExtract.Count());
+                SetExtractingText(ViewModel.FilesToExtract.Count(), ViewModel.FilesToExtract.Count(), true);
                 ExtractionProgress.Value = 1.0d;
                 ViewModel.OnFinishedSuccessfully -= ViewModel_OnFinished;
                 ViewModel.ExtractionProgress.ProgressChanged -= ExtractionProgress_ProgressChanged;
@@ -77,15 +76,19 @@ namespace Ba2Explorer.View
             this.Title = String.Format("{0:P0} - {1}", percent, ViewModel.ArchiveInfo.FileName);
         }
 
-        private void SetExtractingText(int actual, int excepted)
+        private void SetExtractingText(int actual, int excepted, bool final)
         {
-            this.MainText.Text = "Extracting " + actual + "/" + excepted;
+            if (final)
+                this.MainText.Text = $"Extracted { actual } out of { excepted } files.";
+            else
+                this.MainText.Text = $"Extracted { actual } out of { excepted } files…";
         }
 
         private void ExtractionProgress_ProgressChanged(object sender, int e)
         {
             ExtractionProgress.Value = (double)e / ViewModel.FilesToExtract.Count();
-            SetExtractingText(e, ViewModel.FilesToExtract.Count());
+
+            SetExtractingText(e, ViewModel.FilesToExtract.Count(), false);
             SetExtractingWindowTitle(ExtractionProgress.Value);
         }
 
@@ -106,6 +109,8 @@ namespace Ba2Explorer.View
 
         private void OpenFolderExecuted(object sender, ExecutedRoutedEventArgs e)
         {
+            // TODO:
+            // use ExplorerOpenPath from MainViewModel;
             Process.Start(ViewModel.DestinationFolder);
         }
 

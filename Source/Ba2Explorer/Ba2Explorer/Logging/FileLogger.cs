@@ -54,6 +54,7 @@ namespace Ba2Explorer.Logging
                 priority.ToString(),
                 DateTime.UtcNow.ToString("G", DateTimeFormatInfo.InvariantInfo),
                 message);
+            writer.Flush();
         }
 
         public void Log(LogPriority priority, string format, params object[] args)
@@ -64,6 +65,7 @@ namespace Ba2Explorer.Logging
                 priority.ToString(),
                 DateTime.UtcNow.ToString("G", DateTimeFormatInfo.InvariantInfo),
                 string.Format(format, args));
+            writer.Flush();
         }
 
         private void ThrowIfDisposed()
@@ -90,6 +92,12 @@ namespace Ba2Explorer.Logging
         public void Dispose()
         {
             Dispose(true);
+        }
+
+        public void LogException(LogPriority priority, string source, Exception e)
+        {
+            Log(LogPriority.Error, $"!!! Received exception from \"{ source }\":");
+            App.LogException(this, e);
         }
     }
 }

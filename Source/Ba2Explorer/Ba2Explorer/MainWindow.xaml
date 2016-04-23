@@ -41,6 +41,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
         <Menu Grid.Row="0" Grid.ColumnSpan="2">
@@ -49,7 +50,7 @@
                 <MenuItem Header="Close" Command="Close"  />
                 <Separator />
                 <MenuItem
-                    IsEnabled="{Binding HasLatestArchives}"
+                    IsEnabled="{Binding HasRecentArchives}"
                     x:Name="RecentArchivesMenuItem"
                     ItemsSource="{Binding Source={StaticResource RecentArchivesSortedItems}}"
                     Click="RecentArchivesItemExecuted"
@@ -101,5 +102,12 @@
             <TextBlock Grid.Row="0" Grid.Column="0">Filter: </TextBlock>
             <TextBox x:Name="FilterText" TextChanged="FilterText_TextChanged" Grid.Row="0" Grid.Column="1" Margin="4,0,2,0"></TextBox>
         </Grid>
+
+        <StatusBar Grid.Row="3" Grid.ColumnSpan="2" x:Name="StatusBar" Visibility="Collapsed">
+            <TextBlock x:Name="StatusBarTime" />
+            <Separator />
+            <TextBlock x:Name="StatusBarText" />
+            <Button x:Name="StatusBarButton" Click="StatusBarButton_Click" />
+        </StatusBar>
     </Grid>
 </Window>
