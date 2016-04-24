@@ -211,11 +211,7 @@ namespace Ba2Explorer.ViewModel
                     archive.ExtractFiles(indexes, destFolder, cancellationToken, progress, true);
                     return true;
                 }
-                catch (OperationCanceledException)
-                {
-                    throw;
-                }
-                catch (Exception e)
+                catch (BA2LoadException e)
                 {
                     App.Logger.LogException(LogPriority.Error, "ArchiveInfo.ExtractFilesAsync", e);
                     throw;

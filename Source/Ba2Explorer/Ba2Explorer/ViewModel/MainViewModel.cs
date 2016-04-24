@@ -105,6 +105,21 @@ namespace Ba2Explorer.ViewModel
             RecentArchives.CollectionChanged += (sender, args) => RaisePropertyChanged(nameof(HasRecentArchives));
         }
 
+        /// <summary>
+        /// Called by main window.
+        /// </summary>
+        public void MainWindowLoaded()
+        {
+            string[] cmdargs = Environment.GetCommandLineArgs();
+            if (cmdargs.Length > 1)
+            {
+                if (cmdargs[1][0] != '/')
+                {
+                    OpenArchive(cmdargs[1]);
+                }
+            }
+        }
+
         [Conditional("DEBUG")]
         private void PrepareDesignTimeData()
         {

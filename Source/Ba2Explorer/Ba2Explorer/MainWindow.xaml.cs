@@ -13,6 +13,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Collections.Generic;
 using Ba2Explorer.Utility;
+using System.Windows.Media.Imaging;
+using System.Windows.Interop;
 
 namespace Ba2Explorer
 {
@@ -60,7 +62,7 @@ namespace Ba2Explorer
             this.Loaded += MainWindow_Loaded;
             this.Closed += MainWindow_Closed;
 
-            // OpenSettingsExecuted(null, null);
+            UpdateAssociateExtensionMenuItem();
         }
 
         private void ViewModel_OnExtractionCompleted(object sender, MainViewModel.ExtractionEventArgs e)
@@ -103,8 +105,6 @@ namespace Ba2Explorer
             else
                 this.Title = "BA2 Explorer • " + value;
         }
-
-
 
         internal void ShowStatusBar(string text)
         {
@@ -151,7 +151,7 @@ namespace Ba2Explorer
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-
+            viewModel.MainWindowLoaded();
             // mainViewModel.OpenArchive("D:/Games/Fallout 4/Data/Fallout4 - Sounds.ba2");
             //mainViewModel.ExtractFiles("D:/A", mainViewModel.ArchiveInfo.Files);
         }
@@ -278,6 +278,95 @@ namespace Ba2Explorer
                 return;
 
             viewModel.OpenArchive(item);
+        }
+
+        private void UpdateAssociateExtensionMenuItem()
+        {
+            bool associated = App.IsAssociatedExtension();
+            AssociateExtensionMenuItem.Tag = associated;
+            AssociateExtensionMenuItem.Header = associated ? "Unassociate archive extension" : "Associate archive extension";
+
+            if (!UACElevationHelper.IsRunAsAdmin())
+            {
+                var image = new Image();
+                image.Source = StockIcon.Shield;
+                AssociateExtensionMenuItem.Icon = image;
+            }
+        }
+
+        private void AssociateExtensionMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            // TODO move to view model
+            string instructions = "Pressing OK will give you a prompt to restart BA2 Explorer with admin rights, so it can " +
+                                  "update extensions registry. " + Environment.NewLine + Environment.NewLine + "Press Cancel to abort.";
+
+            // true means app is associated extension.
+            if ((bool)AssociateExtensionMenuItem.Tag == true)
+            {
+                if (UACElevationHelper.IsRunAsAdmin())
+                {
+                    if (App.UnassociateBA2Extension())
+                    {
+                        MessageBox.Show(this, "Successfully unassociated extension.", "Success", MessageBoxButton.OK,
+                            MessageBoxImage.Information);
+                        UpdateAssociateExtensionMenuItem();
+                    }
+                    else
+                    {
+                        App.Logger.Log(Logging.LogPriority.Error, "Error while unassociating extension (is admin: {0}, elevated: {1}, " +
+                            "is in admin group: {2}, integrity level: {3}", UACElevationHelper.IsRunAsAdmin(),
+                            UACElevationHelper.IsProcessElevated(), UACElevationHelper.IsUserInAdminGroup(),
+                            UACElevationHelper.GetProcessIntegrityLevel());
+
+                        MessageBox.Show(this, "Error occured while unassociating extension.", "Error", MessageBoxButton.OK,
+                            MessageBoxImage.Error);
+                    }
+                }
+                else
+                {
+                    var result = NativeTaskDialog.Show(new WindowInteropHelper(this).Handle, IntPtr.Zero, "Administrator rights required",
+                        "Admin rights required to unassociate archive extension from BA2 Explorer",
+                        instructions, TaskDialogButtons.Ok | TaskDialogButtons.Cancel, TaskDialogIcon.Shield);
+
+                    if (result == TaskDialogResult.Ok)
+                    {
+                        UACElevationHelper.Elevate("/unassociate-extension");
+                    }
+                }
+            }
+            else
+            {
+                if (UACElevationHelper.IsRunAsAdmin())
+                {
+                    if (App.AssociateBA2Extension())
+                    {
+                        MessageBox.Show(this, "Successfully associated extension.", "Success", MessageBoxButton.OK,
+                            MessageBoxImage.Information);
+                        UpdateAssociateExtensionMenuItem();
+                    }
+                    else
+                    {
+                        App.Logger.Log(Logging.LogPriority.Error, "Error while associating extension (is admin: {0}, elevated: {1}, " +
+                            "is in admin group: {2}, integrity level: {3}", UACElevationHelper.IsRunAsAdmin(),
+                            UACElevationHelper.IsProcessElevated(), UACElevationHelper.IsUserInAdminGroup(),
+                            UACElevationHelper.GetProcessIntegrityLevel());
+
+                        MessageBox.Show(this, "Error occured while associating extension.", "Error", MessageBoxButton.OK,
+                            MessageBoxImage.Error);
+                    }
+                }
+                else
+                {
+                    var result = NativeTaskDialog.Show(new WindowInteropHelper(this).Handle, IntPtr.Zero, "Administrator rights required",
+                        "Administrator rights required to associate archive extension to BA2 Explorer.",
+                        instructions, TaskDialogButtons.Ok | TaskDialogButtons.Cancel, TaskDialogIcon.Shield);
+
+                    if (result == TaskDialogResult.Ok)
+                    {
+                        UACElevationHelper.Elevate(@"/associate-extension");
+                    }
+                }
+            }
         }
     }
 }

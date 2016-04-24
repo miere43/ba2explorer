@@ -26,6 +26,7 @@ namespace Ba2Explorer.View
 
             this.Loaded += FileExtractionWindow_Loaded;
 
+
             base.OnInitialized(e);
         }
 
@@ -35,6 +36,9 @@ namespace Ba2Explorer.View
             ViewModel.OnCanceled += ViewModel_OnCanceled;
             ViewModel.OnExtractionError += ViewModel_OnExtractionError;
             ViewModel.ExtractionProgress.ProgressChanged += ExtractionProgress_ProgressChanged;
+
+            this.TaskbarItemInfo.ProgressState = System.Windows.Shell.TaskbarItemProgressState.Indeterminate;
+            this.ExtractionProgress.IsIndeterminate = true;
 
             this.Title = "Extracting " + ViewModel.ArchiveInfo.FileName;
 
@@ -63,7 +67,7 @@ namespace Ba2Explorer.View
         {
             this.Dispatcher.Invoke(() =>
             {
-                SetExtractingText(ViewModel.FilesToExtract.Count(), ViewModel.FilesToExtract.Count(), true);
+                UpdateExtractionProgress(ViewModel.FilesToExtract.Count(), ViewModel.FilesToExtract.Count(), true);
                 ExtractionProgress.Value = 1.0d;
                 ViewModel.OnFinishedSuccessfully -= ViewModel_OnFinished;
                 ViewModel.ExtractionProgress.ProgressChanged -= ExtractionProgress_ProgressChanged;
@@ -76,20 +80,36 @@ namespace Ba2Explorer.View
             this.Title = String.Format("{0:P0} - {1}", percent, ViewModel.ArchiveInfo.FileName);
         }
 
-        private void SetExtractingText(int actual, int excepted, bool final)
+        bool started = false;
+
+        private void UpdateExtractionProgress(int actual, int excepted, bool final)
         {
+            if (!started)
+            {
+                started = true;
+                this.ExtractionProgress.IsIndeterminate = false;
+                this.TaskbarItemInfo.ProgressState = System.Windows.Shell.TaskbarItemProgressState.Normal;
+            }
+
             if (final)
+            {
                 this.MainText.Text = $"Extracted { actual } out of { excepted } files.";
+                ExtractionProgress.Value = 1.0d;
+                this.TaskbarItemInfo.ProgressValue = 1.0d;
+            }
             else
+            {
                 this.MainText.Text = $"Extracted { actual } out of { excepted } files…";
+                ExtractionProgress.Value = (double)actual / ViewModel.FilesToExtract.Count();
+                this.TaskbarItemInfo.ProgressValue = ExtractionProgress.Value;
+            }
+
+            SetExtractingWindowTitle(ExtractionProgress.Value);
         }
 
         private void ExtractionProgress_ProgressChanged(object sender, int e)
         {
-            ExtractionProgress.Value = (double)e / ViewModel.FilesToExtract.Count();
-
-            SetExtractingText(e, ViewModel.FilesToExtract.Count(), false);
-            SetExtractingWindowTitle(ExtractionProgress.Value);
+            UpdateExtractionProgress(e, ViewModel.FilesToExtract.Count(), false);
         }
 
         private void CanStopExtraction(object sender, CanExecuteRoutedEventArgs e)
@@ -118,6 +138,7 @@ namespace Ba2Explorer.View
         {
             Cancel.Content = "Canceling...";
             Cancel.IsEnabled = false;
+            this.TaskbarItemInfo.ProgressState = System.Windows.Shell.TaskbarItemProgressState.Paused;
 
             ViewModel.Cancel();
         }

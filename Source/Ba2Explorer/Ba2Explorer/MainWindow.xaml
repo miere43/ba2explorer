@@ -31,7 +31,7 @@
         </CollectionViewSource>
         <conv:ObjectToBooleanConverter x:Key="ObjectToBooleanConverter" />
     </Window.Resources>
-
+    
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="1*"/>
@@ -64,7 +64,11 @@
                 <Separator />
                 <MenuItem Header="Extract All" Command="commands:AppCommands.ExtractAll" />
             </MenuItem>
-            <MenuItem Header="Settings" Command="commands:AppCommands.OpenSettings" />
+            <MenuItem Header="Settings">
+                <MenuItem Header="Open settings file" Command="commands:AppCommands.OpenSettings" />
+                <Separator />
+                <MenuItem x:Name="AssociateExtensionMenuItem" Header="Associate BA2 file extension" Click="AssociateExtensionMenuItem_Click" />
+            </MenuItem>
         </Menu>
 
         <ListView BorderThickness="0,1,0,0" x:Name="ArchiveFilesList" Grid.Row="2" Grid.Column="0" DataContext="{Binding ArchiveInfo}" ItemsSource="{Binding Files}"
@@ -77,6 +81,8 @@
         </ListView>
         
         <GridSplitter Background="#4A5573" Grid.Row="1" Grid.RowSpan="2" Grid.Column="0" Width="2" />
+
+        <Image x:Name="DumbShit" Grid.ColumnSpan="2" Grid.RowSpan="2" Panel.ZIndex="1000"/>
 
         <view:FilePreview
             x:Name="FilePreview"

@@ -41,6 +41,7 @@
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <RunCodeAnalysis>false</RunCodeAnalysis>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -51,6 +52,14 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup />
+  <PropertyGroup />
+  <PropertyGroup>
+    <StartupObject>Ba2Explorer.App</StartupObject>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationManifest>Ba2Explorer.exe.manifest</ApplicationManifest>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="GalaSoft.MvvmLight, Version=5.2.0.37222, Culture=neutral, PublicKeyToken=e7570ab207bcb616, processorArchitecture=MSIL">
@@ -108,7 +117,11 @@
     <Compile Include="Settings\MainWindowSettings.cs" />
     <Compile Include="Utility\EncodedStringConverter.cs" />
     <Compile Include="Utility\Fallout4Data.cs" />
+    <Compile Include="Utility\NativeMethods.cs" />
     <Compile Include="Utility\OpenAppUtil.cs" />
+    <Compile Include="Utility\StockIcon.cs" />
+    <Compile Include="Utility\NativeTaskDialog.cs" />
+    <Compile Include="Utility\UACElevationHelper.cs" />
     <Compile Include="View\Commands\AppCommands.cs" />
     <Compile Include="ArchiveFilename.cs" />
     <Compile Include="View\Converters\ObjectToBooleanConverter.cs" />
@@ -130,7 +143,7 @@
     <Compile Include="View\AudioPlayerControl.xaml.cs">
       <DependentUpon>AudioPlayerControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Win32Util.cs" />
+    <Compile Include="Utility\NativeMethods_2.cs" />
     <Page Include="View\FileExtractionWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -178,6 +191,9 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <None Include="Ba2Explorer.exe.manifest">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>

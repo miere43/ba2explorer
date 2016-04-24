@@ -243,7 +243,7 @@ namespace Ba2Explorer.View
                 image.BitmapImage.Width + "x" + image.BitmapImage.Height);
 
             image.Dispose();
-            Win32Util.DeleteObject(hBitmap);
+            NativeMethods.DeleteObject(hBitmap);
         }
 
         private void SetErrorPreview(string error)

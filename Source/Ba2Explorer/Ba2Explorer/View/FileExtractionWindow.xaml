@@ -17,7 +17,11 @@
     <Window.Resources>
         <converters:InverseBooleanConverter x:Key="InverseBoolConverter" />
     </Window.Resources>
-    
+
+    <Window.TaskbarItemInfo>
+        <TaskbarItemInfo />
+    </Window.TaskbarItemInfo>
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
