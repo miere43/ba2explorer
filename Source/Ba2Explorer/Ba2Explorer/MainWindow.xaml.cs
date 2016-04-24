@@ -18,7 +18,7 @@ namespace Ba2Explorer
 {
     public partial class MainWindow : Window
     {
-        private MainViewModel mainViewModel;
+        private MainViewModel viewModel;
 
         private CollectionView archiveFilesFilter;
 
@@ -28,15 +28,17 @@ namespace Ba2Explorer
         {
             InitializeComponent();
 
-            mainViewModel = (MainViewModel)DataContext;
-            mainViewModel.Window = this;
+            viewModel = (MainViewModel)DataContext;
+            viewModel.OnArchiveOpened += ViewModel_OnArchiveOpened;
+            viewModel.OnArchiveClosed += ViewModel_OnArchiveClosed;
+            viewModel.OnExtractionCompleted += ViewModel_OnExtractionCompleted;
 
-            mainViewModel.PropertyChanged += (sender, args) =>
+            viewModel.PropertyChanged += (sender, args) =>
             {
-                if (mainViewModel.ArchiveInfo != null && args.PropertyName == nameof(ArchiveInfo))
+                if (viewModel.ArchiveInfo != null && args.PropertyName == nameof(ArchiveInfo))
                 {
                     // todo string.intern(nameof(archiveinfo)) ?
-                    this.FilePreview.SetArchive(mainViewModel.ArchiveInfo);
+                    this.FilePreview.SetArchive(viewModel.ArchiveInfo);
                     archiveFilesFilter = (CollectionView)CollectionViewSource.GetDefaultView(this.ArchiveFilesList.ItemsSource);
                     archiveFilesFilter.Filter = ArchiveFileFilter;
                 }
@@ -61,6 +63,49 @@ namespace Ba2Explorer
             // OpenSettingsExecuted(null, null);
         }
 
+        private void ViewModel_OnExtractionCompleted(object sender, MainViewModel.ExtractionEventArgs e)
+        {
+            if (e.IsOneFileExtracted)
+            {
+                this.ShowStatusBarWithButton($"File \"{ e.ExtractedFiles[0] }\" extracted.", "Open file folder",
+                    () => OpenAppUtil.ExplorerOpenPath(this, e.ExtractedFiles[0], true));
+            }
+            else
+            {
+                this.ShowStatusBarWithButton($"{ e.ExtractedFiles.Count() } files were extracted.", "Open folder",
+                    () => OpenAppUtil.ExplorerOpenPath(this, e.DestinationFolder, false));
+            }
+        }
+
+        private void ViewModel_OnArchiveOpened(object sender, EventArgs e)
+        {
+            this.UpdateTitle(viewModel.ArchiveInfo.FilePath);
+            this.ShowStatusBar($"{ viewModel.ArchiveInfo.FilePath } • { viewModel.ArchiveInfo.TotalFiles } files.");
+        }
+
+        private void ViewModel_OnArchiveClosed(object sender, bool resetUI)
+        {
+            if (resetUI)
+            {
+                this.UpdateTitle();
+                this.HideStatusBar();
+            }
+        }
+
+        /// <summary>
+        /// Changes main window title. Call without parameter to reset title, call with parameter to add additional string to the title.
+        /// </summary>
+        /// <param name="value">Additional string, which will be appended to title. Use <c>null</c> to remove additional string.</param>
+        private void UpdateTitle(string value = null)
+        {
+            if (value == null)
+                this.Title = "BA2 Explorer";
+            else
+                this.Title = "BA2 Explorer • " + value;
+        }
+
+
+
         internal void ShowStatusBar(string text)
         {
             if (StatusBar.Visibility != Visibility.Visible)
@@ -79,7 +124,7 @@ namespace Ba2Explorer
             statusbarButtonAction = buttonClickAction;
         }
 
-        internal void CollapseStatusBar()
+        internal void HideStatusBar()
         {
             StatusBar.Visibility = Visibility.Collapsed;
         }
@@ -101,7 +146,7 @@ namespace Ba2Explorer
 
         private void MainWindow_Closed(object sender, EventArgs e)
         {
-            this.mainViewModel.Cleanup();
+            this.viewModel.Cleanup();
         }
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
@@ -119,7 +164,7 @@ namespace Ba2Explorer
 
             string selectedFilePath = (string)this.ArchiveFilesList.SelectedItem;
 
-            Task<bool> task = this.FilePreview.TrySetPreviewAsync(selectedFilePath);
+            var task = this.FilePreview.TrySetPreviewAsync(selectedFilePath);
 
             e.Handled = true;
         }
@@ -139,7 +184,7 @@ namespace Ba2Explorer
 
         private void FilterText_TextChanged(object sender, TextChangedEventArgs e)
         {
-            if (mainViewModel.ArchiveInfo == null)
+            if (viewModel.ArchiveInfo == null)
                 return;
 
             CollectionViewSource.GetDefaultView(this.ArchiveFilesList.ItemsSource).Refresh();
@@ -151,27 +196,27 @@ namespace Ba2Explorer
 
         private void OpenCommandExecuted(object sender, ExecutedRoutedEventArgs e)
         {
-            mainViewModel.OpenArchiveWithDialog();
+            viewModel.OpenArchiveWithDialog();
             e.Handled = true;
         }
 
         private void CloseCanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
-            e.CanExecute = mainViewModel.ArchiveInfo != null;
+            e.CanExecute = viewModel.ArchiveInfo != null;
             e.Handled = true;
         }
 
         private void CloseCommandExecuted(object sender, ExecutedRoutedEventArgs e)
         {
             e.Handled = true;
-            mainViewModel.CloseArchive(true);
+            viewModel.CloseArchive(true);
 
             GC.Collect(2);
         }
 
         private void ExtractCanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
-            if (mainViewModel.ArchiveInfo == null)
+            if (viewModel.ArchiveInfo == null)
             {
                 e.CanExecute = false;
                 e.Handled = true;
@@ -188,27 +233,27 @@ namespace Ba2Explorer
             {
                 string sel = ArchiveFilesList.SelectedItem as string;
 
-                await mainViewModel.ExtractFileWithDialog(sel);
+                await viewModel.ExtractFileWithDialog(sel);
                 e.Handled = true;
             }
             else if (ArchiveFilesList.SelectedItems.Count > 1)
             {
                 IList sels = ArchiveFilesList.SelectedItems;
 
-                mainViewModel.ExtractFilesWithDialog(sels.Cast<string>());
+                viewModel.ExtractFilesWithDialog(sels.Cast<string>().ToList());
                 e.Handled = true;
             }
         }
 
         private void ExtractAllCommandExecuted(object sender, ExecutedRoutedEventArgs e)
         {
-            mainViewModel.ExtractFilesWithDialog(mainViewModel.ArchiveInfo.Files);
+            viewModel.ExtractFilesWithDialog(viewModel.ArchiveInfo.Files);
             e.Handled = true;
         }
 
         private void ExtractAllCanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
-            e.CanExecute = mainViewModel.ArchiveInfo != null;
+            e.CanExecute = viewModel.ArchiveInfo != null;
             e.Handled = true;
         }
 
@@ -222,18 +267,6 @@ namespace Ba2Explorer
             this.Close();
         }
 
-        private void CollectGCExecuted(object sender, RoutedEventArgs e)
-        {
-            long memoryBefore = GC.GetTotalMemory(false);
-            GC.Collect(GC.MaxGeneration);
-            long memoryAfter = GC.GetTotalMemory(false);
-
-            MessageBox.Show(String.Format("Collected {0} generations.\n\nBefore: {1:n2} MB\nAfter: {2:n2} MB",
-                GC.MaxGeneration,
-                memoryBefore / 1024.0d / 1024.0d,
-                memoryAfter  / 1024.0d / 1024.0d));
-        }
-
         #endregion
 
         private void RecentArchivesItemExecuted(object sender, RoutedEventArgs e)
@@ -244,7 +277,7 @@ namespace Ba2Explorer
             if (item == null)
                 return;
 
-            mainViewModel.OpenArchive(item);
+            viewModel.OpenArchive(item);
         }
     }
 }

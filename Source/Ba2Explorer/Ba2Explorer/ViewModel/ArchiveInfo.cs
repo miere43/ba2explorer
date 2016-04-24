@@ -113,23 +113,22 @@ namespace Ba2Explorer.ViewModel
                 if (index == -1)
                     return false;
 
+                bool entered = false;
+
                 try
                 {
-                    accessSemaphore.Wait(timeout, cancellationToken);
+                    entered = accessSemaphore.Wait(timeout, cancellationToken);
                     return archive.ExtractToStream(index, stream);
                 }
-                catch (OperationCanceledException)
-                {
-                    throw;
-                }
-                catch (Exception e)
+                catch (BA2ExtractionException e)
                 {
                     App.Logger.Log(LogPriority.Error, "ArchiveInfo.ExtractToStreamAsync exception: {0}", e.Message);
                     throw;
                 }
                 finally
                 {
-                    accessSemaphore.Release();
+                    if (entered)
+                        accessSemaphore.Release();
                 }
             });
         }
@@ -157,9 +156,11 @@ namespace Ba2Explorer.ViewModel
                 if (index == -1)
                     return false;
 
+                bool entered = false;
+
                 try
                 {
-                    accessSemaphore.Wait(timeout, cancellationToken);
+                    entered = accessSemaphore.Wait(timeout, cancellationToken);
                     using (FileStream stream = File.Create(destFileName))
                     {
                         return archive.ExtractToStream(index, stream);
@@ -176,7 +177,8 @@ namespace Ba2Explorer.ViewModel
                 }
                 finally
                 {
-                    accessSemaphore.Release();
+                    if (entered)
+                        accessSemaphore.Release();
                 }
             });
         }
@@ -201,9 +203,11 @@ namespace Ba2Explorer.ViewModel
                     indexes.Add(index);
                 }
 
+                bool entered = false;
+
                 try
                 {
-                    accessSemaphore.Wait(timeout, cancellationToken);
+                    entered = accessSemaphore.Wait(timeout, cancellationToken);
                     archive.ExtractFiles(indexes, destFolder, cancellationToken, progress, true);
                     return true;
                 }
@@ -218,7 +222,8 @@ namespace Ba2Explorer.ViewModel
                 }
                 finally
                 {
-                    accessSemaphore.Release();
+                    if (entered)
+                        accessSemaphore.Release();
                 }
             });
         }

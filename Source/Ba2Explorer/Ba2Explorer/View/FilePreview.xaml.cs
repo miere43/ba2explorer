@@ -184,7 +184,7 @@ namespace Ba2Explorer.View
 
             textBlock.Inlines.Clear();
             textBlock.Inlines.Add(text);
-            Run grayedText = new Run(" (" + tip + ")");
+            Run grayedText = new Run(" (" + tip + ')');
             grayedText.Foreground = Brushes.Gray;
             textBlock.Inlines.Add(grayedText);
         }

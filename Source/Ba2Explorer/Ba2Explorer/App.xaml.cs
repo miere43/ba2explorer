@@ -62,12 +62,13 @@ namespace Ba2Explorer
             }
             else
             {
-                logger.Log(LogPriority.Error, "!!! Catched unhandled {0} exception.", e.GetType().FullName);
-                logger.Log(LogPriority.Error, "!!! Unhandled exception: message: {0}\n\n target site: {1}\n\n stack trace: {2}\n\nsource: {3}",
+                logger.Log(LogPriority.Error, "!!! Catched {0}.", e.GetType().FullName);
+                logger.Log(LogPriority.Error, "!!! Unhandled exception:{0}{4}source: {3}{4}target site: {1}{4}stack trace:{4}{2}{4}",
                     e.Message,
                     e.TargetSite,
                     e.StackTrace,
-                    e.Source);
+                    e.Source,
+                    Environment.NewLine);
 
                 if (e.InnerException != null)
                 {

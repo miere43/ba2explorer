@@ -32,6 +32,21 @@ namespace Ba2Explorer.ViewModel
     /// </summary>
     public class MainViewModel : ViewModelBase
     {
+        public sealed class ExtractionEventArgs : EventArgs
+        {
+            public bool IsOneFileExtracted => ExtractedFiles.Count == 1;
+
+            public readonly IList<string> ExtractedFiles;
+
+            public readonly string DestinationFolder;
+
+            public ExtractionEventArgs(IList<string> extractedFiles, string destFolder)
+            {
+                ExtractedFiles = extractedFiles;
+                DestinationFolder = destFolder;
+            }
+        }
+
         private ArchiveInfo archiveInfo;
         public ArchiveInfo ArchiveInfo
         {
@@ -45,8 +60,6 @@ namespace Ba2Explorer.ViewModel
                 RaisePropertyChanged();
             }
         }
-
-        public MainWindow Window { get; set; }
 
         private ObservableCollection<string> recentArchives;
         public ObservableCollection<string> RecentArchives
@@ -67,39 +80,14 @@ namespace Ba2Explorer.ViewModel
             }
         }
 
-        //private bool CharCmp(char c)
-        //{
-        //    return c == '\\';
-        //}
+        public event EventHandler OnArchiveOpened;
 
-        //public ObservableCollection<ArchiveFilename> CreateFromStrings(List<string> strings, int rootLevel = 0)
-        //{
-        //    strings.Sort((lhs, rhs) =>
-        //    {
-        //        int lhsDirs = lhs.Count(CharCmp);
-        //        int rhsDirs = rhs.Count(CharCmp);
+        /// <summary>
+        /// Called when archive was closed. True boolean value shows that UI should be resetted to default.
+        /// </summary>
+        public event EventHandler<bool> OnArchiveClosed;
 
-        //        if (lhsDirs > rhsDirs)
-        //            return rhsDirs - lhsDirs;
-        //        else if (rhsDirs < lhsDirs)
-        //            return lhsDirs - rhsDirs;
-        //        return 0;
-        //    });
-
-        //    ObservableCollection<ArchiveFilename> names = new ObservableCollection<ArchiveFilename>();
-
-        //    foreach (string item in strings)
-        //    {
-        //        string[] subdirs = item.Split(new char[] { '\\' }, StringSplitOptions.RemoveEmptyEntries);
-        //        if (subdirs.Length == 1)
-        //        {
-        //            names.Add(new ArchiveFilename(subdirs[0]));
-        //            continue;
-        //        }
-        //    }
-
-        //    return names;
-        //}
+        public event EventHandler<ExtractionEventArgs> OnExtractionCompleted;
 
         /// <summary>
         /// Initializes a new instance of the MainViewModel class.
@@ -108,32 +96,14 @@ namespace Ba2Explorer.ViewModel
         {
             ArchiveInfo = null;
 
-            //ArchiveList = new ObservableCollection<ArchiveFilename>(
-            //    CreateFromStrings(new List<string>()
-            //    {
-            //        @"1",
-            //        @"2\b",
-            //        @"3\b\c",
-            //    }));
-
 #if DEBUG
             if (IsInDesignMode)
                 PrepareDesignTimeData();
 #endif
 
-            ////if (IsInDesignMode)
-            ////{
-            ////    // Code runs in Blend --> create design time data.
-            ////}
-            ////else
-            ////{
-            ////    // Code runs "for real"
-            ////}
-
             RecentArchives = AppSettings.Instance.MainWindow.GetLatestFiles();
             RecentArchives.CollectionChanged += (sender, args) => RaisePropertyChanged(nameof(HasRecentArchives));
         }
-
 
         [Conditional("DEBUG")]
         private void PrepareDesignTimeData()
@@ -151,14 +121,6 @@ namespace Ba2Explorer.ViewModel
                 ArchiveInfo.Dispose();
 
             base.Cleanup();
-        }
-
-        public void SetTitle(string title)
-        {
-            if (title == null)
-                Window.Title = "BA2 Explorer";
-            else
-                Window.Title = "BA2 Explorer • " + title.Trim();
         }
 
         public void OpenArchiveWithDialog()
@@ -186,7 +148,7 @@ namespace Ba2Explorer.ViewModel
         /// Opens the archive from file path.
         /// </summary>
         /// <exception cref="ArgumentException" />
-        public void OpenArchive(string path)
+        public bool OpenArchive(string path)
         {
             if (String.IsNullOrWhiteSpace(path))
                 throw new ArgumentException(nameof(path));
@@ -194,7 +156,7 @@ namespace Ba2Explorer.ViewModel
             // Requested same archive.
             if (archiveInfo != null)
                 if (path.Equals(this.archiveInfo.FilePath, StringComparison.OrdinalIgnoreCase))
-                    return;
+                    return false;
 
             if (ArchiveInfo != null)
             {
@@ -204,11 +166,12 @@ namespace Ba2Explorer.ViewModel
             // TODO:
             // check for errors
             ArchiveInfo = ArchiveInfo.Open(path);
-            SetTitle(ArchiveInfo.FileName);
 
             AppSettings.Instance.Global.OpenArchiveLatestFolder = Path.GetDirectoryName(path);
             App.Logger.Log(LogPriority.Info, "Opened archive {0}", path);
-            Window.ShowStatusBar(path);
+
+            OnArchiveOpened?.Invoke(this, EventArgs.Empty);
+            return true;
         }
 
         /// <summary>
@@ -227,11 +190,7 @@ namespace Ba2Explorer.ViewModel
             }
 
             ArchiveInfo = null;
-            if (resetUI)
-            {
-                SetTitle(null);
-                Window.CollapseStatusBar();
-            }
+            OnArchiveClosed?.Invoke(this, resetUI);
         }
 
         /// <summary>
@@ -259,13 +218,14 @@ namespace Ba2Explorer.ViewModel
             if (result.HasValue && result.Value == true)
             {
                 await ArchiveInfo.ExtractFileAsync(fileName, dialog.FileName, Timeout.InfiniteTimeSpan, CancellationToken.None);
-                AppSettings.Instance.Global.ExtractionLatestFolder = Path.GetDirectoryName(dialog.FileName);
-                Window.ShowStatusBarWithButton($"File \"{fileName}\" extracted.", "Open file folder",
-                    () => ExplorerOpenPath(dialog.FileName, true));
+                string destFolder = Path.GetDirectoryName(dialog.FileName);
+                AppSettings.Instance.Global.ExtractionLatestFolder = destFolder;
+
+                OnExtractionCompleted?.Invoke(this, new ExtractionEventArgs(new List<string>() { dialog.FileName }, destFolder));
             }
         }
 
-        public void ExtractFilesWithDialog(IEnumerable<string> files)
+        public void ExtractFilesWithDialog(IList<string> files)
         {
             if (files == null)
                 throw new ArgumentNullException(nameof(files));
@@ -300,48 +260,7 @@ namespace Ba2Explorer.ViewModel
 
         #region Private methods
 
-        /// <summary>
-        /// Opens Explorer, which opens directory or selecting the file passed in <c>path</c> argument.
-        /// </summary>
-        private void ExplorerOpenPath(string path, bool isFile)
-        {
-            ProcessStartInfo info = new ProcessStartInfo();
-            info.ErrorDialog = true;
-            info.ErrorDialogParentHandle = new WindowInteropHelper(this.Window).Handle;
-            info.FileName = "explorer";
-            info.UseShellExecute = true;
-
-            bool failed = false;
-
-            if (isFile)
-            {
-                if (File.Exists(path)) {
-                    info.Arguments = @"/select," + path;
-                } else if (Directory.Exists(Path.GetDirectoryName(path))) {
-                    info.Arguments = Path.GetDirectoryName(path);
-                } else {
-                    failed = true;
-                }
-            }
-            else
-            {
-                if (Directory.Exists(path)) {
-                    info.Arguments = path;
-                } else {
-                    failed = true;
-                }
-            }
-
-            if (failed)
-            {
-                MessageBox.Show(this.Window, "Cannot open file folder: file nor folder are exist", "Error", MessageBoxButton.OK,
-                    MessageBoxImage.Warning, MessageBoxResult.OK, MessageBoxOptions.None);
-                return;
-            }
-
-            var process = Process.Start(info);
-            process.Dispose();
-        }
+        
 
         /// <summary>
         /// Extracts the files with dialog.
@@ -350,7 +269,7 @@ namespace Ba2Explorer.ViewModel
         /// <param name="files">The files.</param>
         /// <exception cref="System.ArgumentException"></exception>
         /// <exception cref="System.ArgumentNullException"></exception>
-        private void ExtractFiles(string destinationFolder, IEnumerable<string> files)
+        private void ExtractFiles(string destinationFolder, IList<string> files)
         {
             if (String.IsNullOrWhiteSpace(destinationFolder))
                 throw new ArgumentException(nameof(destinationFolder));
@@ -364,14 +283,13 @@ namespace Ba2Explorer.ViewModel
             window.ViewModel.DestinationFolder = destinationFolder;
             window.ViewModel.FilesToExtract = files;
             window.ShowInTaskbar = true;
-            window.Owner = this.Window;
+            window.Owner = Application.Current.MainWindow;
 
             window.ShowDialog();
 
             if (window.ViewModel.IsFinishedSuccessfully)
             {
-                Window.ShowStatusBarWithButton($"{ window.ViewModel.FilesToExtract.Count() } files were extracted.", "Open folder",
-                    () => ExplorerOpenPath(window.ViewModel.DestinationFolder, false));
+                OnExtractionCompleted?.Invoke(this, new ExtractionEventArgs(files, destinationFolder));
             }
         }
 
