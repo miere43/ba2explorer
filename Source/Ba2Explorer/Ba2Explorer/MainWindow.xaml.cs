@@ -296,77 +296,11 @@ namespace Ba2Explorer
 
         private void AssociateExtensionMenuItem_Click(object sender, RoutedEventArgs e)
         {
-            // TODO move to view model
-            string instructions = "Pressing OK will give you a prompt to restart BA2 Explorer with admin rights, so it can " +
-                                  "update extensions registry. " + Environment.NewLine + Environment.NewLine + "Press Cancel to abort.";
-
-            // true means app is associated extension.
-            if ((bool)AssociateExtensionMenuItem.Tag == true)
-            {
-                if (UACElevationHelper.IsRunAsAdmin())
-                {
-                    if (App.UnassociateBA2Extension())
-                    {
-                        MessageBox.Show(this, "Successfully unassociated extension.", "Success", MessageBoxButton.OK,
-                            MessageBoxImage.Information);
-                        UpdateAssociateExtensionMenuItem();
-                    }
-                    else
-                    {
-                        App.Logger.Log(Logging.LogPriority.Error, "Error while unassociating extension (is admin: {0}, elevated: {1}, " +
-                            "is in admin group: {2}, integrity level: {3}", UACElevationHelper.IsRunAsAdmin(),
-                            UACElevationHelper.IsProcessElevated(), UACElevationHelper.IsUserInAdminGroup(),
-                            UACElevationHelper.GetProcessIntegrityLevel());
-
-                        MessageBox.Show(this, "Error occured while unassociating extension.", "Error", MessageBoxButton.OK,
-                            MessageBoxImage.Error);
-                    }
-                }
+            if (viewModel.AssociateExtension(this))
+                if (App.IsAssociatedExtension())
+                    AssociateExtensionMenuItem.Header = "Unassociate archive extension";
                 else
-                {
-                    var result = TaskDialog.Show(this, IntPtr.Zero, "Administrator rights required",
-                        "Admin rights required to unassociate archive extension from BA2 Explorer",
-                        instructions, TaskDialogButtons.OK | TaskDialogButtons.Cancel, TaskDialogIcon.Shield);
-
-                    if (result == TaskDialogResult.Ok)
-                    {
-                        UACElevationHelper.Elevate("/unassociate-extension");
-                    }
-                }
-            }
-            else
-            {
-                if (UACElevationHelper.IsRunAsAdmin())
-                {
-                    if (App.AssociateBA2Extension())
-                    {
-                        MessageBox.Show(this, "Successfully associated extension.", "Success", MessageBoxButton.OK,
-                            MessageBoxImage.Information);
-                        UpdateAssociateExtensionMenuItem();
-                    }
-                    else
-                    {
-                        App.Logger.Log(Logging.LogPriority.Error, "Error while associating extension (is admin: {0}, elevated: {1}, " +
-                            "is in admin group: {2}, integrity level: {3}", UACElevationHelper.IsRunAsAdmin(),
-                            UACElevationHelper.IsProcessElevated(), UACElevationHelper.IsUserInAdminGroup(),
-                            UACElevationHelper.GetProcessIntegrityLevel());
-
-                        MessageBox.Show(this, "Error occured while associating extension.", "Error", MessageBoxButton.OK,
-                            MessageBoxImage.Error);
-                    }
-                }
-                else
-                {
-                    var result = TaskDialog.Show(this, IntPtr.Zero, "Administrator rights required",
-                        "Administrator rights required to associate archive extension to BA2 Explorer.",
-                        instructions, TaskDialogButtons.OK | TaskDialogButtons.Cancel, TaskDialogIcon.Shield);
-
-                    if (result == TaskDialogResult.Ok)
-                    {
-                        UACElevationHelper.Elevate(@"/associate-extension");
-                    }
-                }
-            }
+                    AssociateExtensionMenuItem.Header = "Associate archive extension";
         }
     }
 }

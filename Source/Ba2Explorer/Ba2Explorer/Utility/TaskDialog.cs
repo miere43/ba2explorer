@@ -59,7 +59,11 @@ namespace Ba2Explorer.Utility
             string header, string message, TaskDialogButtons buttons, TaskDialogIcon icon)
         {
             if (NativeMethods.IsWindowsVersionAtLeast(WindowsOSVersion.Vista))
+            {
+                // Play MessageBox sound.
+                System.Media.SystemSounds.Exclamation.Play();
                 return ShowTaskDialog(new WindowInteropHelper(owner).Handle, hInstance, title, header, message, buttons, icon);
+            }
             else
                 return ConvertMessageBoxResult(MessageBox.Show(owner, header + Environment.NewLine + Environment.NewLine + message,
                     title, ConvertTaskDialogButtons(buttons), ConvertTaskDialogIcon(icon)));

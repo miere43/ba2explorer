@@ -28,32 +28,6 @@ namespace Ba2Explorer
 
         public App()
         {
-            string[] args = Environment.GetCommandLineArgs();
-            if (args.Contains("/associate-extension"))
-            {
-                if (UACElevationHelper.IsRunAsAdmin() && UACElevationHelper.IsProcessElevated())
-                {
-                    if (!AssociateBA2Extension())
-                    {
-                        MessageBox.Show("Associating extension was not successful.");
-                    }
-                }
-                else
-                {
-                    MessageBox.Show("Cannot associate extension without admin rights and elevated process.");
-                }
-            }
-            else if (args.Contains("/unassociate-extension"))
-            {
-                if (UACElevationHelper.IsRunAsAdmin() && UACElevationHelper.IsProcessElevated())
-                {
-                    if (!UnassociateBA2Extension())
-                        MessageBox.Show("Unassociating extension was not successfull.");
-                }
-                else
-                    MessageBox.Show("Cannot unassociate extension without admin rights and elevated process.");
-            }
-
             AppSettings.Load("prefs.toml");
 
             if (AppSettings.Instance.Logger.LoggerEnabled)
@@ -71,6 +45,43 @@ namespace Ba2Explorer
             Logger = logger;
 
             this.DispatcherUnhandledException += App_DispatcherUnhandledException;
+            this.Activated += App_Activated;
+        }
+
+        private void App_Activated(object sender, EventArgs e)
+        {
+            HandleArguments();
+        }
+
+        private void HandleArguments()
+        {
+            string[] args = Environment.GetCommandLineArgs();
+            if (args.Contains("/associate-extension"))
+            {
+                if (UACElevationHelper.IsRunAsAdmin() && UACElevationHelper.IsProcessElevated())
+                {
+                    if (!AssociateBA2Extension())
+                        MessageBox.Show("Associating extension was not successful.");
+                    else
+                        MessageBox.Show("Successfully associated extension!", "Success", MessageBoxButton.OK,
+                            MessageBoxImage.Information);
+                }
+                else
+                    MessageBox.Show("Cannot associate extension without admin rights and elevated process.");
+            }
+            else if (args.Contains("/unassociate-extension"))
+            {
+                if (UACElevationHelper.IsRunAsAdmin() && UACElevationHelper.IsProcessElevated())
+                {
+                    if (!UnassociateBA2Extension())
+                        MessageBox.Show("Unassociating extension was not successfull.");
+                    else
+                        MessageBox.Show("Successfully unassociated extension!", "Success", MessageBoxButton.OK,
+                            MessageBoxImage.Information);
+                }
+                else
+                    MessageBox.Show("Cannot unassociate extension without admin rights and elevated process.");
+            }
         }
 
         private void App_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
