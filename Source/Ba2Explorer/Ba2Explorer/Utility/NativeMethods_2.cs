@@ -7,6 +7,16 @@ using System.Runtime.InteropServices;
 
 namespace Ba2Explorer.Utility
 {
+    internal enum WindowsOSVersion
+    {
+        NotWindows = -1,
+        Unknown = 0,
+        /// <summary>
+        /// Windows Vista or later.
+        /// </summary>
+        Vista = 100,
+    }
+
     internal partial class NativeMethods
     {
         private const int GWL_STYLE = -16;
@@ -37,41 +47,24 @@ namespace Ba2Explorer.Utility
         [DllImport("shell32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         public static extern void SHChangeNotify(uint wEventId, uint uFlags, IntPtr dwItem1, IntPtr dwItem2);
 
-        [StructLayoutAttribute(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
-        internal struct StockIconInfo
+        internal static WindowsOSVersion GetWindowsVersion()
         {
+            if (Environment.OSVersion.Platform != PlatformID.Win32NT)
+                return WindowsOSVersion.NotWindows;
 
-            internal UInt32 StructureSize;
+            if (Environment.OSVersion.Version.Major >= 6)
+                return WindowsOSVersion.Vista;
 
-            internal IntPtr Handle;
-
-            internal Int32 ImageIndex;
-
-            internal Int32 Identifier;
-
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)]
-
-            internal string Path;
-
+            return WindowsOSVersion.Unknown;
         }
 
-        [DllImport("shell32.dll", CharSet = CharSet.Unicode, ExactSpelling = true, SetLastError = false)]
-        internal static extern int SHGetStockIconInfo(StockIconIdentifier identifier, StockIconOptions flags, ref StockIconInfo info);
-
-        [DllImport("user32.dll", SetLastError = true)]
-        internal static extern bool DestroyIcon(IntPtr handle);
-
-        [Flags]
-        internal enum StockIconOptions : uint
+        internal static bool IsWindowsVersionAtLeast(WindowsOSVersion version)
         {
-            Small = 0x000000001,       // Retrieve the small version of the icon, as specified by the SM_CXSMICON and SM_CYSMICON system metrics.
-            ShellSize = 0x000000004,   // Retrieve the shell-sized icons rather than the sizes specified by the system metrics.
-            Handle = 0x000000100,      // The hIcon member of the SHSTOCKICONINFO structure receives a handle to the specified icon.
-            SystemIndex = 0x000004000, // The iSysImageImage member of the SHSTOCKICONINFO structure receives the index of the specified icon in the system imagelist.
-            LinkOverlay = 0x000008000, // Add the link overlay to the file’s icon.
-            Selected = 0x000010000     // Blend the icon with the system highlight color.
+            if (version == WindowsOSVersion.NotWindows ||
+                version == WindowsOSVersion.Unknown)
+                return false;
+
+            return (int)GetWindowsVersion() >= (int)version;
         }
-
-
     }
 }

@@ -324,9 +324,9 @@ namespace Ba2Explorer
                 }
                 else
                 {
-                    var result = NativeTaskDialog.Show(new WindowInteropHelper(this).Handle, IntPtr.Zero, "Administrator rights required",
+                    var result = TaskDialog.Show(this, IntPtr.Zero, "Administrator rights required",
                         "Admin rights required to unassociate archive extension from BA2 Explorer",
-                        instructions, TaskDialogButtons.Ok | TaskDialogButtons.Cancel, TaskDialogIcon.Shield);
+                        instructions, TaskDialogButtons.OK | TaskDialogButtons.Cancel, TaskDialogIcon.Shield);
 
                     if (result == TaskDialogResult.Ok)
                     {
@@ -357,9 +357,9 @@ namespace Ba2Explorer
                 }
                 else
                 {
-                    var result = NativeTaskDialog.Show(new WindowInteropHelper(this).Handle, IntPtr.Zero, "Administrator rights required",
+                    var result = TaskDialog.Show(this, IntPtr.Zero, "Administrator rights required",
                         "Administrator rights required to associate archive extension to BA2 Explorer.",
-                        instructions, TaskDialogButtons.Ok | TaskDialogButtons.Cancel, TaskDialogIcon.Shield);
+                        instructions, TaskDialogButtons.OK | TaskDialogButtons.Cancel, TaskDialogIcon.Shield);
 
                     if (result == TaskDialogResult.Ok)
                     {

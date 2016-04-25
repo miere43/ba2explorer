@@ -120,7 +120,7 @@
     <Compile Include="Utility\NativeMethods.cs" />
     <Compile Include="Utility\OpenAppUtil.cs" />
     <Compile Include="Utility\StockIcon.cs" />
-    <Compile Include="Utility\NativeTaskDialog.cs" />
+    <Compile Include="Utility\TaskDialog.cs" />
     <Compile Include="Utility\UACElevationHelper.cs" />
     <Compile Include="View\Commands\AppCommands.cs" />
     <Compile Include="ArchiveFilename.cs" />
