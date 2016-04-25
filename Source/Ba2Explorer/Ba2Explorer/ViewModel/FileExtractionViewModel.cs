@@ -12,19 +12,23 @@ using System.Windows;
 
 namespace Ba2Explorer.ViewModel
 {
+    public enum ExtractionFinishedState
+    {
+        None,
+        Succeed,
+        Failed,
+        Canceled
+    }
+
     public sealed class FileExtractionViewModel : ViewModelBase
     {
         private CancellationTokenSource cancellationToken;
 
-        public event EventHandler OnFinishedSuccessfully;
+        #region Properties / Events
 
-        public event EventHandler OnCanceled;
-
-        public event EventHandler OnExtractionError;
+        public event EventHandler<ExtractionFinishedState> OnFinished;
 
         public Progress<int> ExtractionProgress { get; set; }
-
-        #region Properties
 
         private ArchiveInfo archiveInfo;
         public ArchiveInfo ArchiveInfo
@@ -49,35 +53,13 @@ namespace Ba2Explorer.ViewModel
             }
         }
 
-        private bool isExtractionFinished = false;
-        public bool IsExtractionFinished
+        private ExtractionFinishedState extractionState = ExtractionFinishedState.None;
+        public ExtractionFinishedState ExtractionState
         {
-            get { return isExtractionFinished; }
+            get { return extractionState; }
             private set
             {
-                isExtractionFinished = value;
-                RaisePropertyChanged();
-            }
-        }
-
-        private bool isExtractionCancelled = false;
-        public bool IsExtractionCancelled
-        {
-            get { return isExtractionCancelled; }
-            private set
-            {
-                isExtractionCancelled = value;
-                RaisePropertyChanged();
-            }
-        }
-
-        private bool isFinishedSuccessfully = false;
-        public bool IsFinishedSuccessfully
-        {
-            get { return isFinishedSuccessfully; }
-            private set
-            {
-                isFinishedSuccessfully = value;
+                extractionState = value;
                 RaisePropertyChanged();
             }
         }
@@ -104,9 +86,14 @@ namespace Ba2Explorer.ViewModel
             }
         }
 
-#endregion
+        #endregion
 
         public FileExtractionViewModel()
+        {
+            Reset();
+        }
+
+        public void Reset()
         {
             ExtractionProgress = new Progress<int>();
             cancellationToken = new CancellationTokenSource();
@@ -126,20 +113,21 @@ namespace Ba2Explorer.ViewModel
                 IsExtracting = true;
                 await ArchiveInfo.ExtractFilesAsync(FilesToExtract, DestinationFolder, ExtractionProgress, Timeout.InfiniteTimeSpan,
                     cancellationToken.Token);
-                IsFinishedSuccessfully = true;
-                OnFinishedSuccessfully?.Invoke(this, null);
+
+                ExtractionState = ExtractionFinishedState.Succeed;
             }
             catch (OperationCanceledException)
             {
-                OnCanceled?.Invoke(this, null);
+                ExtractionState = ExtractionFinishedState.Canceled;
             }
             catch (BA2ExtractionException)
             {
-                OnExtractionError?.Invoke(this, null);
+                ExtractionState = ExtractionFinishedState.Failed;
             }
             finally
             {
                 IsExtracting = false;
+                OnFinished?.Invoke(this, ExtractionState);
             }
         }
     }

@@ -5,6 +5,7 @@ using System.Windows.Input;
 using System.Diagnostics;
 using System.ComponentModel;
 using Ba2Explorer.ViewModel;
+using Ba2Explorer.Utility;
 
 namespace Ba2Explorer.View
 {
@@ -13,6 +14,8 @@ namespace Ba2Explorer.View
     /// </summary>
     public partial class FileExtractionWindow : Window
     {
+        private bool started = false;
+
         public FileExtractionViewModel ViewModel;
 
         public FileExtractionWindow()
@@ -26,15 +29,12 @@ namespace Ba2Explorer.View
 
             this.Loaded += FileExtractionWindow_Loaded;
 
-
             base.OnInitialized(e);
         }
 
         private void FileExtractionWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            ViewModel.OnFinishedSuccessfully += ViewModel_OnFinished;
-            ViewModel.OnCanceled += ViewModel_OnCanceled;
-            ViewModel.OnExtractionError += ViewModel_OnExtractionError;
+            ViewModel.OnFinished += ViewModel_OnFinished;
             ViewModel.ExtractionProgress.ProgressChanged += ExtractionProgress_ProgressChanged;
 
             this.TaskbarItemInfo.ProgressState = System.Windows.Shell.TaskbarItemProgressState.Indeterminate;
@@ -42,36 +42,34 @@ namespace Ba2Explorer.View
 
             this.Title = "Extracting " + ViewModel.ArchiveInfo.FileName;
 
-            Debug.WriteLine("file extr activated");
             var task = ViewModel.ExtractFiles();
         }
 
-        private void ViewModel_OnExtractionError(object sender, EventArgs e)
+        private void ViewModel_OnFinished(object sender, ExtractionFinishedState e)
         {
             this.Dispatcher.Invoke(() =>
             {
-                
-            });
-        }
-
-        private void ViewModel_OnCanceled(object sender, EventArgs e)
-        {
-            this.Dispatcher.Invoke(() =>
-            {
-                this.Cancel.Content = "Canceled";
-                this.Title = "Canceled " + ViewModel.ArchiveInfo.FileName;
-            });
-        }
-
-        private void ViewModel_OnFinished(object sender, EventArgs e)
-        {
-            this.Dispatcher.Invoke(() =>
-            {
-                UpdateExtractionProgress(ViewModel.FilesToExtract.Count(), ViewModel.FilesToExtract.Count(), true);
-                ExtractionProgress.Value = 1.0d;
-                ViewModel.OnFinishedSuccessfully -= ViewModel_OnFinished;
+                ViewModel.OnFinished -= ViewModel_OnFinished;
                 ViewModel.ExtractionProgress.ProgressChanged -= ExtractionProgress_ProgressChanged;
+
+                UpdateExtractionProgress(ViewModel.FilesToExtract.Count(), ViewModel.FilesToExtract.Count(), true);
                 SetExtractingWindowTitle(ExtractionProgress.Value);
+
+                if (e == ExtractionFinishedState.Canceled)
+                {
+                    this.Cancel.Content = "Canceled";
+                    this.Title = "Canceled " + ViewModel.ArchiveInfo.FileName;
+                }
+                else
+                {
+                    if (NotifyOnFinishedCheckBox.IsChecked.Value)
+                    {
+                        MessageBox.Show(this, "Extraction completed.", "Extraction completed.", MessageBoxButton.OK,
+                            MessageBoxImage.Information);
+                    }
+                }
+
+                this.Close();
             });
         }
 
@@ -79,8 +77,6 @@ namespace Ba2Explorer.View
         {
             this.Title = String.Format("{0:P0} - {1}", percent, ViewModel.ArchiveInfo.FileName);
         }
-
-        bool started = false;
 
         private void UpdateExtractionProgress(int actual, int excepted, bool final)
         {

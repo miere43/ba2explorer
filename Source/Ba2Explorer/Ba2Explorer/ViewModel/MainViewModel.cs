@@ -38,10 +38,13 @@ namespace Ba2Explorer.ViewModel
 
             public readonly string DestinationFolder;
 
-            public ExtractionEventArgs(IList<string> extractedFiles, string destFolder)
+            public readonly ExtractionFinishedState State;
+
+            public ExtractionEventArgs(IList<string> extractedFiles, string destFolder, ExtractionFinishedState state)
             {
                 ExtractedFiles = extractedFiles;
                 DestinationFolder = destFolder;
+                State = state;
             }
         }
 
@@ -234,7 +237,8 @@ namespace Ba2Explorer.ViewModel
                 string destFolder = Path.GetDirectoryName(dialog.FileName);
                 AppSettings.Instance.Global.ExtractionLatestFolder = destFolder;
 
-                OnExtractionCompleted?.Invoke(this, new ExtractionEventArgs(new List<string>() { dialog.FileName }, destFolder));
+                OnExtractionCompleted?.Invoke(this, new ExtractionEventArgs(new List<string>() { dialog.FileName }, destFolder,
+                    ExtractionFinishedState.Succeed));
             }
         }
 
@@ -292,6 +296,7 @@ namespace Ba2Explorer.ViewModel
             AppSettings.Instance.Global.ExtractionLatestFolder = Path.GetDirectoryName(destinationFolder);
 
             FileExtractionWindow window = new FileExtractionWindow();
+            window.ViewModel.Reset();
             window.ViewModel.ArchiveInfo = this.ArchiveInfo;
             window.ViewModel.DestinationFolder = destinationFolder;
             window.ViewModel.FilesToExtract = files;
@@ -300,10 +305,7 @@ namespace Ba2Explorer.ViewModel
 
             window.ShowDialog();
 
-            if (window.ViewModel.IsFinishedSuccessfully)
-            {
-                OnExtractionCompleted?.Invoke(this, new ExtractionEventArgs(files, destinationFolder));
-            }
+            this.OnExtractionCompleted?.Invoke(this, new ExtractionEventArgs(files, destinationFolder, window.ViewModel.ExtractionState));
         }
 
         internal bool AssociateExtension(Window dialogOwnerWindow)

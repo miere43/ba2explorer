@@ -67,15 +67,26 @@ namespace Ba2Explorer
 
         private void ViewModel_OnExtractionCompleted(object sender, MainViewModel.ExtractionEventArgs e)
         {
-            if (e.IsOneFileExtracted)
+            switch (e.State)
             {
-                this.ShowStatusBarWithButton($"File \"{ e.ExtractedFiles[0] }\" extracted.", "Open file folder",
-                    () => OpenAppUtil.ExplorerOpenPath(this, e.ExtractedFiles[0], true));
-            }
-            else
-            {
-                this.ShowStatusBarWithButton($"{ e.ExtractedFiles.Count() } files were extracted.", "Open folder",
-                    () => OpenAppUtil.ExplorerOpenPath(this, e.DestinationFolder, false));
+                case ExtractionFinishedState.Failed:
+                    this.ShowStatusBar($"Extraction failed.");
+                    break;
+                case ExtractionFinishedState.Canceled:
+                    this.ShowStatusBar($"Extraction was canceled.");
+                    break;
+                case ExtractionFinishedState.Succeed:
+                    if (e.IsOneFileExtracted)
+                    {
+                        this.ShowStatusBarWithButton($"File \"{ e.ExtractedFiles[0] }\" extracted.", "Open file folder",
+                            () => OpenAppUtil.ExplorerOpenPath(this, e.ExtractedFiles[0], true));
+                    }
+                    else
+                    {
+                        this.ShowStatusBarWithButton($"{ e.ExtractedFiles.Count() } files were extracted.", "Open folder",
+                            () => OpenAppUtil.ExplorerOpenPath(this, e.DestinationFolder, false));
+                    }
+                    break;
             }
         }
 

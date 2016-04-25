@@ -7,7 +7,7 @@
         xmlns:converters="clr-namespace:Ba2Explorer.View.Converters"
         mc:Ignorable="d"
         DataContext="{Binding Source={StaticResource Locator}, Path=FileExtraction}"
-        Title="Extracting..." Height="144" Width="310" WindowStartupLocation="CenterOwner">
+        Title="Extracting..." Height="164" Width="320" WindowStartupLocation="CenterOwner">
 
     <Window.CommandBindings>
         <CommandBinding Command="Stop" CanExecute="CanStopExtraction" Executed="StopExtraction" />
@@ -24,7 +24,8 @@
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
@@ -33,7 +34,7 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <TextBlock x:Name="MainText" Grid.ColumnSpan="2" Margin="6" VerticalAlignment="Center" Text="Please wait, starting soon…" />
+        <TextBlock x:Name="MainText" Grid.ColumnSpan="2" Margin="8" VerticalAlignment="Center" Text="Please wait, starting soon…" />
         <ProgressBar
             Height="20"
             Grid.Row="1"
@@ -42,12 +43,14 @@
             VerticalAlignment="Center"
             HorizontalAlignment="Stretch"
             IsEnabled="{Binding IsExtracting}"
-            Margin="10"
+            Margin="8,0"
             x:Name="ExtractionProgress"
             Minimum="0"
             Maximum="1" />
 
-        <StackPanel HorizontalAlignment="Center" Grid.Row="2" Grid.Column="0" Orientation="Horizontal" Grid.ColumnSpan="2">
+        <CheckBox IsEnabled="{Binding IsExtracting}" x:Name="NotifyOnFinishedCheckBox" Grid.Row="2" Margin="8" Grid.ColumnSpan="2">Beep when finished</CheckBox>
+
+        <StackPanel HorizontalAlignment="Center" Grid.Row="3" Grid.Column="0" Orientation="Horizontal" Grid.ColumnSpan="2">
             <Button Command="Open" Margin="6" Padding="6,3" IsCancel="False" x:Name="OpenFolder" Content="Open folder" />
             <Button IsEnabled="{Binding IsExtracting}" Command="Stop" Margin="6" Padding="6,3" IsCancel="True" x:Name="Cancel" Content="Cancel" />
         </StackPanel>
