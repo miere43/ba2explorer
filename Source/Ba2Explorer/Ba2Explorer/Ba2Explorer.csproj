@@ -124,6 +124,8 @@
     <Compile Include="Utility\UACElevationHelper.cs" />
     <Compile Include="View\Commands\AppCommands.cs" />
     <Compile Include="ArchiveFilename.cs" />
+    <Compile Include="View\Converters\ArchiveFilesViewColumnSpanConverter.cs" />
+    <Compile Include="View\Converters\BooleanToCollapsedVisibilityConverter.cs" />
     <Compile Include="View\Converters\ObjectToBooleanConverter.cs" />
     <Compile Include="View\FileExtractionWindow.xaml.cs">
       <DependentUpon>FileExtractionWindow.xaml</DependentUpon>

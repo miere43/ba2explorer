@@ -15,7 +15,7 @@ namespace Ba2Explorer.Settings
 
         public double WindowHeight { get; set; } = 350;
 
-        [TomlComment("Should window be located above all opened windows? (bool)")]
+        [TomlComment("Should window be located above all opened windows?")]
         public bool Topmost { get; set; } = false;
 
         public List<string> RecentArchives { get; set; } = null;

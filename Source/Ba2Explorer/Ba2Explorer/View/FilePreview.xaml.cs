@@ -38,7 +38,7 @@ namespace Ba2Explorer.View
 
         private EncodedStringConverter stringConverter = new EncodedStringConverter();
 
-        enum FileType
+        private enum FileType
         {
             Unknown,
             Text,
@@ -95,6 +95,9 @@ namespace Ba2Explorer.View
         /// <param name="filePath">Path to file from archive.</param>
         public async Task<bool> TrySetPreviewAsync(string filePath)
         {
+            if (!IsEnabled)
+                return false;
+
             EnsureArchiveAttached();
 
             if (String.IsNullOrWhiteSpace(filePath))

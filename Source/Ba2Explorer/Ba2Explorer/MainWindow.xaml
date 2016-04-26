@@ -30,6 +30,8 @@
             </CollectionViewSource.SortDescriptions>
         </CollectionViewSource>
         <conv:ObjectToBooleanConverter x:Key="ObjectToBooleanConverter" />
+        <conv:BooleanToCollapsedVisibilityConverter x:Key="BoolToCollapsedVisConverter" />
+        <conv:ArchiveFilesViewColumnSpanConverter x:Key="ArchiveFilesColumnSpanConverter" />
     </Window.Resources>
     
     <Grid>
@@ -59,6 +61,9 @@
                 <Separator />
                 <MenuItem Command="commands:AppCommands.ExitApp" Header="Exit" />
             </MenuItem>
+            <MenuItem Header="View">
+                <MenuItem x:Name="FilePreviewPanelMenuItem" IsChecked="True" IsCheckable="True" Header="File Preview Panel" />
+            </MenuItem>
             <MenuItem Header="Archive" IsEnabled="{Binding ArchiveInfo, Converter={StaticResource ObjectToBooleanConverter}}">
                 <MenuItem Header="Close" Command="Close" />
                 <Separator />
@@ -71,8 +76,9 @@
             </MenuItem>
         </Menu>
 
-        <ListView BorderThickness="0,1,0,0" x:Name="ArchiveFilesList" Grid.Row="2" Grid.Column="0" DataContext="{Binding ArchiveInfo}" ItemsSource="{Binding Files}"
-                  SelectionChanged="ArchiveFilesList_SelectionChanged">
+        <ListView BorderThickness="0,1,0,0" x:Name="ArchiveFilesList" Grid.Row="2" Grid.Column="0" DataContext="{Binding ArchiveInfo}"
+                  ItemsSource="{Binding Files}" SelectionChanged="ArchiveFilesList_SelectionChanged"
+                  Grid.ColumnSpan="{Binding IsChecked, ElementName=FilePreviewPanelMenuItem, Converter={StaticResource ArchiveFilesColumnSpanConverter}}">
             <ListView.ContextMenu>
                 <ContextMenu>
                     <MenuItem Header="Extract" Command="commands:AppCommands.ExtractSelected" />
@@ -80,10 +86,13 @@
             </ListView.ContextMenu>
         </ListView>
         
-        <GridSplitter Background="#4A5573" Grid.Row="1" Grid.RowSpan="2" Grid.Column="0" Width="2" />
+        <GridSplitter Background="#4A5573" Grid.Row="1" Grid.RowSpan="2" Grid.Column="0" Width="2"
+                      Visibility="{Binding Visibility, ElementName=FilePreview}"/>
 
         <view:FilePreview
             x:Name="FilePreview"
+            Visibility="{Binding IsChecked, ElementName=FilePreviewPanelMenuItem, Converter={StaticResource BoolToCollapsedVisConverter}}"
+            IsEnabled="{Binding IsChecked, ElementName=FilePreviewPanelMenuItem}"
             Grid.Row="1"
             Grid.RowSpan="2"
             Grid.Column="1" />

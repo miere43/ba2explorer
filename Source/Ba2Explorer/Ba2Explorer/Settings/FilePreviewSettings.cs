@@ -6,6 +6,8 @@
     /// </summary>
     internal class FilePreviewSettings : AppSettingsBase
     {
+        public bool IsEnabled { get; set; } = true;
+
         public bool SoundPlayerAutoplaySounds { get; set; } = false;
 
         public FilePreviewSettings()

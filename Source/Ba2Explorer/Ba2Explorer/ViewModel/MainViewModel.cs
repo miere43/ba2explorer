@@ -48,6 +48,8 @@ namespace Ba2Explorer.ViewModel
             }
         }
 
+        #region Properties 
+
         private ArchiveInfo archiveInfo;
         public ArchiveInfo ArchiveInfo
         {
@@ -80,6 +82,8 @@ namespace Ba2Explorer.ViewModel
                 return RecentArchives != null && RecentArchives.Count > 0;
             }
         }
+
+        #endregion
 
         public event EventHandler OnArchiveOpened;
 

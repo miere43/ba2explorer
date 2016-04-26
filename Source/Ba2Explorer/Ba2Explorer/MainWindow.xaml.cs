@@ -46,6 +46,14 @@ namespace Ba2Explorer
                 }
             };
 
+            this.Loaded += MainWindow_Loaded;
+            this.Closed += MainWindow_Closed;
+
+            this.FilePreview.IsEnabledChanged += (sender, args) =>
+            {
+                if (FilePreview.IsEnabled) SetSelectedItemFilePreview();
+            };
+
             var settings = AppSettings.Instance.MainWindow;
             this.Width = settings.WindowWidth;
             this.Height = settings.WindowHeight;
@@ -57,12 +65,29 @@ namespace Ba2Explorer
                 this.Left = settings.WindowLeft;
             }
 
-            settings.OnSaving += Settings_OnSaving;
+            // TODO: fix this
+            this.FilePreviewPanelMenuItem.IsChecked = AppSettings.Instance.FilePreview.IsEnabled;
 
-            this.Loaded += MainWindow_Loaded;
-            this.Closed += MainWindow_Closed;
+            settings.OnSaving += MainWindowSettings_OnSaving;
+            AppSettings.Instance.FilePreview.OnSaving += FilePreviewSettings_OnSaving;
 
             UpdateAssociateExtensionMenuItem();
+        }
+
+        private void FilePreviewSettings_OnSaving(object sender, EventArgs e)
+        {
+            FilePreviewSettings s = (FilePreviewSettings)sender;
+            s.IsEnabled = this.FilePreview.IsEnabled;
+        }
+
+        private void SetSelectedItemFilePreview()
+        {
+            // TODO handle multiple selection
+            if (this.ArchiveFilesList.SelectedItem == null)
+                return;
+
+            string selectedFilePath = (string)this.ArchiveFilesList.SelectedItem;
+            var task = this.FilePreview.TrySetPreviewAsync(selectedFilePath);
         }
 
         private void ViewModel_OnExtractionCompleted(object sender, MainViewModel.ExtractionEventArgs e)
@@ -145,7 +170,7 @@ namespace Ba2Explorer
             statusbarButtonAction?.Invoke();
         }
 
-        private void Settings_OnSaving(object sender, EventArgs e)
+        private void MainWindowSettings_OnSaving(object sender, EventArgs e)
         {
             MainWindowSettings s = (MainWindowSettings)sender;
             s.Topmost = this.Topmost;
@@ -169,13 +194,7 @@ namespace Ba2Explorer
 
         private void ArchiveFilesList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            // TODO handle multiple selection
-            if (this.ArchiveFilesList.SelectedItem == null)
-                return;
-
-            string selectedFilePath = (string)this.ArchiveFilesList.SelectedItem;
-
-            var task = this.FilePreview.TrySetPreviewAsync(selectedFilePath);
+            this.SetSelectedItemFilePreview();
 
             e.Handled = true;
         }
