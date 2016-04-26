@@ -12,6 +12,8 @@
 
         public string ExtractionLatestFolder { get; set; } = "";
 
+        public bool MultithreadedExtraction { get; set; } = true;
+
         public override void Saving()
         {
             IsFirstLaunch = false;

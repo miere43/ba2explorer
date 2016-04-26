@@ -10,6 +10,7 @@ using Microsoft.Win32;
 using GalaSoft.MvvmLight;
 using Ba2Tools;
 using Ba2Explorer.Logging;
+using Ba2Explorer.Settings;
 
 namespace Ba2Explorer.ViewModel
 {
@@ -20,8 +21,6 @@ namespace Ba2Explorer.ViewModel
     public sealed class ArchiveInfo : ObservableObject, IDisposable
     {
         private BA2Archive archive;
-
-        private SemaphoreSlim accessSemaphore;
 
         #region Properties
 
@@ -77,7 +76,6 @@ namespace Ba2Explorer.ViewModel
 
         public ArchiveInfo()
         {
-            accessSemaphore = new SemaphoreSlim(1, 1);
         }
 
         ~ArchiveInfo()
@@ -104,7 +102,7 @@ namespace Ba2Explorer.ViewModel
         /// Use Timeout.InfiniteTimeSpan to wait indefinitely.</param>
         /// <param name="cancellationToken">The cancellation token to observe.</param>
         /// <returns>False when <c>fileName</c> was not found in archive or error during extraction happened, or true otherwise.</returns>
-        public Task<bool> ExtractToStreamAsync(Stream stream, string fileName, TimeSpan timeout, CancellationToken cancellationToken)
+        public Task<bool> ExtractToStreamAsync(Stream stream, string fileName)
         {
             if (fileName == null)
                 throw new ArgumentNullException(nameof(fileName));
@@ -116,22 +114,14 @@ namespace Ba2Explorer.ViewModel
                 if (index == -1)
                     return false;
 
-                bool entered = false;
-
                 try
                 {
-                    entered = accessSemaphore.Wait(timeout, cancellationToken);
                     return archive.ExtractToStream(index, stream);
                 }
                 catch (BA2ExtractionException e)
                 {
                     App.Logger.Log(LogPriority.Error, "ArchiveInfo.ExtractToStreamAsync exception: {0}", e.Message);
                     throw;
-                }
-                finally
-                {
-                    if (entered)
-                        accessSemaphore.Release();
                 }
             });
         }
@@ -142,11 +132,8 @@ namespace Ba2Explorer.ViewModel
         /// </summary>
         /// <param name="stream">Destination stream where file would be extracted.</param>
         /// <param name="fileName">File name in archive to extract into stream.</param>
-        /// <param name="timeout">Maximum time to wait until aborting extraction.
-        /// Use Timeout.InfiniteTimeSpan to wait indefinitely.</param>
-        /// <param name="cancellationToken">The cancellation token to observe.</param>
         /// <returns>False when <c>fileName</c> was not found in archive or error during extraction happened, or true otherwise.</returns>
-        public Task<bool> ExtractFileAsync(string fileName, string destFileName, TimeSpan timeout, CancellationToken cancellationToken)
+        public Task<bool> ExtractFileAsync(string fileName, string destFileName)
         {
             if (fileName == null)
                 throw new ArgumentNullException(nameof(fileName));
@@ -159,11 +146,8 @@ namespace Ba2Explorer.ViewModel
                 if (index == -1)
                     return false;
 
-                bool entered = false;
-
                 try
                 {
-                    entered = accessSemaphore.Wait(timeout, cancellationToken);
                     using (FileStream stream = File.Create(destFileName))
                     {
                         return archive.ExtractToStream(index, stream);
@@ -177,11 +161,6 @@ namespace Ba2Explorer.ViewModel
                 {
                     App.Logger.Log(LogPriority.Error, "ArchiveInfo.ExtractToFileAsync exception: {0}", e.Message);
                     throw;
-                }
-                finally
-                {
-                    if (entered)
-                        accessSemaphore.Release();
                 }
             });
         }
@@ -206,23 +185,15 @@ namespace Ba2Explorer.ViewModel
                     indexes.Add(index);
                 }
 
-                bool entered = false;
-
                 try
                 {
-                    entered = accessSemaphore.Wait(timeout, cancellationToken);
-                    archive.ExtractFiles(indexes, destFolder, cancellationToken, progress, true);
+                    archive.ExtractFiles(indexes, destFolder, true, cancellationToken, progress);
                     return true;
                 }
                 catch (BA2LoadException e)
                 {
                     App.Logger.LogException(LogPriority.Error, "ArchiveInfo.ExtractFilesAsync", e);
                     throw;
-                }
-                finally
-                {
-                    if (entered)
-                        accessSemaphore.Release();
                 }
             });
         }
@@ -233,11 +204,12 @@ namespace Ba2Explorer.ViewModel
 
             try
             {
-                BA2Archive archive = BA2Loader.Load(path);
+                BA2Archive archive = BA2Loader.Load(path,
+                    AppSettings.Instance.Global.MultithreadedExtraction ? BA2LoaderFlags.Multithreaded : BA2LoaderFlags.None);
 
                 info = new ArchiveInfo();
                 info.archive = archive;
-                info.Files = new ObservableCollection<string>(archive.ListFiles());
+                info.Files = new ObservableCollection<string>(archive.FileList);
                 info.FilePath = path;
                 info.FileName = Path.GetFileName(info.FilePath);
             }
@@ -268,8 +240,6 @@ namespace Ba2Explorer.ViewModel
         {
             if (archive != null)
                 archive.Dispose();
-            if (accessSemaphore != null)
-                accessSemaphore.Dispose();
 
             IsDisposed = true;
         }

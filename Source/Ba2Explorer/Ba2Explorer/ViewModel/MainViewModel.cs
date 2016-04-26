@@ -237,7 +237,7 @@ namespace Ba2Explorer.ViewModel
 
             if (result.HasValue && result.Value == true)
             {
-                await ArchiveInfo.ExtractFileAsync(fileName, dialog.FileName, Timeout.InfiniteTimeSpan, CancellationToken.None);
+                await ArchiveInfo.ExtractFileAsync(fileName, dialog.FileName);
                 string destFolder = Path.GetDirectoryName(dialog.FileName);
                 AppSettings.Instance.Global.ExtractionLatestFolder = destFolder;
 
