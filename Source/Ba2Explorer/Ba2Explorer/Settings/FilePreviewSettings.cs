@@ -1,8 +1,7 @@
 ﻿namespace Ba2Explorer.Settings
 {
     /// <summary>
-    /// Represents settings for FilePreview control in
-    /// MainWindow.
+    /// Represents settings for FilePreviewControl in MainWindow.
     /// </summary>
     internal class FilePreviewSettings : AppSettingsBase
     {

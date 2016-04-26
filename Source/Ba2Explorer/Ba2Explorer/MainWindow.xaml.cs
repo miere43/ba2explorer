@@ -7,14 +7,8 @@ using System.Windows.Data;
 using System.Windows.Input;
 using Ba2Explorer.ViewModel;
 using System.Collections;
-using Nett;
 using Ba2Explorer.Settings;
-using System.Diagnostics;
-using System.IO;
-using System.Collections.Generic;
 using Ba2Explorer.Utility;
-using System.Windows.Media.Imaging;
-using System.Windows.Interop;
 
 namespace Ba2Explorer
 {
@@ -35,17 +29,6 @@ namespace Ba2Explorer
             viewModel.OnArchiveClosed += ViewModel_OnArchiveClosed;
             viewModel.OnExtractionCompleted += ViewModel_OnExtractionCompleted;
 
-            viewModel.PropertyChanged += (sender, args) =>
-            {
-                if (viewModel.ArchiveInfo != null && args.PropertyName == nameof(ArchiveInfo))
-                {
-                    // todo string.intern(nameof(archiveinfo)) ?
-                    this.FilePreview.SetArchive(viewModel.ArchiveInfo);
-                    archiveFilesFilter = (CollectionView)CollectionViewSource.GetDefaultView(this.ArchiveFilesList.ItemsSource);
-                    archiveFilesFilter.Filter = ArchiveFileFilter;
-                }
-            };
-
             this.Loaded += MainWindow_Loaded;
             this.Closed += MainWindow_Closed;
 
@@ -54,9 +37,13 @@ namespace Ba2Explorer
                 if (FilePreview.IsEnabled) SetSelectedItemFilePreview();
             };
 
-            var settings = AppSettings.Instance.MainWindow;
-            this.Width = settings.WindowWidth;
-            this.Height = settings.WindowHeight;
+            // Settings handling
+            AppSettings.Instance.MainWindow.OnSaving  += MainWindowSettings_OnSaving;
+            AppSettings.Instance.FilePreview.OnSaving += FilePreviewSettings_OnSaving;
+
+            MainWindowSettings settings = AppSettings.Instance.MainWindow;
+            this.Width   = settings.WindowWidth;
+            this.Height  = settings.WindowHeight;
             this.Topmost = settings.Topmost;
 
             if (!AppSettings.Instance.Global.IsFirstLaunch)
@@ -65,13 +52,23 @@ namespace Ba2Explorer
                 this.Left = settings.WindowLeft;
             }
 
+            // View updates
+            UpdateAssociateExtensionMenuItem();
+
             // TODO: fix this
             this.FilePreviewPanelMenuItem.IsChecked = AppSettings.Instance.FilePreview.IsEnabled;
+        }
 
-            settings.OnSaving += MainWindowSettings_OnSaving;
-            AppSettings.Instance.FilePreview.OnSaving += FilePreviewSettings_OnSaving;
+        #region Settings Saving / Loading
 
-            UpdateAssociateExtensionMenuItem();
+        private void MainWindowSettings_OnSaving(object sender, EventArgs e)
+        {
+            MainWindowSettings s = (MainWindowSettings)sender;
+            s.Topmost = this.Topmost;
+            s.WindowLeft = this.Left;
+            s.WindowTop = this.Top;
+            s.WindowWidth = this.Width;
+            s.WindowHeight = this.Height;
         }
 
         private void FilePreviewSettings_OnSaving(object sender, EventArgs e)
@@ -80,15 +77,9 @@ namespace Ba2Explorer
             s.IsEnabled = this.FilePreview.IsEnabled;
         }
 
-        private void SetSelectedItemFilePreview()
-        {
-            // TODO handle multiple selection
-            if (this.ArchiveFilesList.SelectedItem == null)
-                return;
+        #endregion
 
-            string selectedFilePath = (string)this.ArchiveFilesList.SelectedItem;
-            var task = this.FilePreview.TrySetPreviewAsync(selectedFilePath);
-        }
+        #region View Model / Window Events
 
         private void ViewModel_OnExtractionCompleted(object sender, MainViewModel.ExtractionEventArgs e)
         {
@@ -117,6 +108,10 @@ namespace Ba2Explorer
 
         private void ViewModel_OnArchiveOpened(object sender, EventArgs e)
         {
+            this.FilePreview.SetArchive(viewModel.ArchiveInfo);
+            archiveFilesFilter = (CollectionView)CollectionViewSource.GetDefaultView(this.ArchiveFilesList.ItemsSource);
+            archiveFilesFilter.Filter = ArchiveFileFilter;
+
             this.UpdateTitle(viewModel.ArchiveInfo.FilePath);
             this.ShowStatusBar($"{ viewModel.ArchiveInfo.FilePath } • { viewModel.ArchiveInfo.TotalFiles } files.");
         }
@@ -130,54 +125,9 @@ namespace Ba2Explorer
             }
         }
 
-        /// <summary>
-        /// Changes main window title. Call without parameter to reset title, call with parameter to add additional string to the title.
-        /// </summary>
-        /// <param name="value">Additional string, which will be appended to title. Use <c>null</c> to remove additional string.</param>
-        private void UpdateTitle(string value = null)
+        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            if (value == null)
-                this.Title = "BA2 Explorer";
-            else
-                this.Title = "BA2 Explorer • " + value;
-        }
-
-        internal void ShowStatusBar(string text)
-        {
-            if (StatusBar.Visibility != Visibility.Visible)
-                StatusBar.Visibility = Visibility.Visible;
-
-            StatusBarButton.Visibility = Visibility.Collapsed;
-            StatusBarTime.Text = DateTime.Now.ToShortTimeString();
-            StatusBarText.Text = text;
-        }
-
-        internal void ShowStatusBarWithButton(string statusbarText, string buttonText, Action buttonClickAction)
-        {
-            ShowStatusBar(statusbarText);
-            StatusBarButton.Visibility = Visibility.Visible;
-            StatusBarButton.Content = buttonText;
-            statusbarButtonAction = buttonClickAction;
-        }
-
-        internal void HideStatusBar()
-        {
-            StatusBar.Visibility = Visibility.Collapsed;
-        }
-
-        private void StatusBarButton_Click(object sender, RoutedEventArgs e)
-        {
-            statusbarButtonAction?.Invoke();
-        }
-
-        private void MainWindowSettings_OnSaving(object sender, EventArgs e)
-        {
-            MainWindowSettings s = (MainWindowSettings)sender;
-            s.Topmost = this.Topmost;
-            s.WindowLeft = this.Left;
-            s.WindowTop = this.Top;
-            s.WindowWidth = this.Width;
-            s.WindowHeight = this.Height;
+            viewModel.MainWindowLoaded();
         }
 
         private void MainWindow_Closed(object sender, EventArgs e)
@@ -185,19 +135,7 @@ namespace Ba2Explorer
             this.viewModel.Cleanup();
         }
 
-        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
-        {
-            viewModel.MainWindowLoaded();
-            // mainViewModel.OpenArchive("D:/Games/Fallout 4/Data/Fallout4 - Sounds.ba2");
-            //mainViewModel.ExtractFiles("D:/A", mainViewModel.ArchiveInfo.Files);
-        }
-
-        private void ArchiveFilesList_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            this.SetSelectedItemFilePreview();
-
-            e.Handled = true;
-        }
+        #endregion
 
         #region Archive files filter
 
@@ -222,7 +160,7 @@ namespace Ba2Explorer
 
         #endregion
 
-        #region Commands
+        #region Commands / Logic
 
         private void OpenCommandExecuted(object sender, ExecutedRoutedEventArgs e)
         {
@@ -297,8 +235,6 @@ namespace Ba2Explorer
             this.Close();
         }
 
-        #endregion
-
         private void RecentArchivesItemExecuted(object sender, RoutedEventArgs e)
         {
             MenuItem selection = e.OriginalSource as MenuItem;
@@ -309,6 +245,71 @@ namespace Ba2Explorer
 
             viewModel.OpenArchive(item);
         }
+
+        private void ArchiveFilesList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            this.SetSelectedItemFilePreview();
+
+            e.Handled = true;
+        }
+
+        private void StatusBarButton_Click(object sender, RoutedEventArgs e)
+        {
+            statusbarButtonAction?.Invoke();
+        }
+
+        #endregion
+
+        #region Helper methods
+
+        private void SetSelectedItemFilePreview()
+        {
+            // TODO handle multiple selection
+            if (this.ArchiveFilesList.SelectedItem == null)
+                return;
+
+            string selectedFilePath = (string)this.ArchiveFilesList.SelectedItem;
+            var task = this.FilePreview.TrySetPreviewAsync(selectedFilePath);
+        }
+
+        /// <summary>
+        /// Changes main window title. Call without parameter to reset title, call with parameter to add additional string to the title.
+        /// </summary>
+        /// <param name="value">Additional string, which will be appended to title. Use <c>null</c> to remove additional string.</param>
+        private void UpdateTitle(string value = null)
+        {
+            if (value == null)
+                this.Title = "BA2 Explorer";
+            else
+                this.Title = "BA2 Explorer • " + value;
+        }
+
+        private void ShowStatusBar(string text)
+        {
+            if (StatusBar.Visibility != Visibility.Visible)
+                StatusBar.Visibility = Visibility.Visible;
+
+            StatusBarButton.Visibility = Visibility.Collapsed;
+            StatusBarTime.Text = DateTime.Now.ToShortTimeString();
+            StatusBarText.Text = text;
+        }
+
+        private void ShowStatusBarWithButton(string statusbarText, string buttonText, Action buttonClickAction)
+        {
+            ShowStatusBar(statusbarText);
+            StatusBarButton.Visibility = Visibility.Visible;
+            StatusBarButton.Content = buttonText;
+            statusbarButtonAction = buttonClickAction;
+        }
+
+        private void HideStatusBar()
+        {
+            StatusBar.Visibility = Visibility.Collapsed;
+        }
+
+        #endregion
+
+        #region Extension Association
 
         private void UpdateAssociateExtensionMenuItem()
         {
@@ -332,5 +333,7 @@ namespace Ba2Explorer
                 else
                     AssociateExtensionMenuItem.Header = "Associate archive extension";
         }
+
+        #endregion
     }
 }

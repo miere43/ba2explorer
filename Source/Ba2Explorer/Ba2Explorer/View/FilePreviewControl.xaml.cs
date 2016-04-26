@@ -22,7 +22,7 @@ namespace Ba2Explorer.View
     /// <summary>
     /// Control to preview various files from archive.
     /// </summary>
-    public partial class FilePreview : UserControl
+    public partial class FilePreviewControl : UserControl
     {
         private static IReadOnlyDictionary<string, string> extensionDescriptions;
 
@@ -47,18 +47,21 @@ namespace Ba2Explorer.View
             Dds
         }
 
-        public FilePreview()
+        public FilePreviewControl()
         {
-            InitializeComponent();
             LazyStaticInit();
+
+            InitializeComponent();
             defaultTextFontFamily = PreviewTextField.FontFamily;
             textFileFontFamily = new FontFamily("Consolas");
         }
 
-        ~FilePreview()
+        ~FilePreviewControl()
         {
             DetachArchive();
         }
+
+        #region Public methods
 
         public void SetArchive(ArchiveInfo archive)
         {
@@ -139,6 +142,8 @@ namespace Ba2Explorer.View
             return true;
         }
 
+        #endregion
+
         #region Private methods
 
         private void ChangeControlsVisibilityForFileType(FileType fileType)
@@ -204,7 +209,6 @@ namespace Ba2Explorer.View
 
         /// <summary>
         /// Set's preview to DDS image.
-        /// TODO: catch loading exceptions.
         /// </summary>
         /// <param name="stream">DDS image stream.</param>
         private async Task SetDdsImagePreview(Stream stream)
@@ -344,7 +348,7 @@ namespace Ba2Explorer.View
 
         #endregion
 
-        #region Maintenance methods
+        #region Helper methods
 
         private void DetachArchive()
         {

@@ -130,8 +130,8 @@
     <Compile Include="View\FileExtractionWindow.xaml.cs">
       <DependentUpon>FileExtractionWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="View\FilePreview.xaml.cs">
-      <DependentUpon>FilePreview.xaml</DependentUpon>
+    <Compile Include="View\FilePreviewControl.xaml.cs">
+      <DependentUpon>FilePreviewControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\Converters\InverseBooleanConverter.cs" />
     <Compile Include="Thirdparty\DdsImage.cs" />
@@ -150,7 +150,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="View\FilePreview.xaml">
+    <Page Include="View\FilePreviewControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

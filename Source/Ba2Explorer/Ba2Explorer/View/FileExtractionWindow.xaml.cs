@@ -125,9 +125,7 @@ namespace Ba2Explorer.View
 
         private void OpenFolderExecuted(object sender, ExecutedRoutedEventArgs e)
         {
-            // TODO:
-            // use ExplorerOpenPath from MainViewModel;
-            Process.Start(ViewModel.DestinationFolder);
+            OpenAppUtil.ExplorerOpenPath(this, ViewModel.DestinationFolder, false);
         }
 
         private void StopExtraction(object sender, ExecutedRoutedEventArgs e)

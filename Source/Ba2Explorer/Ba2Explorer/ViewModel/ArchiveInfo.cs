@@ -25,8 +25,6 @@ namespace Ba2Explorer.ViewModel
 
         #region Properties
 
-        private ObservableCollection<string> files;
-
         private bool isDisposed = false;
 
         /// <summary>
@@ -41,6 +39,8 @@ namespace Ba2Explorer.ViewModel
                 RaisePropertyChanged();
             }
         }
+
+        private ObservableCollection<string> files;
 
         /// <summary>
         /// Gets filenames in archive.
@@ -87,10 +87,13 @@ namespace Ba2Explorer.ViewModel
             Dispose();
         }
 
+        #region Public methods
+
         public bool Contains(string filePath)
         {
             return archive.ContainsFile(filePath);
         }
+
         /// <summary>
         /// Extracts file to stream, aborting the process after certain timeout or when
         /// cancellation token signal received.
@@ -251,6 +254,10 @@ namespace Ba2Explorer.ViewModel
             return info;
         }
 
+        #endregion
+
+        #region Disposal
+
         void ThrowIfDisposed()
         {
             if (IsDisposed)
@@ -266,5 +273,7 @@ namespace Ba2Explorer.ViewModel
 
             IsDisposed = true;
         }
+
+        #endregion
     }
 }
