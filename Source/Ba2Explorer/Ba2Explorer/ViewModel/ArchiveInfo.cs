@@ -200,28 +200,14 @@ namespace Ba2Explorer.ViewModel
 
         public static ArchiveInfo Open(string path)
         {
-            ArchiveInfo info = null;
+            BA2Archive archive = BA2Loader.Load(path,
+                AppSettings.Instance.Global.MultithreadedExtraction ? BA2LoaderFlags.Multithreaded : BA2LoaderFlags.None);
 
-            try
-            {
-                BA2Archive archive = BA2Loader.Load(path,
-                    AppSettings.Instance.Global.MultithreadedExtraction ? BA2LoaderFlags.Multithreaded : BA2LoaderFlags.None);
-
-                info = new ArchiveInfo();
-                info.archive = archive;
-                info.Files = new ObservableCollection<string>(archive.FileList);
-                info.FilePath = path;
-                info.FileName = Path.GetFileName(info.FilePath);
-            }
-            catch (BA2LoadException e)
-            {
-                // todo
-                MessageBox.Show($"Error while loading archive: {e.Message}");
-            }
-            catch (Exception e)
-            {
-                MessageBox.Show($"Unexcepted error while opening archive: {e.Message}");
-            }
+            ArchiveInfo info = new ArchiveInfo();
+            info.archive = archive;
+            info.Files = new ObservableCollection<string>(archive.FileList);
+            info.FilePath = path;
+            info.FileName = Path.GetFileName(info.FilePath);
 
             return info;
         }

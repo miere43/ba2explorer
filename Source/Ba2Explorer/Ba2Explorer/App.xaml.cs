@@ -30,12 +30,29 @@ namespace Ba2Explorer
         {
             AppSettings.Load("prefs.toml");
 
-            if (AppSettings.Instance.Logger.LoggerEnabled)
+            this.Activated += App_Activated;
+        }
+
+        private void App_Activated(object sender, EventArgs unused)
+        {
+            if (AppSettings.Instance.Logger.IsEnabled)
             {
-                logger = new FileLogger(File.Open(AppSettings.Instance.Logger.LogFilePath, FileMode.Append))
+                FileStream file = null;
+                try
                 {
-                    LogMaxSize = AppSettings.Instance.Logger.LogMaxSize
-                };
+                    file = File.Open(AppSettings.Instance.Logger.LogFilePath, FileMode.Append);
+
+                    logger = new FileLogger(file)
+                    {
+                        LogMaxSize = AppSettings.Instance.Logger.LogMaxSize
+                    };
+                }
+                catch (Exception e)
+                {
+                    MessageBox.Show($"Error while setting up logger: { e.Message }", "Error", MessageBoxButton.OK,
+                        MessageBoxImage.Error);
+                    logger = new NullLogger();
+                }
             }
             else
             {
@@ -45,11 +62,7 @@ namespace Ba2Explorer
             Logger = logger;
 
             this.DispatcherUnhandledException += App_DispatcherUnhandledException;
-            this.Activated += App_Activated;
-        }
 
-        private void App_Activated(object sender, EventArgs e)
-        {
             HandleArguments();
         }
 

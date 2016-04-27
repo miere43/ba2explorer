@@ -182,9 +182,16 @@ namespace Ba2Explorer.ViewModel
                 CloseArchive(false);
             }
 
-            // TODO:
-            // check for errors
-            ArchiveInfo = ArchiveInfo.Open(path);
+            try
+            {
+                ArchiveInfo = ArchiveInfo.Open(path);
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show($"Unable to open archive:{ Environment.NewLine }{ Environment.NewLine }{ e.Message }", "Error",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+                return false;
+            }
 
             AppSettings.Instance.Global.OpenArchiveLatestFolder = Path.GetDirectoryName(path);
             App.Logger.Log(LogPriority.Info, "Opened archive {0}", path);
@@ -279,9 +286,13 @@ namespace Ba2Explorer.ViewModel
             }
         }
 
-        #region Private methods
+        public void RemoveRecentArchive(string filePath)
+        {
+            AppSettings.Instance.MainWindow.RecentArchives.Remove(filePath);
+            this.RecentArchives.Remove(filePath);
+        }
 
-        
+        #region Private methods
 
         /// <summary>
         /// Extracts the files with dialog.

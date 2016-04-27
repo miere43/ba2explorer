@@ -48,8 +48,8 @@
 
         <Menu Grid.Row="0" Grid.ColumnSpan="2">
             <MenuItem Header="File">
-                <MenuItem Header="Open" Command="Open"  />
-                <MenuItem Header="Close" Command="Close"  />
+                <MenuItem Header="Open" Command="Open" />
+                <MenuItem Header="Close" Command="Close" />
                 <Separator />
                 <MenuItem
                     IsEnabled="{Binding HasRecentArchives}"

@@ -243,7 +243,10 @@ namespace Ba2Explorer
             if (item == null)
                 return;
 
-            viewModel.OpenArchive(item);
+            if (!viewModel.OpenArchive(item))
+            {
+                viewModel.RemoveRecentArchive(item);
+            }
         }
 
         private void ArchiveFilesList_SelectionChanged(object sender, SelectionChangedEventArgs e)
