@@ -18,7 +18,6 @@ namespace Ba2Explorer
 {
     public partial class App : Application
     {
-        internal ILogger logger;
         internal static ILogger Logger { get; private set; }
 
         static readonly string associateExtension = ".ba2";
@@ -30,11 +29,6 @@ namespace Ba2Explorer
         {
             AppSettings.Load("prefs.toml");
 
-            this.Activated += App_Activated;
-        }
-
-        private void App_Activated(object sender, EventArgs unused)
-        {
             if (AppSettings.Instance.Logger.IsEnabled)
             {
                 FileStream file = null;
@@ -42,7 +36,7 @@ namespace Ba2Explorer
                 {
                     file = File.Open(AppSettings.Instance.Logger.LogFilePath, FileMode.Append);
 
-                    logger = new FileLogger(file)
+                    Logger = new FileLogger(file)
                     {
                         LogMaxSize = AppSettings.Instance.Logger.LogMaxSize
                     };
@@ -51,19 +45,24 @@ namespace Ba2Explorer
                 {
                     MessageBox.Show($"Error while setting up logger: { e.Message }", "Error", MessageBoxButton.OK,
                         MessageBoxImage.Error);
-                    logger = new NullLogger();
+                    Logger = new NullLogger();
                 }
             }
             else
             {
-                logger = new NullLogger();
+                Logger = new NullLogger();
             }
 
-            Logger = logger;
+            Logger = Logger;
 
             this.DispatcherUnhandledException += App_DispatcherUnhandledException;
+            this.Activated += App_Activated;
+        }
 
+        private void App_Activated(object sender, EventArgs unused)
+        {
             HandleArguments();
+            this.Activated -= App_Activated;
         }
 
         private void HandleArguments()
@@ -99,12 +98,12 @@ namespace Ba2Explorer
 
         private void App_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
         {
-            if (logger != null)
+            if (Logger != null)
             {
                 try
                 {
-                    logger.Log(LogPriority.Error, "!!! Unhandled exception, dispatcher: {0}", e.Dispatcher.ToString());
-                    LogException(logger, e.Exception);
+                    Logger.Log(LogPriority.Error, "!!! Unhandled exception, dispatcher: {0}", e.Dispatcher.ToString());
+                    LogException(Logger, e.Exception);
                 }
                 catch { }
             }
@@ -188,7 +187,6 @@ namespace Ba2Explorer
             {
                 return false;
             }
-
         }
 
         internal static bool IsAssociatedExtension()
@@ -201,10 +199,11 @@ namespace Ba2Explorer
         private void Application_Exit(object sender, ExitEventArgs e)
         {
             AppSettings.Save("prefs.toml");
-            Logger.Log(LogPriority.Info, "App closed");
+            if (Logger != null)
+                Logger.Log(LogPriority.Info, "App closed");
 
-            logger.Dispose();
-            logger = null;
+            Logger?.Dispose();
+            Logger = null;
             this.DispatcherUnhandledException -= App_DispatcherUnhandledException;
         }
     }

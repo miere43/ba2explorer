@@ -41,15 +41,16 @@ namespace Ba2Explorer.Utility
             info.FileName = Assembly.GetExecutingAssembly().Location;
             try
             {
+                Application.Current.Shutdown();
                 Process.Start(info);
+                Environment.Exit(0);
             }
             // Launching application was canceled.
-            catch (Win32Exception)
+            catch (Win32Exception e)
             {
-                return;
+                MessageBox.Show($"Error occured during restarting: {e.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                Environment.Exit(-1);
             }
-
-            Application.Current.Shutdown();
         }
 
         internal static void AddAdminShieldIcon(IntPtr controlHandle)
