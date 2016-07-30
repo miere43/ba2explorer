@@ -9,26 +9,23 @@ namespace Ba2Explorer.View.Commands
 {
     public static class AppCommands
     {
-        private static RoutedUICommand extractSelected;
-        public static RoutedUICommand ExtractSelected { get { return extractSelected; } }
+        public static RoutedUICommand ExtractSelected { get; private set; }
 
-        private static RoutedUICommand extractAll;
-        public static RoutedUICommand ExtractAll { get { return extractAll; } }
+        public static RoutedUICommand ExtractAll { get; private set; }
 
-        private static RoutedUICommand openSettings;
-        public static RoutedUICommand OpenSettings { get { return openSettings; } }
+        public static RoutedUICommand OpenSettings { get; private set; }
 
-        private static RoutedUICommand exitApp;
-        public static RoutedUICommand ExitApp { get { return exitApp; } }
+        public static RoutedUICommand ExitApp { get; private set; }
 
         static AppCommands()
         {
             Type t = typeof(AppCommands);
 
-            extractSelected = new RoutedUICommand("ExtractSelected", "ExtractSelected", t);
-            extractAll      = new RoutedUICommand("ExtractAll",      "ExtractAll",      t);
-            openSettings    = new RoutedUICommand("OpenSettings",    "OpenSettings",    t);
-            exitApp         = new RoutedUICommand("ExitApp",         "ExitApp",         t);
+            ExtractSelected = new RoutedUICommand("ExtractSelected", "ExtractSelected", t);
+            ExtractAll      = new RoutedUICommand("ExtractAll",      "ExtractAll",      t);
+            OpenSettings    = new RoutedUICommand("OpenSettings",    "OpenSettings",    t);
+            ExitApp         = new RoutedUICommand("ExitApp",         "ExitApp",         t);
+            ApplicationCommands.Close.InputGestures.Add(new KeyGesture(Key.W, ModifierKeys.Control));
         }
     }
 }
