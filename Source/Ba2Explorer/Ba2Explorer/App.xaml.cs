@@ -20,11 +20,6 @@ namespace Ba2Explorer
     {
         internal static ILogger Logger { get; private set; }
 
-        static readonly string associateExtension = ".ba2";
-        static readonly string associateKeyName = "BA2Explorer.ba2";
-        static readonly string associateExePath = System.Reflection.Assembly.GetExecutingAssembly().Location;
-        static readonly string associateFriendlyName = "Bethesda Archive 2";
-
         public App()
         {
             AppSettings.Load("prefs.toml");
@@ -61,6 +56,10 @@ namespace Ba2Explorer
 
         private void App_Activated(object sender, EventArgs unused)
         {
+//#if DEBUG
+//            if (!Debugger.IsAttached)
+//                Debugger.Launch();
+//#endif
             HandleArguments();
             this.Activated -= App_Activated;
         }
@@ -70,29 +69,11 @@ namespace Ba2Explorer
             string[] args = Environment.GetCommandLineArgs();
             if (args.Contains("/associate-extension"))
             {
-                if (UACElevationHelper.IsRunAsAdmin() && UACElevationHelper.IsProcessElevated())
-                {
-                    if (!AssociateBA2Extension())
-                        MessageBox.Show("Associating extension was not successful.");
-                    else
-                        MessageBox.Show("Successfully associated extension!", "Success", MessageBoxButton.OK,
-                            MessageBoxImage.Information);
-                }
-                else
-                    MessageBox.Show("Cannot associate extension without admin rights and elevated process.");
+                ExtensionAssociation.TryAssociate(null, alreadyTriedToAssociate: true);
             }
             else if (args.Contains("/unassociate-extension"))
             {
-                if (UACElevationHelper.IsRunAsAdmin() && UACElevationHelper.IsProcessElevated())
-                {
-                    if (!UnassociateBA2Extension())
-                        MessageBox.Show("Unassociating extension was not successfull.");
-                    else
-                        MessageBox.Show("Successfully unassociated extension!", "Success", MessageBoxButton.OK,
-                            MessageBoxImage.Information);
-                }
-                else
-                    MessageBox.Show("Cannot unassociate extension without admin rights and elevated process.");
+                ExtensionAssociation.TryUnassociate(null, alreadyTriedToUnassociate: true);
             }
         }
 
@@ -133,67 +114,6 @@ namespace Ba2Explorer
                     LogException(logger, e.InnerException);
                 }
             }
-        }
-
-        internal static bool AssociateBA2Extension()
-        {
-            try
-            {
-                RegistryKey BaseKey;
-                RegistryKey OpenMethod;
-                RegistryKey Shell;
-
-                BaseKey = Registry.ClassesRoot.CreateSubKey(associateExtension);
-                BaseKey.SetValue("", associateKeyName);
-
-                OpenMethod = Registry.ClassesRoot.CreateSubKey(associateKeyName);
-                OpenMethod.SetValue("", associateFriendlyName);
-                OpenMethod.CreateSubKey("DefaultIcon").SetValue("", "\"" + associateExePath + "\",0");
-                Shell = OpenMethod.CreateSubKey("Shell");
-                Shell.CreateSubKey("edit").CreateSubKey("command").SetValue("", "\"" + associateExePath + "\"" + " \"%1\"");
-                Shell.CreateSubKey("open").CreateSubKey("command").SetValue("", "\"" + associateExePath + "\"" + " \"%1\"");
-                BaseKey.Close();
-                OpenMethod.Close();
-                Shell.Close();
-
-                // Tell explorer the file association has been changed
-                NativeMethods.SHChangeNotify(0x08000000, 0x0000, IntPtr.Zero, IntPtr.Zero);
-
-                return true;
-            }
-
-            catch (SecurityException)
-            {
-                return false;
-            }
-        }
-
-        internal static bool UnassociateBA2Extension()
-        {
-            try
-            {
-                using (var baseKey = Registry.ClassesRoot.OpenSubKey(associateExtension, true))
-                {
-                    baseKey.DeleteValue("", false);
-                }
-
-                Registry.ClassesRoot.DeleteSubKeyTree(associateKeyName, false);
-
-                NativeMethods.SHChangeNotify(0x08000000, 0x0000, IntPtr.Zero, IntPtr.Zero);
-
-                return true;
-            }
-            catch (SecurityException)
-            {
-                return false;
-            }
-        }
-
-        internal static bool IsAssociatedExtension()
-        {
-            const string keyName = "BA2Explorer.ba2";
-
-            return Registry.ClassesRoot.OpenSubKey(keyName) != null;
         }
 
         private void Application_Exit(object sender, ExitEventArgs e)

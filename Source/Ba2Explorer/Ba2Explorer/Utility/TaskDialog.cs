@@ -44,6 +44,8 @@ namespace Ba2Explorer.Utility
         private static extern TaskDialogResult ShowTaskDialog(IntPtr hwndParent, IntPtr hInstance, string title,
             string mainInstruction, string content, TaskDialogButtons buttons, TaskDialogIcon icon);
 
+        private static readonly bool IsWindowsVersionAtLeastVista = NativeMethods.IsWindowsVersionAtLeast(WindowsOSVersion.Vista);
+
         /// <summary>
         /// Shows task dialog when running under Windows Vista and later, but falling back to normal message box when it's not available.
         /// </summary>
@@ -58,7 +60,7 @@ namespace Ba2Explorer.Utility
         internal static TaskDialogResult Show(Window owner, IntPtr hInstance, string title,
             string header, string message, TaskDialogButtons buttons, TaskDialogIcon icon)
         {
-            if (NativeMethods.IsWindowsVersionAtLeast(WindowsOSVersion.Vista))
+            if (IsWindowsVersionAtLeastVista)
             {
                 // Play MessageBox sound.
                 System.Media.SystemSounds.Exclamation.Play();

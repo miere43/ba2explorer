@@ -52,9 +52,6 @@ namespace Ba2Explorer
                 this.Left = settings.WindowLeft;
             }
 
-            // View updates
-            UpdateAssociateExtensionMenuItem();
-
             // TODO: fix this
             this.FilePreviewPanelMenuItem.IsChecked = AppSettings.Instance.FilePreview.IsEnabled;
         }
@@ -128,6 +125,9 @@ namespace Ba2Explorer
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
             viewModel.MainWindowLoaded();
+
+            // View updates
+            UpdateAssociateExtensionMenuItem();
         }
 
         private void MainWindow_Closed(object sender, EventArgs e)
@@ -316,7 +316,7 @@ namespace Ba2Explorer
 
         private void UpdateAssociateExtensionMenuItem()
         {
-            bool associated = App.IsAssociatedExtension();
+            bool associated = ExtensionAssociation.IsExtensionAssociated;
             AssociateExtensionMenuItem.Tag = associated;
             AssociateExtensionMenuItem.Header = associated ? "Unassociate archive extension" : "Associate archive extension";
 
@@ -331,7 +331,7 @@ namespace Ba2Explorer
         private void AssociateExtensionMenuItem_Click(object sender, RoutedEventArgs e)
         {
             if (viewModel.AssociateExtension(this))
-                if (App.IsAssociatedExtension())
+                if (ExtensionAssociation.IsExtensionAssociated)
                     AssociateExtensionMenuItem.Header = "Unassociate archive extension";
                 else
                     AssociateExtensionMenuItem.Header = "Associate archive extension";

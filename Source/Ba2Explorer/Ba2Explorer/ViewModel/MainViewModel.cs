@@ -323,81 +323,12 @@ namespace Ba2Explorer.ViewModel
             this.OnExtractionCompleted?.Invoke(this, new ExtractionEventArgs(files, destinationFolder, window.ViewModel.ExtractionState));
         }
 
-        internal bool AssociateExtension(Window dialogOwnerWindow)
+        public bool AssociateExtension(Window parentWindow)
         {
-            // TODO move to view model
-            string instructions = "Pressing OK will give you a prompt to restart BA2 Explorer with admin rights, so it can " +
-                                  "update extensions registry. " + Environment.NewLine + Environment.NewLine + "Press Cancel to abort.";
-
-            // true means app is associated extension.
-            if (App.IsAssociatedExtension())
-            {
-                if (UACElevationHelper.IsRunAsAdmin())
-                {
-                    if (App.UnassociateBA2Extension())
-                    {
-                        MessageBox.Show(dialogOwnerWindow, "Successfully unassociated extension.", "Success", MessageBoxButton.OK,
-                            MessageBoxImage.Information);
-                        return true;
-                    }
-                    else
-                    {
-                        App.Logger.Log(Logging.LogPriority.Error, "Error while unassociating extension (is admin: {0}, elevated: {1}, " +
-                            "is in admin group: {2}, integrity level: {3}", UACElevationHelper.IsRunAsAdmin(),
-                            UACElevationHelper.IsProcessElevated(), UACElevationHelper.IsUserInAdminGroup(),
-                            UACElevationHelper.GetProcessIntegrityLevel());
-
-                        MessageBox.Show(dialogOwnerWindow, "Error occured while unassociating extension.", "Error", MessageBoxButton.OK,
-                            MessageBoxImage.Error);
-                    }
-                }
-                else
-                {
-                    var result = TaskDialog.Show(dialogOwnerWindow, IntPtr.Zero, "Administrator rights required",
-                        "Admin rights required to unassociate archive extension from BA2 Explorer",
-                        instructions, TaskDialogButtons.OK | TaskDialogButtons.Cancel, TaskDialogIcon.Shield);
-
-                    if (result == TaskDialogResult.Ok)
-                    {
-                        UACElevationHelper.Elevate("/unassociate-extension");
-                    }
-                }
-            }
+            if (ExtensionAssociation.IsExtensionAssociated)
+                return ExtensionAssociation.TryUnassociate(parentWindow, alreadyTriedToUnassociate: false);
             else
-            {
-                if (UACElevationHelper.IsRunAsAdmin())
-                {
-                    if (App.AssociateBA2Extension())
-                    {
-                        MessageBox.Show(dialogOwnerWindow, "Successfully associated extension.", "Success", MessageBoxButton.OK,
-                            MessageBoxImage.Information);
-                        return true;
-                    }
-                    else
-                    {
-                        App.Logger.Log(Logging.LogPriority.Error, "Error while associating extension (is admin: {0}, elevated: {1}, " +
-                            "is in admin group: {2}, integrity level: {3}", UACElevationHelper.IsRunAsAdmin(),
-                            UACElevationHelper.IsProcessElevated(), UACElevationHelper.IsUserInAdminGroup(),
-                            UACElevationHelper.GetProcessIntegrityLevel());
-
-                        MessageBox.Show(dialogOwnerWindow, "Error occured while associating extension.", "Error", MessageBoxButton.OK,
-                            MessageBoxImage.Error);
-                    }
-                }
-                else
-                {
-                    var result = TaskDialog.Show(dialogOwnerWindow, IntPtr.Zero, "Administrator rights required",
-                        "Administrator rights required to associate archive extension to BA2 Explorer.",
-                        instructions, TaskDialogButtons.OK | TaskDialogButtons.Cancel, TaskDialogIcon.Shield);
-
-                    if (result == TaskDialogResult.Ok)
-                    {
-                        UACElevationHelper.Elevate(@"/associate-extension");
-                    }
-                }
-            }
-
-            return false;
+                return ExtensionAssociation.TryAssociate(parentWindow, alreadyTriedToAssociate: false);
         }
 
         private string LowerFileNameExtension(string fileName)

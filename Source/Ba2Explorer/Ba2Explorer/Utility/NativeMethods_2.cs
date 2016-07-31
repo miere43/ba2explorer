@@ -60,8 +60,7 @@ namespace Ba2Explorer.Utility
 
         internal static bool IsWindowsVersionAtLeast(WindowsOSVersion version)
         {
-            if (version == WindowsOSVersion.NotWindows ||
-                version == WindowsOSVersion.Unknown)
+            if (version == WindowsOSVersion.NotWindows || version == WindowsOSVersion.Unknown)
                 return false;
 
             return (int)GetWindowsVersion() >= (int)version;
