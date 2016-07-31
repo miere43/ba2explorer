@@ -9,6 +9,7 @@ using Ba2Explorer.ViewModel;
 using System.Collections;
 using Ba2Explorer.Settings;
 using Ba2Explorer.Utility;
+using System.Collections.Generic;
 
 namespace Ba2Explorer
 {
@@ -89,14 +90,14 @@ namespace Ba2Explorer
                     this.ShowStatusBar($"Extraction was canceled.");
                     break;
                 case ExtractionFinishedState.Succeed:
-                    if (e.IsOneFileExtracted)
+                    if (e.ExtractedCount == 1)
                     {
-                        this.ShowStatusBarWithButton($"File \"{ e.ExtractedFiles[0] }\" extracted.", "Open file folder",
-                            () => OpenAppUtil.ExplorerOpenPath(this, e.ExtractedFiles[0], true));
+                        this.ShowStatusBarWithButton($"File \"{ e.ExtractedFileName }\" extracted.", "Open file folder",
+                            () => OpenAppUtil.ExplorerOpenPath(this, e.ExtractedFileName, true));
                     }
                     else
                     {
-                        this.ShowStatusBarWithButton($"{ e.ExtractedFiles.Count() } files were extracted.", "Open folder",
+                        this.ShowStatusBarWithButton($"{ e.ExtractedCount } files were extracted.", "Open folder",
                             () => OpenAppUtil.ExplorerOpenPath(this, e.DestinationFolder, false));
                     }
                     break;
@@ -199,23 +200,29 @@ namespace Ba2Explorer
         {
             if (ArchiveFilesList.SelectedItems.Count == 1)
             {
-                string sel = ArchiveFilesList.SelectedItem as string;
+                int sel = ArchiveFilesList.SelectedIndex;
 
                 await viewModel.ExtractFileWithDialog(sel);
                 e.Handled = true;
             }
             else if (ArchiveFilesList.SelectedItems.Count > 1)
             {
-                IList sels = ArchiveFilesList.SelectedItems;
+                // oh god wpf why i just cant get the indices?????///////
+                List<string> sels = ArchiveFilesList.SelectedItems.Cast<string>().ToList();
+                List<int> ss = new List<int>();
+                foreach (var sel in sels)
+                {
+                    ss.Add(viewModel.ArchiveInfo.GetIndex(sel));
+                }
 
-                viewModel.ExtractFilesWithDialog(sels.Cast<string>().ToList());
+                viewModel.ExtractFilesWithDialog(ss);
                 e.Handled = true;
             }
         }
 
         private void ExtractAllCommandExecuted(object sender, ExecutedRoutedEventArgs e)
         {
-            viewModel.ExtractFilesWithDialog(viewModel.ArchiveInfo.Files);
+            viewModel.ExtractAllWithDialog();
             e.Handled = true;
         }
 
@@ -267,12 +274,11 @@ namespace Ba2Explorer
 
         private void SetSelectedItemFilePreview()
         {
-            // TODO handle multiple selection
-            if (this.ArchiveFilesList.SelectedItem == null)
-                return;
+            int selection = this.ArchiveFilesList.SelectedIndex;
 
-            string selectedFilePath = (string)this.ArchiveFilesList.SelectedItem;
-            var task = this.FilePreview.TrySetPreviewAsync(selectedFilePath);
+            // TODO handle multiple selection
+            if (selection == -1) return;
+            var task = this.FilePreview.TrySetPreviewAsync(selection);
         }
 
         /// <summary>

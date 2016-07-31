@@ -87,9 +87,45 @@ namespace Ba2Explorer.ViewModel
 
         #region Public methods
 
+        /// <summary>
+        /// Gets file name from file index. Returns null if index is out of bounds.
+        /// </summary>
+        public string GetFileName(int fileIndex)
+        {
+            if (fileIndex < 0 || fileIndex >= archive.TotalFiles)
+                return null;
+            return archive.FileList[fileIndex];
+        }
+
+        public int GetIndex(string fileName)
+        {
+            return archive.GetIndexFromFilename(fileName);
+        }
+
+        public bool Contains(int fileIndex)
+        {
+            return fileIndex >= 0 && fileIndex < archive.TotalFiles;
+        }
+
         public bool Contains(string filePath)
         {
             return archive.ContainsFile(filePath);
+        }
+
+        public Task ExtractAllAsync(string destFolder, CancellationToken cancellationToken, IProgress<int> progress)
+        {
+            return Task.Run(() =>
+            {
+                try
+                {
+                    archive.ExtractAll(destFolder, true, cancellationToken, progress);
+                }
+                catch (BA2ExtractionException e)
+                {
+                    App.Logger.LogException(LogPriority.Error, "ArchiveInfo.ExtractAllAsync", e);
+                    throw;
+                }
+            });
         }
 
         /// <summary>
@@ -102,21 +138,15 @@ namespace Ba2Explorer.ViewModel
         /// Use Timeout.InfiniteTimeSpan to wait indefinitely.</param>
         /// <param name="cancellationToken">The cancellation token to observe.</param>
         /// <returns>False when <c>fileName</c> was not found in archive or error during extraction happened, or true otherwise.</returns>
-        public Task<bool> ExtractToStreamAsync(Stream stream, string fileName)
+        public Task<bool> ExtractToStreamAsync(Stream stream, int fileIndex)
         {
-            if (fileName == null)
-                throw new ArgumentNullException(nameof(fileName));
             if (stream == null)
                 throw new ArgumentNullException(nameof(stream));
 
             return Task.Run(() => {
-                var index = archive.GetIndexFromFilename(fileName);
-                if (index == -1)
-                    return false;
-
                 try
                 {
-                    return archive.ExtractToStream(index, stream);
+                    return archive.ExtractToStream(fileIndex, stream);
                 }
                 catch (BA2ExtractionException e)
                 {
@@ -133,24 +163,18 @@ namespace Ba2Explorer.ViewModel
         /// <param name="stream">Destination stream where file would be extracted.</param>
         /// <param name="fileName">File name in archive to extract into stream.</param>
         /// <returns>False when <c>fileName</c> was not found in archive or error during extraction happened, or true otherwise.</returns>
-        public Task<bool> ExtractFileAsync(string fileName, string destFileName)
+        public Task<bool> ExtractFileAsync(int fileIndex, string destFileName)
         {
-            if (fileName == null)
-                throw new ArgumentNullException(nameof(fileName));
             if (destFileName == null)
                 throw new ArgumentNullException(nameof(destFileName));
 
             return Task.Run(() =>
             {
-                var index = archive.GetIndexFromFilename(fileName);
-                if (index == -1)
-                    return false;
-
                 try
                 {
                     using (FileStream stream = File.Create(destFileName))
                     {
-                        return archive.ExtractToStream(index, stream);
+                        return archive.ExtractToStream(fileIndex, stream);
                     }
                 }
                 catch (OperationCanceledException)
@@ -165,7 +189,7 @@ namespace Ba2Explorer.ViewModel
             });
         }
 
-        public Task<bool> ExtractFilesAsync(IEnumerable<string> files, string destFolder, IProgress<int> progress, TimeSpan timeout,
+        public Task<bool> ExtractFilesAsync(IEnumerable<int> fileIndexes, string destFolder, IProgress<int> progress, TimeSpan timeout,
             CancellationToken cancellationToken)
         {
             if (files == null)
@@ -175,22 +199,12 @@ namespace Ba2Explorer.ViewModel
 
             return Task.Run(() =>
             {
-                List<int> indexes = new List<int>();
-                foreach (var fileName in files)
-                {
-                    int index = archive.GetIndexFromFilename(fileName);
-                    if (index == -1)
-                        return false;
-
-                    indexes.Add(index);
-                }
-
                 try
                 {
-                    archive.ExtractFiles(indexes, destFolder, true, cancellationToken, progress);
+                    archive.ExtractFiles(fileIndexes, destFolder, true, cancellationToken, progress);
                     return true;
                 }
-                catch (BA2LoadException e)
+                catch (BA2ExtractionException e)
                 {
                     App.Logger.LogException(LogPriority.Error, "ArchiveInfo.ExtractFilesAsync", e);
                     throw;

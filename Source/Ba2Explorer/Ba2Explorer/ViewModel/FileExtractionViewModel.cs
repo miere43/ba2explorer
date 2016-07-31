@@ -75,8 +75,8 @@ namespace Ba2Explorer.ViewModel
             }
         }
 
-        private IEnumerable<string> filesToExtract = null;
-        public IEnumerable<string> FilesToExtract
+        private IEnumerable<int> filesToExtract = null;
+        public IEnumerable<int> FilesToExtract
         {
             get { return filesToExtract; }
             set
@@ -85,6 +85,8 @@ namespace Ba2Explorer.ViewModel
                 RaisePropertyChanged();
             }
         }
+
+        public bool ExtractAll { get; internal set; }
 
         #endregion
 
@@ -111,8 +113,15 @@ namespace Ba2Explorer.ViewModel
             try
             {
                 IsExtracting = true;
-                await ArchiveInfo.ExtractFilesAsync(FilesToExtract, DestinationFolder, ExtractionProgress, Timeout.InfiniteTimeSpan,
-                    cancellationToken.Token);
+                if (ExtractAll)
+                {
+                    await ArchiveInfo.ExtractAllAsync(DestinationFolder, cancellationToken.Token, ExtractionProgress);
+                }
+                else
+                {
+                    await ArchiveInfo.ExtractFilesAsync(FilesToExtract, DestinationFolder, ExtractionProgress, Timeout.InfiniteTimeSpan,
+                        cancellationToken.Token);
+                }
 
                 ExtractionState = ExtractionFinishedState.Succeed;
             }

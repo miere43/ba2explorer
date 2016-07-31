@@ -96,31 +96,30 @@ namespace Ba2Explorer.View
         /// Tries to set preview for selected file in archive.
         /// </summary>
         /// <param name="filePath">Path to file from archive.</param>
-        public async Task<bool> TrySetPreviewAsync(string filePath)
+        public async Task<bool> TrySetPreviewAsync(int fileIndex)
         {
             if (!IsEnabled)
                 return false;
 
             EnsureArchiveAttached();
 
-            if (String.IsNullOrWhiteSpace(filePath))
-                throw new ArgumentException(nameof(filePath));
-
-            if (!this.IsEnabled || !archiveInfo.Contains(filePath))
+            if (!this.IsEnabled || !archiveInfo.Contains(fileIndex))
                 return false;
 
-            this.previewFilePath = filePath;
+            string fileName = archiveInfo.GetFileName(fileIndex);
+            this.previewFilePath = fileName;
             FileType type = ResolveFileTypeFromExtension(Path.GetExtension(previewFilePath));
 
             if (type == FileType.Unknown)
             {
-                SetUnknownPreview(filePath);
+                SetUnknownPreview(fileName);
                 return true;
             }
 
             using (MemoryStream stream = new MemoryStream())
             {
-                await archiveInfo.ExtractToStreamAsync(stream, filePath);
+                if (await archiveInfo.ExtractToStreamAsync(stream, fileIndex) == false)
+                    return false;
 
                 switch (type)
                 {

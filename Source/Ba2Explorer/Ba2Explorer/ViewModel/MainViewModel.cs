@@ -32,17 +32,18 @@ namespace Ba2Explorer.ViewModel
     {
         public sealed class ExtractionEventArgs : EventArgs
         {
-            public bool IsOneFileExtracted => ExtractedFiles.Count == 1;
+            public readonly string ExtractedFileName;
 
-            public readonly IList<string> ExtractedFiles;
+            public readonly int ExtractedCount;
 
             public readonly string DestinationFolder;
 
             public readonly ExtractionFinishedState State;
 
-            public ExtractionEventArgs(IList<string> extractedFiles, string destFolder, ExtractionFinishedState state)
+            public ExtractionEventArgs(string extractedFileName, int extractedCount, string destFolder, ExtractionFinishedState state)
             {
-                ExtractedFiles = extractedFiles;
+                ExtractedFileName = extractedFileName;
+                ExtractedCount = extractedCount;
                 DestinationFolder = destFolder;
                 State = state;
             }
@@ -225,8 +226,12 @@ namespace Ba2Explorer.ViewModel
         /// </summary>
         /// <param name="fileName">File name in archive.</param>
         /// <returns>Task.</returns>
-        public async Task ExtractFileWithDialog(string fileName)
+        public async Task ExtractFileWithDialog(int fileIndex)
         {
+            string fileName = ArchiveInfo.GetFileName(fileIndex);
+            if (fileName == null)
+                throw new Exception($"no file with index {fileIndex} exists.");
+
             SaveFileDialog dialog = new SaveFileDialog();
             dialog.CheckPathExists = true;
             dialog.OverwritePrompt = true;
@@ -244,22 +249,59 @@ namespace Ba2Explorer.ViewModel
 
             if (result.HasValue && result.Value == true)
             {
-                await ArchiveInfo.ExtractFileAsync(fileName, dialog.FileName);
+                await ArchiveInfo.ExtractFileAsync(fileIndex, dialog.FileName);
                 string destFolder = Path.GetDirectoryName(dialog.FileName);
                 AppSettings.Instance.Global.ExtractionLatestFolder = destFolder;
 
-                OnExtractionCompleted?.Invoke(this, new ExtractionEventArgs(new List<string>() { dialog.FileName }, destFolder,
+                OnExtractionCompleted?.Invoke(this, new ExtractionEventArgs(dialog.FileName, 1, destFolder,
                     ExtractionFinishedState.Succeed));
             }
         }
 
-        public void ExtractFilesWithDialog(IList<string> files)
+        public void ExtractAllWithDialog()
+        {
+            var dialog = new System.Windows.Forms.FolderBrowserDialog();
+            dialog.Description = "Extract files to folder...";
+            dialog.ShowNewFolderButton = true;
+
+            if (!String.IsNullOrWhiteSpace(AppSettings.Instance.Global.ExtractionLatestFolder))
+                dialog.SelectedPath = AppSettings.Instance.Global.ExtractionLatestFolder;
+
+            var result = dialog.ShowDialog();
+            if (result == System.Windows.Forms.DialogResult.OK)
+            {
+                ExtractAll(dialog.SelectedPath);
+            }
+            else { return; }
+        }
+
+        private void ExtractAll(string destinationFolder)
+        {
+            if (String.IsNullOrWhiteSpace(destinationFolder))
+                throw new ArgumentException(nameof(destinationFolder));
+
+            AppSettings.Instance.Global.ExtractionLatestFolder = Path.GetDirectoryName(destinationFolder);
+
+            FileExtractionWindow window = new FileExtractionWindow();
+            window.ViewModel.Reset();
+            window.ViewModel.ArchiveInfo = this.ArchiveInfo;
+            window.ViewModel.DestinationFolder = destinationFolder;
+            window.ViewModel.ExtractAll = true;
+            window.ShowInTaskbar = true;
+            window.Owner = Application.Current.MainWindow;
+
+            window.ShowDialog();
+
+            this.OnExtractionCompleted?.Invoke(this, new ExtractionEventArgs("", (int)archiveInfo.TotalFiles, destinationFolder,
+                window.ViewModel.ExtractionState));
+        }
+
+        public void ExtractFilesWithDialog(IList<int> files)
         {
             if (files == null)
                 throw new ArgumentNullException(nameof(files));
 
-            try
-            {
+
                 var dialog = new System.Windows.Forms.FolderBrowserDialog();
                 dialog.Description = "Extract files to folder...";
                 dialog.ShowNewFolderButton = true;
@@ -271,19 +313,12 @@ namespace Ba2Explorer.ViewModel
                 if (result == System.Windows.Forms.DialogResult.OK)
                 {
                     ExtractFiles(dialog.SelectedPath, files);
-                    AppSettings.Instance.Global.ExtractionLatestFolder = dialog.SelectedPath;
                 }
                 else
                 {
                     return;
                 }
-            }
-            catch (Exception e)
-            {
-                App.Logger.Log(LogPriority.Error, "ExtractFilesWithDialog failed: {0}", e.Message);
-                // todo;
-                MessageBox.Show(e.Message);
-            }
+
         }
 
         public void RemoveRecentArchive(string filePath)
@@ -301,7 +336,7 @@ namespace Ba2Explorer.ViewModel
         /// <param name="files">The files.</param>
         /// <exception cref="System.ArgumentException"></exception>
         /// <exception cref="System.ArgumentNullException"></exception>
-        private void ExtractFiles(string destinationFolder, IList<string> files)
+        private void ExtractFiles(string destinationFolder, IList<int> files)
         {
             if (String.IsNullOrWhiteSpace(destinationFolder))
                 throw new ArgumentException(nameof(destinationFolder));
@@ -320,7 +355,8 @@ namespace Ba2Explorer.ViewModel
 
             window.ShowDialog();
 
-            this.OnExtractionCompleted?.Invoke(this, new ExtractionEventArgs(files, destinationFolder, window.ViewModel.ExtractionState));
+            this.OnExtractionCompleted?.Invoke(this, new ExtractionEventArgs("", files.Count, destinationFolder, 
+                window.ViewModel.ExtractionState));
         }
 
         public bool AssociateExtension(Window parentWindow)
