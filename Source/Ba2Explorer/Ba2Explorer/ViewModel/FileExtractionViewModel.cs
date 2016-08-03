@@ -48,7 +48,7 @@ namespace Ba2Explorer.ViewModel
             private set
             {
                 isExtracting = value;
-                Debug.WriteLine("changed to " + isExtracting);
+                //Debug.WriteLine("changed to " + isExtracting);
                 RaisePropertyChanged();
             }
         }

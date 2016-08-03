@@ -235,7 +235,7 @@ namespace Ba2Explorer.Controls
 
             if (Text == null || Text.Length == 0) return;
 
-            Debug.WriteLine(m_dirty ? "dirty" : "not dirty");
+            //Debug.WriteLine(m_dirty ? "dirty" : "not dirty");
             if (m_dirty)
             {
                 m_drawnLinesHeight = 0.0d;
@@ -354,7 +354,7 @@ namespace Ba2Explorer.Controls
             m_horizontalOffset = MathHelper.Clamp(offset, 0, m_extentWidth); // Height
             SetDirty();
 
-            Debug.WriteLine("SetHorizontalOffset {0}", m_horizontalOffset);
+            //Debug.WriteLine("SetHorizontalOffset {0}", m_horizontalOffset);
         }
 
         public void SetVerticalOffset(double offset)
@@ -362,12 +362,12 @@ namespace Ba2Explorer.Controls
             m_verticalOffset = MathHelper.Clamp(offset, 0, m_extentHeight); // Width
             SetDirty();
 
-            Debug.WriteLine("SetVerticalOffset {0}", m_verticalOffset);
+            //Debug.WriteLine("SetVerticalOffset {0}", m_verticalOffset);
         }
 
         public Rect MakeVisible(Visual visual, Rect rectangle)
         {
-            Debug.WriteLine("MakeVisible {0} {1}", visual, rectangle);
+            //Debug.WriteLine("MakeVisible {0} {1}", visual, rectangle);
 
             return rectangle;
         }
