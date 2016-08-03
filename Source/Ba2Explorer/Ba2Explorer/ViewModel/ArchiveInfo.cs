@@ -11,6 +11,7 @@ using GalaSoft.MvvmLight;
 using Ba2Tools;
 using Ba2Explorer.Logging;
 using Ba2Explorer.Settings;
+using System.Linq;
 
 namespace Ba2Explorer.ViewModel
 {
@@ -20,7 +21,24 @@ namespace Ba2Explorer.ViewModel
     /// <seealso cref="GalaSoft.MvvmLight.ObservableObject" />
     public sealed class ArchiveInfo : ObservableObject, IDisposable
     {
-        private BA2Archive archive;
+        private object m_lock = new object();
+
+        private BA2Archive m_archive;
+        public BA2Archive Archive
+        {
+            get
+            {
+                lock (m_lock)
+                    return m_archive;
+            }
+            set
+            {
+                lock (m_lock)
+                    m_archive = value;
+            }
+        }
+
+        public event EventHandler Disposing;
 
         #region Properties
 
@@ -44,7 +62,7 @@ namespace Ba2Explorer.ViewModel
         /// <summary>
         /// Gets filenames in archive.
         /// </summary>
-        public ObservableCollection<string> Files
+        public ObservableCollection<string> FileNames
         {
             get { return files; }
             private set
@@ -69,7 +87,7 @@ namespace Ba2Explorer.ViewModel
         /// </summary>
         public int TotalFiles
         {
-            get { return (int)archive.TotalFiles; }
+            get { return (int)Archive.TotalFiles; }
         }
 
         #endregion
@@ -87,30 +105,7 @@ namespace Ba2Explorer.ViewModel
 
         #region Public methods
 
-        /// <summary>
-        /// Gets file name from file index. Returns null if index is out of bounds.
-        /// </summary>
-        public string GetFileName(int fileIndex)
-        {
-            if (fileIndex < 0 || fileIndex >= archive.TotalFiles)
-                return null;
-            return archive.FileList[fileIndex];
-        }
-
-        public int GetIndex(string fileName)
-        {
-            return archive.GetIndexFromFilename(fileName);
-        }
-
-        public bool Contains(int fileIndex)
-        {
-            return fileIndex >= 0 && fileIndex < archive.TotalFiles;
-        }
-
-        public bool Contains(string filePath)
-        {
-            return archive.ContainsFile(filePath);
-        }
+        public BA2Archive GetArchive() { return Archive; }
 
         public Task ExtractAllAsync(string destFolder, CancellationToken cancellationToken, IProgress<int> progress)
         {
@@ -118,39 +113,11 @@ namespace Ba2Explorer.ViewModel
             {
                 try
                 {
-                    archive.ExtractAll(destFolder, true, cancellationToken, progress);
+                    Archive.ExtractAll(destFolder, true, cancellationToken, progress);
                 }
                 catch (BA2ExtractionException e)
                 {
                     App.Logger.LogException(LogPriority.Error, "ArchiveInfo.ExtractAllAsync", e);
-                    throw;
-                }
-            });
-        }
-
-        /// <summary>
-        /// Extracts file to stream, aborting the process after certain timeout or when
-        /// cancellation token signal received.
-        /// </summary>
-        /// <param name="stream">Destination stream where file would be extracted.</param>
-        /// <param name="fileName">File name in archive to extract into stream.</param>
-        /// <param name="timeout">Maximum time to wait until aborting extraction.
-        /// Use Timeout.InfiniteTimeSpan to wait indefinitely.</param>
-        /// <param name="cancellationToken">The cancellation token to observe.</param>
-        /// <returns>False when <c>fileName</c> was not found in archive or error during extraction happened, or true otherwise.</returns>
-        public Task<bool> ExtractToStreamAsync(Stream stream, int fileIndex)
-        {
-            if (stream == null)
-                throw new ArgumentNullException(nameof(stream));
-
-            return Task.Run(() => {
-                try
-                {
-                    return archive.ExtractToStream(fileIndex, stream);
-                }
-                catch (BA2ExtractionException e)
-                {
-                    App.Logger.Log(LogPriority.Error, "ArchiveInfo.ExtractToStreamAsync exception: {0}", e.Message);
                     throw;
                 }
             });
@@ -174,7 +141,7 @@ namespace Ba2Explorer.ViewModel
                 {
                     using (FileStream stream = File.Create(destFileName))
                     {
-                        return archive.ExtractToStream(fileIndex, stream);
+                        return Archive.ExtractToStream(fileIndex, stream);
                     }
                 }
                 catch (OperationCanceledException)
@@ -201,7 +168,7 @@ namespace Ba2Explorer.ViewModel
             {
                 try
                 {
-                    archive.ExtractFiles(fileIndexes, destFolder, true, cancellationToken, progress);
+                    Archive.ExtractFiles(fileIndexes, destFolder, true, cancellationToken, progress);
                     return true;
                 }
                 catch (BA2ExtractionException e)
@@ -218,8 +185,8 @@ namespace Ba2Explorer.ViewModel
                 AppSettings.Instance.Global.MultithreadedExtraction ? BA2LoaderFlags.Multithreaded : BA2LoaderFlags.None);
 
             ArchiveInfo info = new ArchiveInfo();
-            info.archive = archive;
-            info.Files = new ObservableCollection<string>(archive.FileList);
+            info.Archive = archive;
+            info.FileNames = new ObservableCollection<string>(archive.FileList);
             info.FilePath = path;
             info.FileName = Path.GetFileName(info.FilePath);
 
@@ -233,13 +200,16 @@ namespace Ba2Explorer.ViewModel
         void ThrowIfDisposed()
         {
             if (IsDisposed)
-                throw new ObjectDisposedException("ArchiveInfo is disposed.");
+                throw new ObjectDisposedException(nameof(ArchiveInfo));
         }
 
         public void Dispose()
         {
-            if (archive != null)
-                archive.Dispose();
+            if (IsDisposed) return;
+            Disposing?.Invoke(this, null);
+
+            if (Archive != null)
+                Archive.Dispose();
 
             IsDisposed = true;
         }

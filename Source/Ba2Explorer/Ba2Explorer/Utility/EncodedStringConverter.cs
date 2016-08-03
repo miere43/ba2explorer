@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace Ba2Explorer.Utility
 {
     /// <summary>
-    /// Detects encodings.
+    /// Detects magic string headers and decodes string accordingly.
     /// </summary>
     public class EncodedStringConverter
     {
@@ -40,6 +40,15 @@ namespace Ba2Explorer.Utility
                  && chars[3] == 0x00)
                 {
                     return Encoding.UTF32.GetString(chars);
+                }
+            }
+            if (chars.Length >= 3)
+            {
+                if (chars[0] == 0xEF &&
+                    chars[1] == 0xBB &&
+                    chars[2] == 0xBF)
+                {
+                    return Encoding.UTF8.GetString(chars, 3, chars.Length - 3);
                 }
             }
             // check for UTF-16

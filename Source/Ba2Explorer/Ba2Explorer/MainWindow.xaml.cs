@@ -106,7 +106,7 @@ namespace Ba2Explorer
 
         private void ViewModel_OnArchiveOpened(object sender, EventArgs e)
         {
-            this.FilePreview.SetArchive(viewModel.ArchiveInfo);
+            this.FilePreview.AttachArchive(viewModel.ArchiveInfo);
             archiveFilesFilter = (CollectionView)CollectionViewSource.GetDefaultView(this.ArchiveFilesList.ItemsSource);
             archiveFilesFilter.Filter = ArchiveFileFilter;
 
@@ -142,12 +142,12 @@ namespace Ba2Explorer
 
         private bool ArchiveFileFilter(object item)
         {
-            if (String.IsNullOrWhiteSpace(this.FilterText.Text))
+            if (String.IsNullOrWhiteSpace(FilterText.Text))
                 return true;
             else
             {
                 string filePath = (string)item;
-                return filePath.IndexOf(this.FilterText.Text, StringComparison.OrdinalIgnoreCase) >= 0;
+                return filePath.IndexOf(FilterText.Text, StringComparison.OrdinalIgnoreCase) >= 0;
             }
         }
 
@@ -156,7 +156,10 @@ namespace Ba2Explorer
             if (viewModel.ArchiveInfo == null)
                 return;
 
-            CollectionViewSource.GetDefaultView(this.ArchiveFilesList.ItemsSource).Refresh();
+            CollectionViewSource.GetDefaultView(ArchiveFilesList.ItemsSource).Refresh();
+
+            if (FilePreview.HasFileInQueue())
+                SetSelectedItemFilePreview();
         }
 
         #endregion
@@ -212,7 +215,7 @@ namespace Ba2Explorer
                 List<int> ss = new List<int>();
                 foreach (var sel in sels)
                 {
-                    ss.Add(viewModel.ArchiveInfo.GetIndex(sel));
+                    ss.Add(viewModel.ArchiveInfo.Archive.GetFileIndex(sel));
                 }
 
                 viewModel.ExtractFilesWithDialog(ss);
@@ -274,11 +277,11 @@ namespace Ba2Explorer
 
         private void SetSelectedItemFilePreview()
         {
-            int selection = this.ArchiveFilesList.SelectedIndex;
+            string selection = (string)ArchiveFilesList.SelectedItem;
 
             // TODO handle multiple selection
-            if (selection == -1) return;
-            var task = this.FilePreview.TrySetPreviewAsync(selection);
+            if (selection == null) return;
+            FilePreview.SetPreview(selection);
         }
 
         /// <summary>

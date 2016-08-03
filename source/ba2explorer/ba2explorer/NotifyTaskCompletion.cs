@@ -37,10 +37,15 @@ namespace Ba2Explorer
         public NotifyTaskCompletion(Task<T> task)
         {
             Task = task;
-            if (!task.IsCompleted)
+        }
+
+        public void StartWatch()
+        {
+            if (!Task.IsCompleted)
             {
-                var _ = WatchTaskAsync(task);
+                var _ = WatchTaskAsync(Task);
             }
+
         }
 
         private async Task WatchTaskAsync(Task task)

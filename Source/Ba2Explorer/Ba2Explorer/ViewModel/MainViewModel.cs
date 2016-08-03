@@ -13,6 +13,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Ba2Explorer.Utility;
+using System.Linq;
 
 namespace Ba2Explorer.ViewModel
 {
@@ -228,7 +229,7 @@ namespace Ba2Explorer.ViewModel
         /// <returns>Task.</returns>
         public async Task ExtractFileWithDialog(int fileIndex)
         {
-            string fileName = ArchiveInfo.GetFileName(fileIndex);
+            string fileName = ArchiveInfo.Archive.FileList.ElementAt(fileIndex);
             if (fileName == null)
                 throw new Exception($"no file with index {fileIndex} exists.");
 

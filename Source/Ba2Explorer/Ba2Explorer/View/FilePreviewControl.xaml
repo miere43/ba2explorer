@@ -22,21 +22,24 @@
             
         </view:AudioPlayerControl>
         
-        <ScrollViewer Visibility="Hidden" x:Name="TextBlockScrollViewer" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
-            <VirtualizingStackPanel>
-                <TextBlock Grid.Row="0"
-                       x:Name="PreviewTextField"
-                       Margin="4"
-                       ScrollViewer.VerticalScrollBarVisibility="Auto"
-                       ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                       TextWrapping="Wrap"
-                       TextTrimming="CharacterEllipsis" />
-            </VirtualizingStackPanel>
+        <ScrollViewer Visibility="Hidden"
+                      HorizontalScrollBarVisibility="Auto"
+                      VerticalScrollBarVisibility="Auto"
+                      CanContentScroll="True"
+                      x:Name="PreviewTextFieldParent">
+                <!-- child will be added from code -->
         </ScrollViewer>
 
         <Image
             x:Name="PreviewImageBox"
             Visibility="Collapsed"/>
+
+        <TextBlock
+           x:Name="LoadingText"
+           Visibility="Collapsed"
+           HorizontalAlignment="Center"
+           VerticalAlignment="Center"
+           Text="Loading..." />
 
         <TextBlock
             x:Name="PreviewText"

@@ -16,9 +16,14 @@ using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using Ba2Explorer.Controller;
+using System.ComponentModel;
+using Ba2Explorer.Controls;
+using System.Linq;
 
 namespace Ba2Explorer.View
 {
+
     /// <summary>
     /// Control to preview various files from archive.
     /// </summary>
@@ -28,58 +33,98 @@ namespace Ba2Explorer.View
 
         private static object staticInitLock = new object();
 
-        private FontFamily defaultTextFontFamily;
+        /// <summary>
+        /// Lock to prevent access to `m_queueNextFileIndex` by UI and `m_previewWorker` threads simultaneously.
+        /// </summary>
+        private object m_queueLock = new object();
 
-        private FontFamily textFileFontFamily;
+        private string m_queueFileName = null;
 
-        private ArchiveInfo archiveInfo;
+        //private FontFamily defaultTextFontFamily;
 
-        private string previewFilePath;
+        //private FontFamily textFileFontFamily;
 
-        private EncodedStringConverter stringConverter = new EncodedStringConverter();
+        private ArchiveInfo m_archive;
 
-        private enum FileType
-        {
-            Unknown,
-            Text,
-            Wav,
-            Xml,
-            Dds
-        }
+        /// <summary>
+        /// Worker that decodes preview file data in background thread.
+        /// </summary>
+        private BackgroundWorker m_previewWorker;
+
+        public FastTextBlock PreviewTextField;
 
         public FilePreviewControl()
         {
             LazyStaticInit();
 
             InitializeComponent();
-            defaultTextFontFamily = PreviewTextField.FontFamily;
-            textFileFontFamily = new FontFamily("Consolas");
+
+            PreviewTextField = new FastTextBlock();
+            PreviewTextFieldParent.Content = PreviewTextField;
+
+            m_previewWorker = new BackgroundWorker();
+            m_previewWorker.DoWork += LoadPreviewInBackground;
+            m_previewWorker.RunWorkerCompleted += LoadPreviewCompleted;
+        }
+
+        private void LoadPreviewCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            PreviewFileData data = (PreviewFileData)e.Result;
+            switch (data.FileType)
+            {
+                case PreviewFileType.Text:
+                    SetTextPreview(data.TakeTextArgs());
+                    break;
+                case PreviewFileType.Dds:
+                    SetDdsPreview(data.TakeDdsArgs());
+                    break;
+                case PreviewFileType.Wav:
+                    SetWavSoundPreview(data.TakeWavArgs());
+                    break;
+                default:
+                    SetUnknownPreview(m_archive.Archive.FileList.ElementAt(data.FileIndex));
+                    break;
+            }
+
+            lock (m_queueLock)
+            {
+                if (m_queueFileName != null)
+                {
+                    var fileIndex = m_queueFileName;
+                    m_queueFileName = null;
+                    SetPreview(fileIndex);
+                }
+            }
+        }
+
+        private void LoadPreviewInBackground(object sender, DoWorkEventArgs args)
+        {
+            args.Result = FilePreviewer.LoadPreview(args);
         }
 
         ~FilePreviewControl()
         {
             DetachArchive();
+            m_previewWorker.DoWork -= LoadPreviewInBackground;
+            m_previewWorker.RunWorkerCompleted -= LoadPreviewCompleted;
         }
 
         #region Public methods
 
-        public void SetArchive(ArchiveInfo archive)
+        public bool HasFileInQueue()
+        {
+            lock (m_queueLock)
+            {
+                return m_queueFileName != null;
+            }
+        }
+
+        public void AttachArchive(ArchiveInfo archive)
         {
             if (archive == null)
                 throw new ArgumentNullException(nameof(archive));
 
-            DetachArchive();
-
-            this.archiveInfo = archive;
-            this.archiveInfo.PropertyChanged += ArchiveInfo_PropertyChanged;
-        }
-
-        /// <summary>
-        /// Returns true if preview of file is supported.
-        /// </summary>
-        public bool CanPreviewTarget(string filePath)
-        {
-            return ResolveFileTypeFromExtension(Path.GetExtension(filePath)) != FileType.Unknown;
+            m_archive = archive;
         }
 
         public void SetUnknownPreviewTarget(string filePath)
@@ -92,89 +137,85 @@ namespace Ba2Explorer.View
             SetUnknownPreview(filePath);
         }
 
+        private void SetQueueFileName(string fileName)
+        {
+            lock (m_queueLock)
+            {
+                //Debug.WriteLine($"Setting queue item to {fileIndex}");
+                m_queueFileName = fileName;
+            }
+        }
+        
+        private string GetQueueFileName()
+        {
+            lock (m_queueLock)
+            {
+                return m_queueFileName;
+            }
+        }
+
         /// <summary>
         /// Tries to set preview for selected file in archive.
         /// </summary>
         /// <param name="filePath">Path to file from archive.</param>
-        public async Task<bool> TrySetPreviewAsync(int fileIndex)
+        public void SetPreview(string fileName)
         {
-            if (!IsEnabled)
-                return false;
+            if (m_archive == null || m_archive.IsDisposed)
+                return;
 
-            EnsureArchiveAttached();
+            if (!IsEnabled || !m_archive.Archive.ContainsFile(fileName))
+                return; // TODO set error preview?
 
-            if (!this.IsEnabled || !archiveInfo.Contains(fileIndex))
-                return false;
+            int fileIndex = m_archive.Archive.GetFileIndex(fileName);
+            if (fileIndex == -1)
+                return; // TODO set error preview?
 
-            string fileName = archiveInfo.GetFileName(fileIndex);
-            this.previewFilePath = fileName;
-            FileType type = ResolveFileTypeFromExtension(Path.GetExtension(previewFilePath));
+            PreviewFileType fileType = FilePreviewer.ResolveFileTypeFromFileName(fileName);
+            // TODO don't run previewWorker if fileType is unknown for better perf.
 
-            if (type == FileType.Unknown)
+            if (m_previewWorker.IsBusy)
             {
-                SetUnknownPreview(fileName);
-                return true;
+                SetQueueFileName(fileName);
             }
-
-            using (MemoryStream stream = new MemoryStream())
+            else
             {
-                if (await archiveInfo.ExtractToStreamAsync(stream, fileIndex) == false)
-                    return false;
-
-                switch (type)
-                {
-                    case FileType.Xml:
-                    case FileType.Text:
-                        SetTextPreview(stream);
-                        break;
-                    case FileType.Dds:
-                        await SetDdsImagePreview(stream);
-                        break;
-                    case FileType.Wav:
-                        SetWavSoundPreview(stream);
-                        break;
-                    default:
-                       throw new NotSupportedException($"Preview of file with type \"{type}\" is not supported.");
-                }
+                m_previewWorker.RunWorkerAsync(new object[] { m_archive, fileIndex, fileType });
             }
-
-            return true;
         }
 
         #endregion
 
         #region Private methods
 
-        private void ChangeControlsVisibilityForFileType(FileType fileType)
+        private void ChangeControlsVisibilityForFileType(PreviewFileType fileType)
         {
-            if (fileType != FileType.Wav)
+            if (fileType != PreviewFileType.Wav)
                 SoundPlayerControl.StopAudio();
 
             switch (fileType)
             {
-                case FileType.Xml:
-                case FileType.Text:
-                case FileType.Unknown:
+                case PreviewFileType.Text:
+                case PreviewFileType.Unknown:
                     PreviewImageBox.Visibility = Visibility.Collapsed;
-                    TextBlockScrollViewer.Visibility = Visibility.Visible;
+                    PreviewTextFieldParent.Visibility = Visibility.Visible;
                     SoundPlayerControl.Visibility = Visibility.Collapsed;
                     break;
-                case FileType.Wav:
+                case PreviewFileType.Wav:
                     PreviewImageBox.Visibility = Visibility.Collapsed;
-                    TextBlockScrollViewer.Visibility = Visibility.Collapsed;
+                    PreviewTextFieldParent.Visibility = Visibility.Collapsed;
                     SoundPlayerControl.Visibility = Visibility.Visible;
                     break;
-                case FileType.Dds:
+                case PreviewFileType.Dds:
                     PreviewImageBox.Visibility = Visibility.Visible;
-                    TextBlockScrollViewer.Visibility = Visibility.Collapsed;
+                    PreviewTextFieldParent.Visibility = Visibility.Collapsed;
                     SoundPlayerControl.Visibility = Visibility.Collapsed;
                     break;
             }
 
-            if (fileType == FileType.Unknown)
-                PreviewTextField.FontFamily = defaultTextFontFamily;
-            else
-                PreviewTextField.FontFamily = textFileFontFamily;
+            //if (fileType == PreviewFileType.Unknown)
+            //    PreviewTextField.FontFamily = defaultTextFontFamily;
+            //else
+            //    PreviewTextField.FontFamily = textFileFontFamily;
         }
 
         /// <summary>
@@ -189,6 +230,8 @@ namespace Ba2Explorer.View
             Contract.Requires(text != null);
             Contract.Requires(tip != null);
 
+            // textBlock.Text = text + "(" + tip + ")";
+
             textBlock.Inlines.Clear();
             textBlock.Inlines.Add(text);
             Run grayedText = new Run(" (" + tip + ')');
@@ -200,40 +243,22 @@ namespace Ba2Explorer.View
         {
             Contract.Requires(stream != null);
 
+            if (SoundPlayerControl.SoundSource != null)
+                SoundPlayerControl.SoundSource.Dispose();
+
             stream.Seek(0, SeekOrigin.Begin);
             SoundPlayerControl.SoundSource = stream;
 
-            ChangeControlsVisibilityForFileType(FileType.Wav);
+            ChangeControlsVisibilityForFileType(PreviewFileType.Wav);
         }
 
         /// <summary>
         /// Set's preview to DDS image.
         /// </summary>
         /// <param name="stream">DDS image stream.</param>
-        private async Task SetDdsImagePreview(Stream stream)
+        private void SetDdsPreview(DdsImage image)
         {
-            Contract.Requires(stream != null);
-            stream.Seek(0, SeekOrigin.Begin);
-
-            DdsImage image = null;
-            try
-            {
-                image = await DdsImage.LoadAsync(stream);
-            }
-            catch (Exception e)
-            {
-                if (image != null)
-                    image.Dispose();
-
-                this.SetErrorPreview("Error during settings up preview: " + e.Message);
-                return;
-            }
-
-            if (!image.IsValid)
-            {
-                image.Dispose();
-                return;
-            }
+            Contract.Requires(image != null);
 
             IntPtr hBitmap = image.BitmapImage.GetHbitmap();
             BitmapSource source = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(
@@ -243,21 +268,24 @@ namespace Ba2Explorer.View
                 BitmapSizeOptions.FromEmptyOptions());
 
             this.PreviewImageBox.Source = source;
-            ChangeControlsVisibilityForFileType(FileType.Dds);
+
+            NativeMethods.DeleteObject(hBitmap);
+            image.Dispose();
+
+            ChangeControlsVisibilityForFileType(PreviewFileType.Dds);
 
             SetTextWithTip(this.PreviewText, "Preview",
-                image.BitmapImage.Width + "x" + image.BitmapImage.Height);
-
-            image.Dispose();
-            NativeMethods.DeleteObject(hBitmap);
+                source.PixelWidth + "x" + source.PixelHeight);
         }
 
         private void SetErrorPreview(string error)
         {
+            Contract.Requires(error != null);
+
             this.PreviewTextField.Text = error;
             this.PreviewText.Text = "Preview";
 
-            this.ChangeControlsVisibilityForFileType(FileType.Text);
+            this.ChangeControlsVisibilityForFileType(PreviewFileType.Text);
         }
 
         /// <summary>
@@ -269,7 +297,7 @@ namespace Ba2Explorer.View
             this.PreviewImageBox.Source = null;
             this.PreviewTextField.Text = null;
 
-            ChangeControlsVisibilityForFileType(FileType.Unknown);
+            ChangeControlsVisibilityForFileType(PreviewFileType.Unknown);
         }
 
         /// <summary>
@@ -287,62 +315,30 @@ namespace Ba2Explorer.View
             string desc = null;
             extensionDescriptions.TryGetValue(ext, out desc);
 
-            SetTextWithTip(this.PreviewTextField,
-                "Cannot preview " + Path.GetFileName(filePath), desc == null ? "unsupported" : desc);
+            PreviewTextField.Text = "Cannot preview " + Path.GetFileName(filePath);
+            //SetTextWithTip(this.PreviewTextField,
+             //   "Cannot preview " + Path.GetFileName(filePath), desc == null ? "unsupported" : desc);
 
             this.PreviewText.Text = "Preview";
-            ChangeControlsVisibilityForFileType(FileType.Unknown);
+            ChangeControlsVisibilityForFileType(PreviewFileType.Unknown);
         }
 
-        /// <summary>
-        /// Set's preview to text label with text
-        /// readed from stream with auto-detected
-        /// or ASCII encoding.
-        /// </summary>
-        private void SetTextPreview(Stream stream)
+        private void SetTextPreview(string text)
         {
-            Contract.Requires(stream != null);
+            Contract.Requires(text != null);
 
-            byte[] buffer = new byte[stream.Length];
-            int readed = stream.Read(buffer, 0, (int)stream.Length);
-            Debug.Assert(readed == stream.Length);
+                //Debug.WriteLine("text length: {0}", text.Length);
+                PreviewTextField.Text = text;
+                PreviewText.Text = "Preview";
 
-            string text = stringConverter.GetConvertedString(buffer, Encoding.ASCII);
+                ChangeControlsVisibilityForFileType(PreviewFileType.Text);
 
-            this.PreviewTextField.Text = text;
-            this.PreviewText.Text = "Preview";
-
-            ChangeControlsVisibilityForFileType(FileType.Text);
-        }
-
-        /// <summary>
-        /// Resolves extension to FileType enum.
-        /// </summary>
-        /// <param name="extension">Extension, can start with dot.</param>
-        private FileType ResolveFileTypeFromExtension(string extension)
-        {
-            Contract.Requires(!String.IsNullOrWhiteSpace(extension));
-
-            extension = extension.TrimStart('.');
-
-            if (extension.Equals("txt", StringComparison.OrdinalIgnoreCase))
-            {
-                return FileType.Text;
-            }
-            else if (extension.Equals("xml", StringComparison.OrdinalIgnoreCase))
-            {
-                return FileType.Xml;
-            }
-            else if (extension.Equals("wav", StringComparison.OrdinalIgnoreCase))
-            {
-                return FileType.Wav;
-            }
-            else if (extension.Equals("dds", StringComparison.OrdinalIgnoreCase))
-            {
-                return FileType.Dds;
-            }
-
-            return FileType.Unknown;
+            //Stopwatch w = new Stopwatch();
+            //w.Start();
+            //this.PreviewTextField.Text = text;
+            //this.PreviewText.Text = "Preview";
+            //w.Stop();
+            //Debug.WriteLine("elapsed: {0}", w.ElapsedMilliseconds);
         }
 
         #endregion
@@ -351,12 +347,11 @@ namespace Ba2Explorer.View
 
         private void DetachArchive()
         {
-            if (archiveInfo == null)
+            if (m_archive == null)
                 return;
 
-            this.previewFilePath = null;
-            this.archiveInfo.PropertyChanged -= ArchiveInfo_PropertyChanged;
-            this.archiveInfo = null;
+            this.m_archive.PropertyChanged -= ArchiveInfo_PropertyChanged;
+            this.m_archive = null;
         }
 
         /// <summary>
@@ -407,18 +402,18 @@ namespace Ba2Explorer.View
 
         private void ArchiveInfo_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            Contract.Ensures(sender == archiveInfo);
+            Contract.Ensures(sender == m_archive);
 
-            if (e.PropertyName == nameof(ArchiveInfo.IsDisposed) && archiveInfo.IsDisposed == true)
+            if (e.PropertyName == nameof(ArchiveInfo.IsDisposed) && m_archive.IsDisposed == true)
             {
                 SetDefaultPreview();
-                this.archiveInfo.PropertyChanged -= ArchiveInfo_PropertyChanged;
+                this.m_archive.PropertyChanged -= ArchiveInfo_PropertyChanged;
             }
         }
 
         private void EnsureArchiveAttached()
         {
-            if (archiveInfo == null || archiveInfo.IsDisposed)
+            if (m_archive == null || m_archive.IsDisposed)
                 throw new InvalidOperationException("ArchiveInfo should be set with SetArchive() method.");
         }
 

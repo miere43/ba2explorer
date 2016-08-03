@@ -77,7 +77,7 @@
         </Menu>
 
         <ListView BorderThickness="0,1,0,0" x:Name="ArchiveFilesList" Grid.Row="2" Grid.Column="0" DataContext="{Binding ArchiveInfo}"
-                  ItemsSource="{Binding Files}" SelectionChanged="ArchiveFilesList_SelectionChanged"
+                  ItemsSource="{Binding FileNames}" SelectionChanged="ArchiveFilesList_SelectionChanged"
                   Grid.ColumnSpan="{Binding IsChecked, ElementName=FilePreviewPanelMenuItem, Converter={StaticResource ArchiveFilesColumnSpanConverter}}">
             <ListView.ContextMenu>
                 <ContextMenu>

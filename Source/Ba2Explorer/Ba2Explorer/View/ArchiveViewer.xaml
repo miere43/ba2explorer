@@ -1,0 +1,34 @@
+﻿<UserControl x:Class="Ba2Explorer.View.ArchiveViewer"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Ba2Explorer.View"
+             mc:Ignorable="d" 
+             DataContext="{Binding ViewModel}"
+             d:DesignHeight="300" d:DesignWidth="600">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="2*" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <TreeView x:Name="FileList" />
+        
+        <GridSplitter Grid.Column="0" Background="#4A5573" Grid.Row="1" Width="2" />
+        
+        <DataGrid x:Name="EntryView"  Grid.Column="1">
+            <DataGrid.Columns>
+                <DataGridTextColumn Width="3*" Header="Name" />
+                <DataGridTextColumn Width="2*" Header="Size" />
+                <DataGridTextColumn Width="*" Header="Type" />
+            </DataGrid.Columns>
+            <DataGrid.Items>
+                
+            </DataGrid.Items>
+        </DataGrid>
+    </Grid>
+</UserControl>
