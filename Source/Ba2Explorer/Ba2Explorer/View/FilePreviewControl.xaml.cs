@@ -70,6 +70,9 @@ namespace Ba2Explorer.View
 
         private void LoadPreviewCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
+            if (e.Cancelled)
+                goto processNextQueueItem; // preview should not be set.
+
             PreviewFileData data = (PreviewFileData)e.Result;
             switch (data.FileType)
             {
@@ -87,6 +90,7 @@ namespace Ba2Explorer.View
                     break;
             }
 
+            processNextQueueItem:
             lock (m_queueLock)
             {
                 if (m_queueFileName != null)
@@ -172,14 +176,27 @@ namespace Ba2Explorer.View
                 return; // TODO set error preview?
 
             PreviewFileType fileType = FilePreviewer.ResolveFileTypeFromFileName(fileName);
-            // TODO don't run previewWorker if fileType is unknown for better perf.
 
             if (m_previewWorker.IsBusy)
             {
-                SetQueueFileName(fileName);
+                if (fileType == PreviewFileType.Unknown)
+                {
+                    m_previewWorker.CancelAsync();
+                    SetUnknownPreview(fileName);
+                    return;
+                }
+                else
+                {
+                    SetQueueFileName(fileName);
+                }
             }
             else
             {
+                if (fileType == PreviewFileType.Unknown)
+                {
+                    SetUnknownPreview(fileName);
+                    return;
+                }
                 m_previewWorker.RunWorkerAsync(new object[] { m_archive, fileIndex, fileType });
             }
         }
