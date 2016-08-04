@@ -60,6 +60,7 @@ namespace Ba2Explorer.View
             InitializeComponent();
 
             PreviewTextField = new FastTextBlock();
+            PreviewTextField.Padding = new Thickness(4);
             PreviewTextFieldParent.Content = PreviewTextField;
 
             m_previewWorker = new BackgroundWorker();
