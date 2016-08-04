@@ -82,19 +82,11 @@ namespace Ba2Explorer.View
         /// </summary>
         private BackgroundWorker m_previewWorker;
 
-        public FastTextBlock PreviewTextField;
-
         public FilePreviewControl()
         {
             LazyStaticInit();
 
             InitializeComponent();
-
-            PreviewTextField = new FastTextBlock();
-            PreviewTextField.Padding = new Thickness(4);
-            PreviewTextFieldParent.Content = PreviewTextField;
-            PreviewTextField.FontFamily = new FontFamily("Consolas");
-            PreviewTextField.FontSize = 12;
 
             m_previewWorker = new BackgroundWorker();
             m_previewWorker.DoWork += LoadPreviewInBackground;

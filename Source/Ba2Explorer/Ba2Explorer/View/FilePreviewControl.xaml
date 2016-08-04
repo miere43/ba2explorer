@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Ba2Explorer"
              xmlns:view="clr-namespace:Ba2Explorer.View"
+             xmlns:ctrls="clr-namespace:Ba2Explorer.Controls"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
     <Grid>
@@ -27,7 +28,11 @@
                       VerticalScrollBarVisibility="Auto"
                       CanContentScroll="True"
                       x:Name="PreviewTextFieldParent">
-                <!-- child will be added from code -->
+            <ctrls:FastTextBlock
+                x:Name="PreviewTextField"
+                Padding="4"
+                FontFamily="Consolas"
+                FontSize="12" />
         </ScrollViewer>
 
         <Image
