@@ -82,7 +82,7 @@ namespace Ba2Explorer.View
                     SetWavSoundPreview(data.TakeWavArgs());
                     break;
                 default:
-                    SetUnknownPreview(m_archive.Archive.FileList.ElementAt(data.FileIndex));
+                    SetUnknownPreview(m_archive.Archive.FileList[data.FileIndex]);
                     break;
             }
 

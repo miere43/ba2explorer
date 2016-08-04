@@ -229,7 +229,7 @@ namespace Ba2Explorer.ViewModel
         /// <returns>Task.</returns>
         public async Task ExtractFileWithDialog(int fileIndex)
         {
-            string fileName = ArchiveInfo.Archive.FileList.ElementAt(fileIndex);
+            string fileName = ArchiveInfo.Archive.FileList[fileIndex];
             if (fileName == null)
                 throw new Exception($"no file with index {fileIndex} exists.");
 
