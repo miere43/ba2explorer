@@ -29,12 +29,45 @@ namespace Ba2Explorer.View
     /// </summary>
     public partial class FilePreviewControl : UserControl
     {
+        #region Dependency Properties
+
+        /// <summary>
+        /// Gets or sets archive that is preview target.
+        /// </summary>
+        public ArchiveInfo Archive
+        {
+            get { return (ArchiveInfo)GetValue(ArchiveProperty); }
+            set { SetValue(ArchiveProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for Archive.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty ArchiveProperty =
+            DependencyProperty.Register(nameof(Archive), typeof(ArchiveInfo), typeof(FilePreviewControl), new PropertyMetadata(null));
+
+        /// <summary>
+        /// Gets or sets file index in archive that will be previewed.
+        /// </summary>
+        public string PreviewFileName
+        {
+            get { return (string)GetValue(PreviewFileNameProperty); }
+            set {
+                SetValue(PreviewFileNameProperty, value);
+                SetPreview(value);
+            }
+        }
+
+        // Using a DependencyProperty as the backing store for PreviewFileName.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty PreviewFileNameProperty =
+            DependencyProperty.Register(nameof(PreviewFileName), typeof(string), typeof(FilePreviewControl), new PropertyMetadata(null));
+
+        #endregion
+
         private static IReadOnlyDictionary<string, string> extensionDescriptions;
 
         private static object staticInitLock = new object();
 
         /// <summary>
-        /// Lock to prevent access to `m_queueNextFileIndex` by UI and `m_previewWorker` threads simultaneously.
+        /// Lock to prevent access to `m_queueFileName` by UI and `m_previewWorker` threads.
         /// </summary>
         private object m_queueLock = new object();
 
@@ -43,8 +76,6 @@ namespace Ba2Explorer.View
         //private FontFamily defaultTextFontFamily;
 
         //private FontFamily textFileFontFamily;
-
-        private ArchiveInfo m_archive;
 
         /// <summary>
         /// Worker that decodes preview file data in background thread.
@@ -62,6 +93,8 @@ namespace Ba2Explorer.View
             PreviewTextField = new FastTextBlock();
             PreviewTextField.Padding = new Thickness(4);
             PreviewTextFieldParent.Content = PreviewTextField;
+            PreviewTextField.FontFamily = new FontFamily("Consolas");
+            PreviewTextField.FontSize = 12;
 
             m_previewWorker = new BackgroundWorker();
             m_previewWorker.DoWork += LoadPreviewInBackground;
@@ -86,7 +119,7 @@ namespace Ba2Explorer.View
                     SetWavSoundPreview(data.TakeWavArgs());
                     break;
                 default:
-                    SetUnknownPreview(m_archive.Archive.FileList[data.FileIndex]);
+                    SetUnknownPreview(Archive.Archive.FileList[data.FileIndex]);
                     break;
             }
 
@@ -109,7 +142,6 @@ namespace Ba2Explorer.View
 
         ~FilePreviewControl()
         {
-            DetachArchive();
             m_previewWorker.DoWork -= LoadPreviewInBackground;
             m_previewWorker.RunWorkerCompleted -= LoadPreviewCompleted;
         }
@@ -122,24 +154,6 @@ namespace Ba2Explorer.View
             {
                 return m_queueFileName != null;
             }
-        }
-
-        public void AttachArchive(ArchiveInfo archive)
-        {
-            if (archive == null)
-                throw new ArgumentNullException(nameof(archive));
-
-            m_archive = archive;
-        }
-
-        public void SetUnknownPreviewTarget(string filePath)
-        {
-            EnsureArchiveAttached();
-
-            if (String.IsNullOrWhiteSpace(filePath))
-                throw new ArgumentException(nameof(filePath));
-
-            SetUnknownPreview(filePath);
         }
 
         private void SetQueueFileName(string fileName)
@@ -163,15 +177,15 @@ namespace Ba2Explorer.View
         /// Tries to set preview for selected file in archive.
         /// </summary>
         /// <param name="filePath">Path to file from archive.</param>
-        public void SetPreview(string fileName)
+        private void SetPreview(string fileName)
         {
-            if (m_archive == null || m_archive.IsDisposed)
+            if (Archive == null || Archive.IsDisposed)
                 return;
 
-            if (!IsEnabled || !m_archive.Archive.ContainsFile(fileName))
+            if (!IsEnabled || !Archive.Archive.ContainsFile(fileName))
                 return; // TODO set error preview?
 
-            int fileIndex = m_archive.Archive.GetFileIndex(fileName);
+            int fileIndex = Archive.Archive.GetFileIndex(fileName);
             if (fileIndex == -1)
                 return; // TODO set error preview?
 
@@ -197,7 +211,7 @@ namespace Ba2Explorer.View
                     SetUnknownPreview(fileName);
                     return;
                 }
-                m_previewWorker.RunWorkerAsync(new object[] { m_archive, fileIndex, fileType });
+                m_previewWorker.RunWorkerAsync(new object[] { Archive, fileIndex, fileType });
             }
         }
 
@@ -363,15 +377,6 @@ namespace Ba2Explorer.View
 
         #region Helper methods
 
-        private void DetachArchive()
-        {
-            if (m_archive == null)
-                return;
-
-            this.m_archive.PropertyChanged -= ArchiveInfo_PropertyChanged;
-            this.m_archive = null;
-        }
-
         /// <summary>
         /// Lazily initializes static properties of FilePreview class.
         /// </summary>
@@ -416,23 +421,6 @@ namespace Ba2Explorer.View
                     // fuz - voices?
                 };
             }
-        }
-
-        private void ArchiveInfo_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
-        {
-            Contract.Ensures(sender == m_archive);
-
-            if (e.PropertyName == nameof(ArchiveInfo.IsDisposed) && m_archive.IsDisposed == true)
-            {
-                SetDefaultPreview();
-                this.m_archive.PropertyChanged -= ArchiveInfo_PropertyChanged;
-            }
-        }
-
-        private void EnsureArchiveAttached()
-        {
-            if (m_archive == null || m_archive.IsDisposed)
-                throw new InvalidOperationException("ArchiveInfo should be set with SetArchive() method.");
         }
 
         #endregion

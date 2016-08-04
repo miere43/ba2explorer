@@ -10,6 +10,8 @@ using System.Collections;
 using Ba2Explorer.Settings;
 using Ba2Explorer.Utility;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
 
 namespace Ba2Explorer
 {
@@ -35,7 +37,7 @@ namespace Ba2Explorer
 
             this.FilePreview.IsEnabledChanged += (sender, args) =>
             {
-                if (FilePreview.IsEnabled) SetSelectedItemFilePreview();
+                // if (FilePreview.IsEnabled) SetSelectedItemFilePreview();
             };
 
             // Settings handling
@@ -52,6 +54,12 @@ namespace Ba2Explorer
                 this.Top = settings.WindowTop;
                 this.Left = settings.WindowLeft;
             }
+
+            //DependencyPropertyDescriptor.FromProperty(ListView.SelectedItemProperty, typeof(ListView))
+            //    .AddValueChanged(this, (s, e) =>
+            //    {
+            //        var i = 123;
+            //    });
 
             // TODO: fix this
             this.FilePreviewPanelMenuItem.IsChecked = AppSettings.Instance.FilePreview.IsEnabled;
@@ -106,7 +114,6 @@ namespace Ba2Explorer
 
         private void ViewModel_OnArchiveOpened(object sender, EventArgs e)
         {
-            this.FilePreview.AttachArchive(viewModel.ArchiveInfo);
             archiveFilesFilter = (CollectionView)CollectionViewSource.GetDefaultView(this.ArchiveFilesList.ItemsSource);
             archiveFilesFilter.Filter = ArchiveFileFilter;
 
@@ -158,8 +165,8 @@ namespace Ba2Explorer
 
             CollectionViewSource.GetDefaultView(ArchiveFilesList.ItemsSource).Refresh();
 
-            if (FilePreview.HasFileInQueue())
-                SetSelectedItemFilePreview();
+            //if (FilePreview.HasFileInQueue())
+            //    SetSelectedItemFilePreview();
         }
 
         #endregion
@@ -258,13 +265,6 @@ namespace Ba2Explorer
             }
         }
 
-        private void ArchiveFilesList_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            this.SetSelectedItemFilePreview();
-
-            e.Handled = true;
-        }
-
         private void StatusBarButton_Click(object sender, RoutedEventArgs e)
         {
             statusbarButtonAction?.Invoke();
@@ -274,14 +274,14 @@ namespace Ba2Explorer
 
         #region Helper methods
 
-        private void SetSelectedItemFilePreview()
-        {
-            string selection = (string)ArchiveFilesList.SelectedItem;
+        //private void SetSelectedItemFilePreview()
+        //{
+        //    string selection = (string)ArchiveFilesList.SelectedItem;
 
-            // TODO handle multiple selection
-            if (selection == null) return;
-            FilePreview.SetPreview(selection);
-        }
+        //    // TODO handle multiple selection
+        //    if (selection == null) return;
+        //    FilePreview.SetPreview(selection);
+        //}
 
         /// <summary>
         /// Changes main window title. Call without parameter to reset title, call with parameter to add additional string to the title.
@@ -346,5 +346,10 @@ namespace Ba2Explorer
         }
 
         #endregion
+
+        private void ArchiveFilesList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            FilePreview.PreviewFileName = ArchiveFilesList.SelectedItem as string;
+        }
     }
 }

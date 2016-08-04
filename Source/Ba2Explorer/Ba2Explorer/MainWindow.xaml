@@ -76,8 +76,13 @@
             </MenuItem>
         </Menu>
 
-        <ListView BorderThickness="0,1,0,0" x:Name="ArchiveFilesList" Grid.Row="2" Grid.Column="0" DataContext="{Binding ArchiveInfo}"
-                  ItemsSource="{Binding FileNames}" SelectionChanged="ArchiveFilesList_SelectionChanged"
+        <ListView BorderThickness="0,1,0,0"
+                  x:Name="ArchiveFilesList"
+                  Grid.Row="2"
+                  Grid.Column="0"
+                  DataContext="{Binding ArchiveInfo}"
+                  ItemsSource="{Binding FileNames}"
+                  SelectionChanged="ArchiveFilesList_SelectionChanged"
                   Grid.ColumnSpan="{Binding IsChecked, ElementName=FilePreviewPanelMenuItem, Converter={StaticResource ArchiveFilesColumnSpanConverter}}">
             <ListView.ContextMenu>
                 <ContextMenu>
@@ -93,9 +98,11 @@
             x:Name="FilePreview"
             Visibility="{Binding IsChecked, ElementName=FilePreviewPanelMenuItem, Converter={StaticResource BoolToCollapsedVisConverter}}"
             IsEnabled="{Binding IsChecked, ElementName=FilePreviewPanelMenuItem}"
+            Archive="{Binding ArchiveInfo}"
             Grid.Row="1"
             Grid.RowSpan="2"
             Grid.Column="1" />
+        <!-- TODO cannot bind this crap PreviewFileName="{Binding SelectedItem, ElementName=ArchiveFilesList}" -->
 
         <Grid 
             Grid.Row="1"

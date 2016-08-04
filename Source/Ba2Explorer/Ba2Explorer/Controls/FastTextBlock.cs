@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -82,11 +83,6 @@ namespace Ba2Explorer.Controls
         private double m_drawnLinesHeight;
 
         /// <summary>
-        /// Font size in ems. TODO: use Control.FontSize
-        /// </summary>
-        private const int m_fontSize = 12;
-
-        /// <summary>
         /// Represents glyph that will be rendered if some character has no glyph bound to it.
         /// </summary>
         private ushort m_unknownGlyphIndex;
@@ -107,12 +103,51 @@ namespace Ba2Explorer.Controls
         /// </summary>
         public FastTextBlock()
         {
-            // TODO: use Control.FontFamily.
-            var fontFamily = new FontFamily("Consolas");
-            m_lineHeightCoeff = fontFamily.LineSpacing;
+            m_runs = new List<GlyphRun>();
 
+            //FontSize = 12;
+            //FontFamily = new FontFamily("Consolas");
+
+            // TODO: remove listener
+            DependencyPropertyDescriptor
+                .FromProperty(Control.FontSizeProperty, typeof(Control))
+                .AddValueChanged(this, FontSizePropertyChanged);
+
+            DependencyPropertyDescriptor
+                .FromProperty(Control.FontFamilyProperty, typeof(Control))
+                .AddValueChanged(this, FontFamilyPropertyChanged);
+        }
+
+        ~FastTextBlock()
+        {
+            DependencyPropertyDescriptor
+                .FromProperty(Control.FontSizeProperty, typeof(Control))
+                .RemoveValueChanged(this, FontSizePropertyChanged);
+
+            DependencyPropertyDescriptor
+                .FromProperty(Control.FontFamilyProperty, typeof(Control))
+                .RemoveValueChanged(this, FontFamilyPropertyChanged);
+        }
+
+        private void FontSizePropertyChanged(object sender, EventArgs e)
+        {
+            SetDirty();
+        }
+
+        private void FontFamilyPropertyChanged(object sender, EventArgs e)
+        {
+            Contract.Assert(FontFamily != null);
+
+            m_lineHeightCoeff = FontFamily.LineSpacing;
+
+            GetGlyphTypeface();
+            SetDirty();
+        }
+
+        private void GetGlyphTypeface()
+        {
             var typeface = new Typeface(
-                fontFamily,
+                FontFamily,
                 FontStyles.Normal,
                 FontWeights.Normal,
                 FontStretches.Normal);
@@ -121,12 +156,6 @@ namespace Ba2Explorer.Controls
                 throw new Exception("TODO");
 
             m_unknownGlyphIndex = m_glyphTypeface.CharacterToGlyphMap['?'];
-            m_runs = new List<GlyphRun>();
-
-            // TODO: remove listener
-            DependencyPropertyDescriptor
-                .FromProperty(Control.FontSizeProperty, typeof(Control))
-                .AddValueChanged(this, FontSizePropertyChanged);
         }
 
         protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
@@ -140,16 +169,6 @@ namespace Ba2Explorer.Controls
                 SetDirty();
             }
         }
-
-        private void FontSizePropertyChanged(object sender, EventArgs e)
-        {
-            m_dirty = true;
-
-            // TODO
-
-            InvalidateVisual();
-        }
-
 
         /// <summary>
         /// Returns list of tuples that contain start and end indices of `Text` property.
@@ -206,14 +225,14 @@ namespace Ba2Explorer.Controls
                 if (!m_glyphTypeface.CharacterToGlyphMap.TryGetValue(c, out glyphIndex))
                     glyphIndex = m_unknownGlyphIndex;
                 indices[i] = glyphIndex;
-                advanceWidths[i] = m_glyphTypeface.AdvanceWidths[glyphIndex] * m_fontSize;
+                advanceWidths[i] = m_glyphTypeface.AdvanceWidths[glyphIndex] * FontSize;
                 lineWidth += advanceWidths[i];
                 ++textOffset;
             }
             if (lineWidth > m_maxLineWidth)
                 m_maxLineWidth = lineWidth;
 
-            var run = new GlyphRun(m_glyphTypeface, 0, false, m_fontSize, indices, new Point(Padding.Left - m_horizontalOffset,
+            var run = new GlyphRun(m_glyphTypeface, 0, false, FontSize, indices, new Point(Padding.Left - m_horizontalOffset,
                 m_drawnLinesHeight + Padding.Top + (GetLineHeightDPI())),
                 advanceWidths, null, null, null, null, null, null);
 
@@ -222,7 +241,7 @@ namespace Ba2Explorer.Controls
             runs.Add(run);
         }
 
-        private double GetLineHeightDPI() => m_lineHeightCoeff * m_fontSize;
+        private double GetLineHeightDPI() => m_lineHeightCoeff * FontSize;
 
         protected override Size MeasureOverride(Size constraint)
         {

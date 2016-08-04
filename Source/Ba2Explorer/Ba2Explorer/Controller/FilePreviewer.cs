@@ -77,7 +77,15 @@ namespace Ba2Explorer.Controller
                 return result;
 
             var stream = new MemoryStream();
-            archive.GetArchive().ExtractToStream(fileIndex, stream);
+            try
+            {
+                archive.Archive.ExtractToStream(fileIndex, stream);
+            }
+            catch (ObjectDisposedException e)
+            {
+                App.Logger.LogException(Logging.LogPriority.Error, "FilePreviwer.LoadPreview", e);
+                return null;
+            }
 
             switch (fileType)
             {
