@@ -203,14 +203,13 @@ namespace Ba2Explorer
         {
             if (ArchiveFilesList.SelectedItems.Count == 1)
             {
-                int sel = ArchiveFilesList.SelectedIndex;
+                string sel = ArchiveFilesList.SelectedItem as string;
 
-                await viewModel.ExtractFileWithDialog(sel);
+                await viewModel.ExtractFileWithDialog(viewModel.ArchiveInfo.Archive.GetFileIndex(sel));
                 e.Handled = true;
             }
             else if (ArchiveFilesList.SelectedItems.Count > 1)
             {
-                // oh god wpf why i just cant get the indices?????///////
                 List<string> sels = ArchiveFilesList.SelectedItems.Cast<string>().ToList();
                 List<int> ss = new List<int>();
                 foreach (var sel in sels)
