@@ -68,7 +68,7 @@ namespace Ba2Explorer.ViewModel
         public string DestinationFolder
         {
             get { return destinationFolder; }
-            set
+            private set
             {
                 destinationFolder = value;
                 RaisePropertyChanged();
@@ -86,7 +86,12 @@ namespace Ba2Explorer.ViewModel
             }
         }
 
-        public bool ExtractAll { get; internal set; }
+        public int ExtractionFileCount
+        {
+            get { return ExtractAll ? (int)ArchiveInfo.Archive.TotalFiles : FilesToExtract.Count(); }
+       }
+
+        public bool ExtractAll { get; private set; }
 
         #endregion
 
@@ -99,6 +104,26 @@ namespace Ba2Explorer.ViewModel
         {
             ExtractionProgress = new Progress<int>();
             cancellationToken = new CancellationTokenSource();
+            FilesToExtract = null;
+            ExtractAll = false;
+        }
+
+        public void SetExtractAll(ArchiveInfo archive, string destFolder)
+        {
+            Reset();
+            ExtractAll = true;
+            DestinationFolder = destFolder;
+            ArchiveInfo = archive;
+            FilesToExtract = null;
+        }
+
+        public void SetExtractFiles(ArchiveInfo archive, string destFolder, IEnumerable<int> files)
+        {
+            Reset();
+            ExtractAll = false;
+            DestinationFolder = destFolder;
+            ArchiveInfo = archive;
+            FilesToExtract = files;
         }
 
         public void Cancel()

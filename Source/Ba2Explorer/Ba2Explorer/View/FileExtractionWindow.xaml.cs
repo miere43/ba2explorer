@@ -52,7 +52,7 @@ namespace Ba2Explorer.View
                 ViewModel.OnFinished -= ViewModel_OnFinished;
                 ViewModel.ExtractionProgress.ProgressChanged -= ExtractionProgress_ProgressChanged;
 
-                UpdateExtractionProgress(ViewModel.FilesToExtract.Count(), ViewModel.FilesToExtract.Count(), true);
+                UpdateExtractionProgress(ViewModel.ExtractionFileCount, ViewModel.ExtractionFileCount, true);
                 SetExtractingWindowTitle(ExtractionProgress.Value);
 
                 if (e == ExtractionFinishedState.Canceled)
@@ -96,7 +96,7 @@ namespace Ba2Explorer.View
             else
             {
                 this.MainText.Text = $"Extracted { actual } out of { excepted } files…";
-                ExtractionProgress.Value = (double)actual / ViewModel.FilesToExtract.Count();
+                ExtractionProgress.Value = (double)actual / ViewModel.ExtractionFileCount;
                 this.TaskbarItemInfo.ProgressValue = ExtractionProgress.Value;
             }
 
@@ -105,7 +105,7 @@ namespace Ba2Explorer.View
 
         private void ExtractionProgress_ProgressChanged(object sender, int e)
         {
-            UpdateExtractionProgress(e, ViewModel.FilesToExtract.Count(), false);
+            UpdateExtractionProgress(e, ViewModel.ExtractionFileCount, false);
         }
 
         private void CanStopExtraction(object sender, CanExecuteRoutedEventArgs e)

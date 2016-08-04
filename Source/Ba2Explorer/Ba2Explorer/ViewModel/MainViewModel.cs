@@ -285,9 +285,7 @@ namespace Ba2Explorer.ViewModel
 
             FileExtractionWindow window = new FileExtractionWindow();
             window.ViewModel.Reset();
-            window.ViewModel.ArchiveInfo = this.ArchiveInfo;
-            window.ViewModel.DestinationFolder = destinationFolder;
-            window.ViewModel.ExtractAll = true;
+            window.ViewModel.SetExtractAll(ArchiveInfo, destinationFolder);
             window.ShowInTaskbar = true;
             window.Owner = Application.Current.MainWindow;
 
@@ -301,7 +299,6 @@ namespace Ba2Explorer.ViewModel
         {
             if (files == null)
                 throw new ArgumentNullException(nameof(files));
-
 
                 var dialog = new System.Windows.Forms.FolderBrowserDialog();
                 dialog.Description = "Extract files to folder...";
@@ -348,9 +345,7 @@ namespace Ba2Explorer.ViewModel
 
             FileExtractionWindow window = new FileExtractionWindow();
             window.ViewModel.Reset();
-            window.ViewModel.ArchiveInfo = this.ArchiveInfo;
-            window.ViewModel.DestinationFolder = destinationFolder;
-            window.ViewModel.FilesToExtract = files;
+            window.ViewModel.SetExtractFiles(ArchiveInfo, destinationFolder, files);
             window.ShowInTaskbar = true;
             window.Owner = Application.Current.MainWindow;
 
