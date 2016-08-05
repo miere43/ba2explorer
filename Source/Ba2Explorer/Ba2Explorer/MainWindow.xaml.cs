@@ -129,6 +129,10 @@ namespace Ba2Explorer
                 this.UpdateTitle();
                 this.HideStatusBar();
             }
+
+            FileListView.ItemsSource = null;
+            currentItem = null;
+            paths.Clear();
         }
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
