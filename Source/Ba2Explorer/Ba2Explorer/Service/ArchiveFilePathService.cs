@@ -26,7 +26,7 @@ namespace Ba2Explorer.Service
                     continue;
                 var root = m_names[1];
                 bool isFile = m_names.Count <= 2;
-                int rootHash = root.GetHashCode();
+                int rootHash = StringComparer.InvariantCultureIgnoreCase.GetHashCode(root);
                 if (!isFile && levelDirHashes.Contains(rootHash))
                     continue; // don't add same directory twice
                 roots.Add(new ArchiveFilePath()
@@ -35,7 +35,7 @@ namespace Ba2Explorer.Service
                     Type = isFile ? FilePathType.File : FilePathType.Directory
                 });
                 if (!isFile)
-                    levelDirHashes.Add(root.GetHashCode());
+                    levelDirHashes.Add(rootHash);
             }
         }
 
@@ -63,7 +63,7 @@ namespace Ba2Explorer.Service
                     continue;
                 var root = m_names[level + 1];
                 bool isFile = m_names.Count <= level + 2;
-                int rootHash = root.GetHashCode();
+                int rootHash = StringComparer.InvariantCultureIgnoreCase.GetHashCode(root);
                 if (!isFile && levelDirHashes.Contains(rootHash))
                     continue; // don't add same directory twice
                 roots.Add(new ArchiveFilePath()
@@ -72,7 +72,7 @@ namespace Ba2Explorer.Service
                     Type = isFile ? FilePathType.File : FilePathType.Directory
                 });
                 if (!isFile)
-                    levelDirHashes.Add(root.GetHashCode());
+                    levelDirHashes.Add(rootHash);
             }
         }
 

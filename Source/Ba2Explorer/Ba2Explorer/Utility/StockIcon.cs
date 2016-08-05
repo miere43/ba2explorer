@@ -15,7 +15,6 @@ namespace Ba2Explorer.Utility
         internal static ImageSource Shield { get { return GetImageSource(StockIconIdentifier.Shield, StockIconOptions.Small); } }
 
         private static ImageSource m_folder;
-
         internal static ImageSource Folder
         {
             get
