@@ -106,7 +106,7 @@ namespace Ba2Explorer.Controls
             {
                 --m_currentLevel;
                 m_paths.RemoveAt(m_currentLevel);
-                ArchiveFilePathService.GetRoots(m_currentPaths, Archive, m_paths[m_currentLevel - 1], m_currentLevel);
+                ArchiveFilePathService.GetRoots(m_currentPaths, Archive, m_paths, m_currentLevel);
             }
 
             if (m_currentPaths.Count > 1)
@@ -120,8 +120,8 @@ namespace Ba2Explorer.Controls
             if (item.Type == FilePathType.Directory)
             {
                 ++m_currentLevel;
-                ArchiveFilePathService.GetRoots(m_currentPaths, Archive, item, m_currentLevel);
                 m_paths.Add(item);
+                ArchiveFilePathService.GetRoots(m_currentPaths, Archive, m_paths, m_currentLevel);
                 if (m_currentPaths.Count > 1)
                     FileView.SelectedIndex = 1; // select first folder (not Go Back button)
                 else if (m_currentPaths.Count == 1)

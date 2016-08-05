@@ -54,9 +54,9 @@ namespace Ba2Explorer.Service
         /// <param name="filePath"></param>
         /// <param name="level"></param>
         /// <returns></returns>
-        public static void GetRoots(ObservableCollection<ArchiveFilePath> roots, ArchiveInfo archive, ArchiveFilePath filePath, int level)
+        public static void GetRoots(ObservableCollection<ArchiveFilePath> roots, ArchiveInfo archive, List<ArchiveFilePath> filePaths, int level)
         {
-            Contract.Assert(filePath.Type == FilePathType.Directory);
+            // Contract.Assert(filePaths[0].Type == FilePathType.Directory);
             roots.Clear();
             List<int> levelDirHashes = new List<int>();
 
@@ -64,8 +64,9 @@ namespace Ba2Explorer.Service
 
             foreach (string path in archive.Archive.FileList)
             {
-                if (!CheckPathAtLevel(path, filePath.Path, level - 1))
-                    continue;
+                if (filePaths.Count > 0)
+                    if (!CheckPathAtLevel(path, filePaths, level - 1))
+                        continue;
                 SplitNames(path);
                 if (m_names.Count < level + 1)
                     continue;
@@ -91,35 +92,50 @@ namespace Ba2Explorer.Service
             }
         }
 
-        private static bool CheckPathAtLevel(string path, string pathToCheck, int level)
+        private static bool CheckPathAtLevel(string path, List<ArchiveFilePath> pathsToCheck, int level)
         {
-            int levelsPassed = 0;
             int pos = 0;
-            if (level == 0)
-                goto skipLevelDetection;
-            foreach (char c in path)
+            for (int i = 0; i < pathsToCheck.Count; ++i)
             {
-                if (c == '\\')
+                string pathToCheck = pathsToCheck[i].Path;
+                int pcPos = 0;
+                while (pcPos < pathToCheck.Length)
                 {
-                    ++levelsPassed;
-                    if (levelsPassed == level)
-                        break;
+                    if (path[pos] != pathToCheck[pcPos])
+                        return false;
+                    ++pos;
+                    ++pcPos;
                 }
-                ++pos;
-            }
-            if (levelsPassed != level)
-                return false;
-            ++pos; // skip '\' char.
-            skipLevelDetection:
-            int pcPos = 0;
-            while (pcPos < pathToCheck.Length)
-            {
-                if (path[pos] != pathToCheck[pcPos])
-                    return false;
-                ++pos;
-                ++pcPos;
+                ++pos; // skip '\' char
             }
             return true;
+            //int levelsPassed = 0;
+            //int pos = 0;
+            //if (level == 0)
+            //    goto skipLevelDetection;
+            ////foreach (char c in path)
+            ////{
+            ////    if (c == '\\')
+            ////    {
+            ////        ++levelsPassed;
+            ////        if (levelsPassed == level)
+            ////            break;
+            ////    }
+            ////    ++pos;
+            ////}
+            //if (levelsPassed != level)
+            //    return false;
+            //++pos; // skip '\' char.
+            //skipLevelDetection:
+            //int pcPos = 0;
+            //while (pcPos < pathToCheck.Length)
+            //{
+            //    if (path[pos] != pathToCheck[pcPos])
+            //        return false;
+            //    ++pos;
+            //    ++pcPos;
+            //}
+            //return true;
         }
 
         private static void SplitNames(string path)
