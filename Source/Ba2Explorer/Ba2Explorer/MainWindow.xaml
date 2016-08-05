@@ -8,6 +8,7 @@
         xmlns:commands="clr-namespace:Ba2Explorer.View.Commands"
         xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
         xmlns:conv="clr-namespace:Ba2Explorer.View.Converters"
+        xmlns:ctrls="clr-namespace:Ba2Explorer.Controls"
         mc:Ignorable="d"
         xml:lang="en-US"
         DataContext="{Binding Source={StaticResource Locator}, Path=Main}"
@@ -76,28 +77,12 @@
             </MenuItem>
         </Menu>
 
-        <ListView
+        <ctrls:FileListView
             x:Name="FileListView"
             Grid.Row="2"
             Grid.Column="0">
-            <ListView.ItemContainerStyle>
-                <Style TargetType="ListViewItem">
-                    <EventSetter Event="MouseDoubleClick" Handler="FileListView_MouseDoubleClick" />
-                </Style>
-            </ListView.ItemContainerStyle>
-            <ListView.ItemTemplate>
-                <DataTemplate>
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        <Label Grid.Column="0" Content="{Binding Type}" />
-                        <Label Grid.Column="1" Content="{Binding Path}" />
-                    </Grid>
-                </DataTemplate>
-            </ListView.ItemTemplate>
-        </ListView>
+        </ctrls:FileListView>
+        <!-- TODO cannot bind this crap Archive="{Binding ArchiveInfo}" -->
 
             <!--<ListView BorderThickness="0,1,0,0"
                   x:Name="ArchiveFilesList"

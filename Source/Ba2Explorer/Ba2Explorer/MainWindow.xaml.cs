@@ -115,11 +115,10 @@ namespace Ba2Explorer
             //archiveFilesFilter = (CollectionView)CollectionViewSource.GetDefaultView(this.ArchiveFilesList.ItemsSource);
             //archiveFilesFilter.Filter = ArchiveFileFilter;
 
-            FileListView.Tag = 0;
-            FileListView.ItemsSource = ArchiveFilePathService.GetRoots(viewModel.ArchiveInfo);
-
             this.UpdateTitle(viewModel.ArchiveInfo.FilePath);
             this.ShowStatusBar($"{ viewModel.ArchiveInfo.FilePath } • { viewModel.ArchiveInfo.TotalFiles } files.");
+
+            FileListView.Archive = viewModel.ArchiveInfo;
         }
 
         private void ViewModel_OnArchiveClosed(object sender, bool resetUI)
@@ -130,9 +129,7 @@ namespace Ba2Explorer
                 this.HideStatusBar();
             }
 
-            FileListView.ItemsSource = null;
-            currentItem = null;
-            paths.Clear();
+            FileListView.Archive = null;
         }
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
@@ -355,62 +352,6 @@ namespace Ba2Explorer
         private void ArchiveFilesList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             //FilePreview.PreviewFileName = ArchiveFilesList.SelectedItem as string;
-        }
-
-        Stack<ArchiveFilePath> paths = new Stack<ArchiveFilePath>();
-
-        ArchiveFilePath currentItem = null;
-
-        private void FileListView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
-        {
-            var item = ((FrameworkElement)e.Source).DataContext as ArchiveFilePath;
-            if (item != null)
-            {
-                if (item.Type == FilePathType.Directory)
-                {
-                    currentItem = item;
-                    int level = (int)FileListView.Tag;
-                    ++level;
-                    FileListView.ItemsSource = ArchiveFilePathService.GetRoots(viewModel.ArchiveInfo, currentItem, level);
-                    FileListView.Tag = level;
-                    paths.Push(currentItem);
-                    Debug.WriteLine("Open Dir, Item {0}, Level {1} => {2}, Stack Size {3}", currentItem.Path, level - 1, level, paths.Count);
-                }
-                else if (item.Type == FilePathType.GoBack)
-                {
-                    int level = (int)FileListView.Tag;
-                    Debug.Assert(level != 0); // should not happen
-                    if (level == 1)
-                    {
-                        Debug.WriteLine("Go Back, Get Main Roots");
-                        paths.Clear();
-                        FileListView.Tag = 0;
-                        FileListView.ItemsSource = ArchiveFilePathService.GetRoots(viewModel.ArchiveInfo);
-                        currentItem = null;
-                    }
-                    else
-                    {
-                        item = paths.Pop();
-                        if (currentItem == item)
-                            currentItem = paths.Pop();
-                        else
-                            currentItem = item;
-                        --level;
-                        Debug.WriteLine("Go Back, Item {0}, Level {1} => {2}, Stack Size {3}", currentItem.Path, level+1, level, paths.Count);
-                        FileListView.Tag = level;
-                        FileListView.ItemsSource = ArchiveFilePathService.GetRoots(viewModel.ArchiveInfo, currentItem, level);
-                    }
-                }
-                else
-                {
-                    MessageBox.Show("TODO");
-                }
-            }
-        }
-
-        private void CommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
-        {
-            Debug.WriteLine("CC");
         }
     }
 }
