@@ -12,7 +12,7 @@ using Ba2Explorer.Service;
 using System.Diagnostics;
 using System.ComponentModel;
 
-namespace Ba2Explorer
+namespace Ba2Explorer.View
 {
     public partial class MainWindow : Window
     {
