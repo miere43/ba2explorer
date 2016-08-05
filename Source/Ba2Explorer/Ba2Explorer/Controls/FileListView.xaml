@@ -4,8 +4,13 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Ba2Explorer.Controls"
+             xmlns:conv="clr-namespace:Ba2Explorer.View.Converters"
+             xmlns:self="clr-namespace:Ba2Explorer"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
+    <UserControl.Resources>
+        <conv:FilePathTypeToImageConverter x:Key="FilePathTypeToImageConverter" />
+    </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -21,13 +26,13 @@
                 </Style>
             </ListView.ItemContainerStyle>
             <ListView.ItemTemplate>
-                <DataTemplate>
+                <DataTemplate DataType="self:ArchiveFilePath">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
-                        <Label Grid.Column="0" Content="{Binding Type}" />
+                        <Image Grid.Column="0" Source="{Binding Type, Converter={StaticResource FilePathTypeToImageConverter}}"/>
                         <Label Grid.Column="1" Content="{Binding Path}" />
                     </Grid>
                 </DataTemplate>

@@ -1,15 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using static Ba2Explorer.Utility.NativeMethods;
 
 namespace Ba2Explorer.Utility
 {
@@ -18,12 +12,40 @@ namespace Ba2Explorer.Utility
         /// <summary>
         /// Shield UAC icon.
         /// </summary>
-        internal static ImageSource Shield { get { return GetImageSource(StockIconIdentifier.Shield, 0); } }
+        internal static ImageSource Shield { get { return GetImageSource(StockIconIdentifier.Shield, StockIconOptions.Small); } }
+
+        private static ImageSource m_folder;
+
+        internal static ImageSource Folder
+        {
+            get
+            {
+                if (m_folder == null)
+                    m_folder = GetImageSource(StockIconIdentifier.Folder, StockIconOptions.Small);
+                return m_folder;
+            }
+        }
+
+        private static ImageSource m_associatedDocument;
+        internal static ImageSource AssociatedDocument
+        {
+            get
+            {
+                if (m_associatedDocument == null)
+                    m_associatedDocument = GetImageSource(StockIconIdentifier.AssociatedDocument, StockIconOptions.Small);
+                return m_associatedDocument;
+            }
+        }
 
         #region Private
 
         private enum StockIconIdentifier
         {
+            AssociatedDocument = 1,
+            /// <summary>
+            /// Folder (generic, unspecified state).
+            /// </summary>
+            Folder = 3,
             /// <summary>
             /// Security shield. Use for UAC promts only.
             /// </summary>

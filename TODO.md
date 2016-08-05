@@ -8,7 +8,7 @@
 
 ## File List View
 * make export methods work again
-* update style, add icons, use Windows Explorer as reference.
+* update style, use Windows Explorer as reference.
 * maybe change ListView to Table to show additional info.
 * Fallout4 - MeshesExtra -> precombined folder takes 7 seconds to open it. fix this somehow, maybe in async way? in parallel?
 * optimize stuff, reduce allocations
