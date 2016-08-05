@@ -27,22 +27,35 @@ namespace Ba2Explorer.Controls
     {
         #region Dependency Properties
 
+        public string SelectedFile
+        {
+            get { return (string)GetValue(SelectedFileProperty); }
+            set { SetValue(SelectedFileProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for SelectedFile.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty SelectedFileProperty =
+            DependencyProperty.Register(nameof(SelectedFile), typeof(string), typeof(FileListView));
+
         public ArchiveInfo Archive
         {
             get { return (ArchiveInfo)GetValue(ArchiveProperty); }
-            set
-            {
-                Reset();
-                SetValue(ArchiveProperty, value);
-                if (value != null)
-                    LoadTopLevelHierarchy();
-            }
+            set { SetValue(ArchiveProperty, value); }
         }
 
         public static readonly DependencyProperty ArchiveProperty =
-            DependencyProperty.Register(nameof(Archive), typeof(ArchiveInfo), typeof(FileListView), new PropertyMetadata(null));
+            DependencyProperty.Register(nameof(Archive), typeof(ArchiveInfo), typeof(FileListView), 
+               new FrameworkPropertyMetadata(propertyChangedCallback: ArchivePropertyChanged));
 
         #endregion
+
+        private static void ArchivePropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            var fs = (FileListView)d;
+            fs.Reset();
+            if (fs.Archive != null)
+                fs.LoadTopLevelHierarchy();
+        }
 
         /// <summary>
         /// Opened paths hierarchy.
@@ -63,6 +76,8 @@ namespace Ba2Explorer.Controls
             FileView.ItemsSource = m_currentPaths;
             ListCollectionView view = (ListCollectionView)CollectionViewSource.GetDefaultView(FileView.ItemsSource);
             view.CustomSort = new ArchiveFilePathCustomSorter();
+
+            DataContext = null;
         }
 
         private void Reset()
@@ -71,6 +86,7 @@ namespace Ba2Explorer.Controls
             m_paths.Clear();
             m_currentLevel = 0;
             PathLabel.Content = "";
+            SelectedFile = null;
         }
 
         private void LoadTopLevelHierarchy()
@@ -110,9 +126,13 @@ namespace Ba2Explorer.Controls
                     ArchiveFilePathService.GetRoots(m_currentPaths, Archive, m_paths[m_currentLevel - 1], m_currentLevel);
                 }
             }
+            else if (item.Type == FilePathType.File)
+            {
+                // do nothing
+            }
             else
             {
-                MessageBox.Show("TODO");
+                throw new NotSupportedException($"{ item.Type } is not supported.");
             }
 
             FileView.Items.Refresh();
@@ -135,6 +155,11 @@ namespace Ba2Explorer.Controls
             var item = ((FrameworkElement)e.Source).DataContext as ArchiveFilePath;
             if (item != null)
                 MoveHierarchy(item);
+        }
+
+        private void FileView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            SelectedFile = string.Join("\\", m_paths);
         }
     }
 }

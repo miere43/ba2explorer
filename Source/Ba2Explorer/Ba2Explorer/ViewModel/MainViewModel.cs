@@ -1,4 +1,3 @@
-using GalaSoft.MvvmLight;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -14,6 +13,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Ba2Explorer.Utility;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Diagnostics.Contracts;
+using System.ComponentModel;
 
 namespace Ba2Explorer.ViewModel
 {
@@ -29,7 +31,7 @@ namespace Ba2Explorer.ViewModel
     /// See http://www.galasoft.ch/mvvm
     /// </para>
     /// </summary>
-    public class MainViewModel : ViewModelBase
+    public class MainViewModel : INotifyPropertyChanged
     {
         public sealed class ExtractionEventArgs : EventArgs
         {
@@ -95,6 +97,7 @@ namespace Ba2Explorer.ViewModel
         public event EventHandler<bool> OnArchiveClosed;
 
         public event EventHandler<ExtractionEventArgs> OnExtractionCompleted;
+        public event PropertyChangedEventHandler PropertyChanged;
 
         /// <summary>
         /// Initializes a new instance of the MainViewModel class.
@@ -103,10 +106,10 @@ namespace Ba2Explorer.ViewModel
         {
             ArchiveInfo = null;
 
-#if DEBUG
-            if (IsInDesignMode)
-                PrepareDesignTimeData();
-#endif
+//#if DEBUG
+//            if (IsInDesignMode)
+//                PrepareDesignTimeData();
+//#endif
 
             RecentArchives = AppSettings.Instance.MainWindow.GetLatestFiles();
             RecentArchives.CollectionChanged += (sender, args) => RaisePropertyChanged(nameof(HasRecentArchives));
@@ -137,13 +140,13 @@ namespace Ba2Explorer.ViewModel
         /// <para>To cleanup additional resources, override this method, clean
         /// up and then call base.Cleanup().</para>
         /// </summary>
-        public override void Cleanup()
-        {
-            if (ArchiveInfo != null && !ArchiveInfo.IsDisposed)
-                ArchiveInfo.Dispose();
+        //public override void Cleanup()
+        //{
+        //    if (ArchiveInfo != null && !ArchiveInfo.IsDisposed)
+        //        ArchiveInfo.Dispose();
 
-            base.Cleanup();
-        }
+        //    base.Cleanup();
+        //}
 
         public void OpenArchiveWithDialog()
         {
@@ -379,5 +382,11 @@ namespace Ba2Explorer.ViewModel
         }
 
         #endregion
+
+        private void RaisePropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            Contract.Requires(propertyName != null);
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
     }
 }

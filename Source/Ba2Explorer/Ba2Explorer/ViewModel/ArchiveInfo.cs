@@ -7,11 +7,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using Microsoft.Win32;
-using GalaSoft.MvvmLight;
 using Ba2Tools;
 using Ba2Explorer.Logging;
 using Ba2Explorer.Settings;
 using System.Linq;
+using System.ComponentModel;
+using System.Diagnostics.Contracts;
+using System.Runtime.CompilerServices;
 
 namespace Ba2Explorer.ViewModel
 {
@@ -19,7 +21,7 @@ namespace Ba2Explorer.ViewModel
     /// Wrapper over Ba2Tools.BA2Archive
     /// </summary>
     /// <seealso cref="GalaSoft.MvvmLight.ObservableObject" />
-    public sealed class ArchiveInfo : ObservableObject, IDisposable
+    public sealed class ArchiveInfo : INotifyPropertyChanged, IDisposable
     {
         private object m_lock = new object();
 
@@ -42,6 +44,7 @@ namespace Ba2Explorer.ViewModel
         }
 
         public event EventHandler Disposing;
+        public event PropertyChangedEventHandler PropertyChanged;
 
         #region Properties
 
@@ -218,5 +221,11 @@ namespace Ba2Explorer.ViewModel
         }
 
         #endregion
+
+        private void RaisePropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            Contract.Requires(propertyName != null);
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
     }
 }

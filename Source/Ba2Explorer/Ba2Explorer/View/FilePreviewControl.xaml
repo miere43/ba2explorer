@@ -6,6 +6,7 @@
              xmlns:local="clr-namespace:Ba2Explorer"
              xmlns:view="clr-namespace:Ba2Explorer.View"
              xmlns:ctrls="clr-namespace:Ba2Explorer.Controls"
+             DataContext="{Binding}"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
     <Grid>

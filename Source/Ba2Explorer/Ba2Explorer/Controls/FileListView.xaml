@@ -6,6 +6,7 @@
              xmlns:local="clr-namespace:Ba2Explorer.Controls"
              xmlns:conv="clr-namespace:Ba2Explorer.View.Converters"
              xmlns:self="clr-namespace:Ba2Explorer"
+             DataContext="{Binding}"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
     <UserControl.Resources>
@@ -19,6 +20,7 @@
         <Label Grid.Row="0" x:Name="PathLabel"></Label>
         <ListView x:Name="FileView"
                   Grid.Row="1"
+                  SelectionChanged="FileView_SelectionChanged"
                   VirtualizingPanel.IsVirtualizing="True">
             <ListView.ItemContainerStyle>
                 <Style TargetType="ListViewItem">

@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:Ba2Explorer"
         xmlns:converters="clr-namespace:Ba2Explorer.View.Converters"
         mc:Ignorable="d"
-        DataContext="{Binding Source={StaticResource Locator}, Path=FileExtraction}"
+        DataContext="{Binding Source={StaticResource FileExtractionVM}}"
         Title="Extracting..." Height="164" Width="320" WindowStartupLocation="CenterOwner">
 
     <Window.CommandBindings>

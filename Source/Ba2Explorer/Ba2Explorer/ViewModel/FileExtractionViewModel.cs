@@ -1,5 +1,4 @@
 ﻿using Ba2Tools;
-using GalaSoft.MvvmLight;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -9,6 +8,8 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 
 namespace Ba2Explorer.ViewModel
 {
@@ -20,13 +21,14 @@ namespace Ba2Explorer.ViewModel
         Canceled
     }
 
-    public sealed class FileExtractionViewModel : ViewModelBase
+    public sealed class FileExtractionViewModel : INotifyPropertyChanged
     {
         private CancellationTokenSource cancellationToken;
 
         #region Properties / Events
 
         public event EventHandler<ExtractionFinishedState> OnFinished;
+        public event PropertyChangedEventHandler PropertyChanged;
 
         public Progress<int> ExtractionProgress { get; set; }
 
@@ -163,6 +165,12 @@ namespace Ba2Explorer.ViewModel
                 IsExtracting = false;
                 OnFinished?.Invoke(this, ExtractionState);
             }
+        }
+
+        private void RaisePropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            Contract.Requires(propertyName != null);
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

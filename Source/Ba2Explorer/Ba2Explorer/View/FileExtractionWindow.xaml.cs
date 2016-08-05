@@ -21,6 +21,8 @@ namespace Ba2Explorer.View
         public FileExtractionWindow()
         {
             InitializeComponent();
+            if (DesignerProperties.GetIsInDesignMode(this))
+                return;
         }
 
         protected override void OnInitialized(EventArgs e)

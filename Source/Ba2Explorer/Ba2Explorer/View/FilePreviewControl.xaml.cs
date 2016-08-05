@@ -41,7 +41,7 @@ namespace Ba2Explorer.View
         }
 
         public static readonly DependencyProperty ArchiveProperty =
-            DependencyProperty.Register(nameof(Archive), typeof(ArchiveInfo), typeof(FilePreviewControl), new PropertyMetadata(null));
+            DependencyProperty.Register(nameof(Archive), typeof(ArchiveInfo), typeof(FilePreviewControl));
 
         /// <summary>
         /// Gets or sets file index in archive that will be previewed.
@@ -49,16 +49,20 @@ namespace Ba2Explorer.View
         public string PreviewFileName
         {
             get { return (string)GetValue(PreviewFileNameProperty); }
-            set {
-                SetValue(PreviewFileNameProperty, value);
-                SetPreview(value);
-            }
+            set { SetValue(PreviewFileNameProperty, value); }
         }
 
         public static readonly DependencyProperty PreviewFileNameProperty =
-            DependencyProperty.Register(nameof(PreviewFileName), typeof(string), typeof(FilePreviewControl), new PropertyMetadata(null));
+            DependencyProperty.Register(nameof(PreviewFileName), typeof(string), typeof(FilePreviewControl),
+                new FrameworkPropertyMetadata(propertyChangedCallback: PreviewFileNamePropertyChanged));
 
         #endregion
+
+        private static void PreviewFileNamePropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            var control = (FilePreviewControl)d;
+            control.SetPreview(control.PreviewFileName);
+        }
 
         private static IReadOnlyDictionary<string, string> extensionDescriptions;
 

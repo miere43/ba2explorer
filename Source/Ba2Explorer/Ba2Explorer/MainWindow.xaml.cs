@@ -10,6 +10,7 @@ using Ba2Explorer.Utility;
 using System.Collections.Generic;
 using Ba2Explorer.Service;
 using System.Diagnostics;
+using System.ComponentModel;
 
 namespace Ba2Explorer
 {
@@ -24,6 +25,8 @@ namespace Ba2Explorer
         public MainWindow()
         {
             InitializeComponent();
+            if (DesignerProperties.GetIsInDesignMode(this))
+                return;
 
             viewModel = (MainViewModel)DataContext;
             viewModel.OnArchiveOpened += ViewModel_OnArchiveOpened;
@@ -142,7 +145,7 @@ namespace Ba2Explorer
 
         private void MainWindow_Closed(object sender, EventArgs e)
         {
-            this.viewModel.Cleanup();
+            //this.viewModel.Cleanup();
         }
 
         #endregion

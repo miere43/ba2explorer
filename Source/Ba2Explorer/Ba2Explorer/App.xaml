@@ -7,11 +7,13 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     d1p1:Ignorable="d"
     xmlns:d1p1="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:view="clr-namespace:Ba2Explorer.View"
+    xmlns:vm="clr-namespace:Ba2Explorer.ViewModel"
     ShutdownMode="OnMainWindowClose"
     Exit="Application_Exit">
-  <Application.Resources>
-    <ResourceDictionary>
-      <vm:ViewModelLocator x:Key="Locator" d:IsDataSource="True" xmlns:vm="clr-namespace:Ba2Explorer.ViewModel" />
-    </ResourceDictionary>
-  </Application.Resources>
+
+    <Application.Resources>
+        <vm:MainViewModel x:Key="MainVM" />
+        <vm:FileExtractionViewModel x:Key="FileExtractionVM" />
+    </Application.Resources>
 </Application>

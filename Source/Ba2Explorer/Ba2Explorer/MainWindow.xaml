@@ -11,7 +11,7 @@
         xmlns:ctrls="clr-namespace:Ba2Explorer.Controls"
         mc:Ignorable="d"
         xml:lang="en-US"
-        DataContext="{Binding Source={StaticResource Locator}, Path=Main}"
+        DataContext="{Binding Source={StaticResource MainVM}}"
         Title="BA2 Explorer" Height="350" Width="525">
 
     <Window.CommandBindings>
@@ -107,6 +107,7 @@
             Visibility="{Binding IsChecked, ElementName=FilePreviewPanelMenuItem, Converter={StaticResource BoolToCollapsedVisConverter}}"
             IsEnabled="{Binding IsChecked, ElementName=FilePreviewPanelMenuItem}"
             Archive="{Binding ArchiveInfo}"
+            PreviewFileName="{Binding ElementName=FileListView, Path=SelectedFile}"
             Grid.Row="1"
             Grid.RowSpan="2"
             Grid.Column="1" />
