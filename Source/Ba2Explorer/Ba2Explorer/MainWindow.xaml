@@ -79,10 +79,10 @@
 
         <ctrls:FileListView
             x:Name="FileListView"
+            Archive="{Binding ArchiveInfo}"
             Grid.Row="2"
             Grid.Column="0">
         </ctrls:FileListView>
-        <!-- TODO cannot bind this crap Archive="{Binding ArchiveInfo}" -->
 
             <!--<ListView BorderThickness="0,1,0,0"
                   x:Name="ArchiveFilesList"
@@ -111,7 +111,6 @@
             Grid.Row="1"
             Grid.RowSpan="2"
             Grid.Column="1" />
-        <!-- TODO cannot bind this crap PreviewFileName="{Binding SelectedItem, ElementName=ArchiveFilesList}" -->
 
         <Grid 
             Grid.Row="1"

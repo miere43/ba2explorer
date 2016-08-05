@@ -24,8 +24,8 @@ namespace Ba2Explorer.Service
                 SplitNames(path);
                 if (m_names.Count < 1)
                     continue;
-                var root = m_names[1];
-                bool isFile = m_names.Count <= 2;
+                var root = m_names[0];
+                bool isFile = m_names.Count < 2;
 
                 int rootHash = 0;
                 if (!isFile)
@@ -63,13 +63,13 @@ namespace Ba2Explorer.Service
 
             foreach (string path in archive.Archive.FileList)
             {
-                if (!CheckPathAtLevel(path, filePath.Path, level))
+                if (!CheckPathAtLevel(path, filePath.Path, level - 1))
                     continue;
                 SplitNames(path);
                 if (m_names.Count < level + 1)
                     continue;
-                var root = m_names[level + 1];
-                bool isFile = m_names.Count <= level + 2;
+                var root = m_names[level];
+                bool isFile = m_names.Count <= level + 1;
 
                 int rootHash = 0;
                 if (!isFile)
@@ -108,9 +108,9 @@ namespace Ba2Explorer.Service
             }
             if (levelsPassed != level)
                 return false;
+            ++pos; // skip '\' char.
             skipLevelDetection:
             int pcPos = 0;
-            ++pos; // skip '\' char.
             while (pcPos < pathToCheck.Length)
             {
                 if (path[pos] != pathToCheck[pcPos])

@@ -121,7 +121,7 @@ namespace Ba2Explorer
             this.UpdateTitle(viewModel.ArchiveInfo.FilePath);
             this.ShowStatusBar($"{ viewModel.ArchiveInfo.FilePath } • { viewModel.ArchiveInfo.TotalFiles } files.");
 
-            FileListView.Archive = viewModel.ArchiveInfo;
+            //FileListView.Archive = viewModel.ArchiveInfo;
         }
 
         private void ViewModel_OnArchiveClosed(object sender, bool resetUI)
@@ -132,7 +132,7 @@ namespace Ba2Explorer
                 this.HideStatusBar();
             }
 
-            FileListView.Archive = null;
+            //FileListView.Archive = null;
         }
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)

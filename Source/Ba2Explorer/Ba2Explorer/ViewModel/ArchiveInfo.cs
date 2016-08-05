@@ -30,16 +30,12 @@ namespace Ba2Explorer.ViewModel
         {
             get
             {
-                lock (m_lock)
-                    return m_archive;
+                return m_archive;
             }
             set
             {
-                lock (m_lock)
-                {
                     m_archive = value;
                     RaisePropertyChanged();
-                }
             }
         }
 

@@ -19,18 +19,6 @@ using System.ComponentModel;
 
 namespace Ba2Explorer.ViewModel
 {
-    /// <summary>
-    /// This class contains properties that the main View can data bind to.
-    /// <para>
-    /// Use the <strong>mvvminpc</strong> snippet to add bindable properties to this ViewModel.
-    /// </para>
-    /// <para>
-    /// You can also use Blend to data bind with the tool's support.
-    /// </para>
-    /// <para>
-    /// See http://www.galasoft.ch/mvvm
-    /// </para>
-    /// </summary>
     public class MainViewModel : INotifyPropertyChanged
     {
         public sealed class ExtractionEventArgs : EventArgs
@@ -104,6 +92,9 @@ namespace Ba2Explorer.ViewModel
         /// </summary>
         public MainViewModel()
         {
+            if (DesignerProperties.GetIsInDesignMode(new DependencyObject()))
+                return;
+
             ArchiveInfo = null;
 
 //#if DEBUG
@@ -377,7 +368,6 @@ namespace Ba2Explorer.ViewModel
             {
                 builder[i] = Char.ToLower(builder[i]);
             }
-
             return builder.ToString();
         }
 

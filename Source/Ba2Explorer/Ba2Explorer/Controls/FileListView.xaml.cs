@@ -76,8 +76,6 @@ namespace Ba2Explorer.Controls
             FileView.ItemsSource = m_currentPaths;
             ListCollectionView view = (ListCollectionView)CollectionViewSource.GetDefaultView(FileView.ItemsSource);
             view.CustomSort = new ArchiveFilePathCustomSorter();
-
-            DataContext = null;
         }
 
         private void Reset()
@@ -159,7 +157,17 @@ namespace Ba2Explorer.Controls
 
         private void FileView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            SelectedFile = string.Join("\\", m_paths);
+            ArchiveFilePath item = (ArchiveFilePath)FileView.SelectedItem;
+            if (item == null || item.Type != FilePathType.File) return;
+
+            StringBuilder b = new StringBuilder();
+            for (int i = 0; i < m_paths.Count; ++i)
+            {
+                b.Append(m_paths[i].Path);
+                b.Append('\\');
+            }
+            b.Append(item.Path);
+            SelectedFile = b.ToString();
         }
     }
 }
