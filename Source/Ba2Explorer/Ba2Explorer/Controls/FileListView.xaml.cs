@@ -130,7 +130,6 @@ namespace Ba2Explorer.Controls
                     FileView.SelectedIndex = 1; // select first folder (not Go Back button)
                 else if (m_currentPaths.Count == 1)
                     FileView.SelectedIndex = 0; // select Go Back button, no items in folder (not possible actually, but howerer)
-                m_prevFolderIndex = FileView.SelectedIndex; // I guess thats correct.
             }
             else if (item.Type == FilePathType.GoBack)
             {
