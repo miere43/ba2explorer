@@ -359,7 +359,7 @@ namespace Ba2Explorer
 
         private void FileListView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            var item = ((FrameworkElement)e.OriginalSource).DataContext as ArchiveFilePath;
+            var item = ((FrameworkElement)e.Source).DataContext as ArchiveFilePath;
             if (item != null)
             {
                 if (item.Type == FilePathType.Directory)
@@ -402,6 +402,11 @@ namespace Ba2Explorer
                     MessageBox.Show("TODO");
                 }
             }
+        }
+
+        private void CommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            Debug.WriteLine("CC");
         }
     }
 }
