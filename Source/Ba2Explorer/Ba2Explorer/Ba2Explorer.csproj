@@ -104,6 +104,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="ArchiveFilePath.cs" />
     <Compile Include="ExtensionAssociation.cs" />
     <Compile Include="Logging\FileLogger.cs" />
     <Compile Include="Logging\ILogger.cs" />
@@ -111,6 +112,7 @@
     <Compile Include="Logging\NullLogger.cs" />
     <Compile Include="MathHelper.cs" />
     <Compile Include="NotifyTaskCompletion.cs" />
+    <Compile Include="Service\ArchiveFIlePathService.cs" />
     <Compile Include="Settings\AppSettings.cs" />
     <Compile Include="Settings\AppSettingsBase.cs" />
     <Compile Include="Settings\FilePreviewSettings.cs" />
@@ -143,6 +145,12 @@
     <Compile Include="ViewModel\MainViewModel.cs" />
     <Compile Include="ViewModel\ViewModelLocator.cs" />
     <Compile Include="Controller\FilePreviewer.cs" />
+    <Compile Include="View\FileViewer.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="View\FileViewer.Designer.cs">
+      <DependentUpon>FileViewer.cs</DependentUpon>
+    </Compile>
     <Compile Include="View\SettingsWindow.xaml.cs">
       <DependentUpon>SettingsWindow.xaml</DependentUpon>
     </Compile>

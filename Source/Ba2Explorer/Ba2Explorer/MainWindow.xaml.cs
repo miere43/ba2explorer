@@ -1,16 +1,14 @@
 ﻿using System;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using Ba2Explorer.ViewModel;
-using System.Collections;
 using Ba2Explorer.Settings;
 using Ba2Explorer.Utility;
 using System.Collections.Generic;
-using System.ComponentModel;
+using Ba2Explorer.Service;
 using System.Diagnostics;
 
 namespace Ba2Explorer
@@ -114,8 +112,11 @@ namespace Ba2Explorer
 
         private void ViewModel_OnArchiveOpened(object sender, EventArgs e)
         {
-            archiveFilesFilter = (CollectionView)CollectionViewSource.GetDefaultView(this.ArchiveFilesList.ItemsSource);
-            archiveFilesFilter.Filter = ArchiveFileFilter;
+            //archiveFilesFilter = (CollectionView)CollectionViewSource.GetDefaultView(this.ArchiveFilesList.ItemsSource);
+            //archiveFilesFilter.Filter = ArchiveFileFilter;
+
+            FileListView.Tag = 0;
+            FileListView.ItemsSource = ArchiveFilePathService.GetRoots(viewModel.ArchiveInfo);
 
             this.UpdateTitle(viewModel.ArchiveInfo.FilePath);
             this.ShowStatusBar($"{ viewModel.ArchiveInfo.FilePath } • { viewModel.ArchiveInfo.TotalFiles } files.");
@@ -163,7 +164,7 @@ namespace Ba2Explorer
             if (viewModel.ArchiveInfo == null)
                 return;
 
-            CollectionViewSource.GetDefaultView(ArchiveFilesList.ItemsSource).Refresh();
+            //CollectionViewSource.GetDefaultView(ArchiveFilesList.ItemsSource).Refresh();
 
             //if (FilePreview.HasFileInQueue())
             //    SetSelectedItemFilePreview();
@@ -202,31 +203,31 @@ namespace Ba2Explorer
                 return;
             }
 
-            e.CanExecute = ArchiveFilesList.SelectedIndex != -1;
+            // e.CanExecute = ArchiveFilesList.SelectedIndex != -1;
             e.Handled = true;
         }
 
-        private async void ExtractSelectedExecuted(object sender, ExecutedRoutedEventArgs e)
+        private /* async */ void ExtractSelectedExecuted(object sender, ExecutedRoutedEventArgs e)
         {
-            if (ArchiveFilesList.SelectedItems.Count == 1)
-            {
-                string sel = ArchiveFilesList.SelectedItem as string;
+            //if (ArchiveFilesList.SelectedItems.Count == 1)
+            //{
+            //    string sel = ArchiveFilesList.SelectedItem as string;
 
-                await viewModel.ExtractFileWithDialog(viewModel.ArchiveInfo.Archive.GetFileIndex(sel));
-                e.Handled = true;
-            }
-            else if (ArchiveFilesList.SelectedItems.Count > 1)
-            {
-                List<string> sels = ArchiveFilesList.SelectedItems.Cast<string>().ToList();
-                List<int> ss = new List<int>();
-                foreach (var sel in sels)
-                {
-                    ss.Add(viewModel.ArchiveInfo.Archive.GetFileIndex(sel));
-                }
+            //    await viewModel.ExtractFileWithDialog(viewModel.ArchiveInfo.Archive.GetFileIndex(sel));
+            //    e.Handled = true;
+            //}
+            //else if (ArchiveFilesList.SelectedItems.Count > 1)
+            //{
+            //    List<string> sels = ArchiveFilesList.SelectedItems.Cast<string>().ToList();
+            //    List<int> ss = new List<int>();
+            //    foreach (var sel in sels)
+            //    {
+            //        ss.Add(viewModel.ArchiveInfo.Archive.GetFileIndex(sel));
+            //    }
 
-                viewModel.ExtractFilesWithDialog(ss);
-                e.Handled = true;
-            }
+            //    viewModel.ExtractFilesWithDialog(ss);
+            //    e.Handled = true;
+            //}
         }
 
         private void ExtractAllCommandExecuted(object sender, ExecutedRoutedEventArgs e)
@@ -349,7 +350,58 @@ namespace Ba2Explorer
 
         private void ArchiveFilesList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            FilePreview.PreviewFileName = ArchiveFilesList.SelectedItem as string;
+            //FilePreview.PreviewFileName = ArchiveFilesList.SelectedItem as string;
+        }
+
+        Stack<ArchiveFilePath> paths = new Stack<ArchiveFilePath>();
+
+        ArchiveFilePath currentItem = null;
+
+        private void FileListView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            var item = ((FrameworkElement)e.OriginalSource).DataContext as ArchiveFilePath;
+            if (item != null)
+            {
+                if (item.Type == FilePathType.Directory)
+                {
+                    currentItem = item;
+                    int level = (int)FileListView.Tag;
+                    ++level;
+                    FileListView.ItemsSource = ArchiveFilePathService.GetRoots(viewModel.ArchiveInfo, currentItem, level);
+                    FileListView.Tag = level;
+                    paths.Push(currentItem);
+                    Debug.WriteLine("Open Dir, Item {0}, Level {1} => {2}, Stack Size {3}", currentItem.Path, level - 1, level, paths.Count);
+                }
+                else if (item.Type == FilePathType.GoBack)
+                {
+                    int level = (int)FileListView.Tag;
+                    Debug.Assert(level != 0); // should not happen
+                    if (level == 1)
+                    {
+                        Debug.WriteLine("Go Back, Get Main Roots");
+                        paths.Clear();
+                        FileListView.Tag = 0;
+                        FileListView.ItemsSource = ArchiveFilePathService.GetRoots(viewModel.ArchiveInfo);
+                        currentItem = null;
+                    }
+                    else
+                    {
+                        item = paths.Pop();
+                        if (currentItem == item)
+                            currentItem = paths.Pop();
+                        else
+                            currentItem = item;
+                        --level;
+                        Debug.WriteLine("Go Back, Item {0}, Level {1} => {2}, Stack Size {3}", currentItem.Path, level+1, level, paths.Count);
+                        FileListView.Tag = level;
+                        FileListView.ItemsSource = ArchiveFilePathService.GetRoots(viewModel.ArchiveInfo, currentItem, level);
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("TODO");
+                }
+            }
         }
     }
 }

@@ -76,7 +76,22 @@
             </MenuItem>
         </Menu>
 
-        <ListView BorderThickness="0,1,0,0"
+        <ListView
+            x:Name="FileListView"
+            Grid.Row="2"
+            MouseDoubleClick="FileListView_MouseDoubleClick"
+            Grid.Column="0">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal">
+                        <Label Content="{Binding Type}" />
+                        <Label Content="{Binding Path}" />
+                    </StackPanel>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+
+            <!--<ListView BorderThickness="0,1,0,0"
                   x:Name="ArchiveFilesList"
                   Grid.Row="2"
                   Grid.Column="0"
@@ -89,7 +104,7 @@
                     <MenuItem Header="Extract" Command="commands:AppCommands.ExtractSelected" />
                 </ContextMenu>
             </ListView.ContextMenu>
-        </ListView>
+        </ListView>-->
         
         <GridSplitter Background="#4A5573" Grid.Row="1" Grid.RowSpan="2" Grid.Column="0" Width="2"
                       Visibility="{Binding Visibility, ElementName=FilePreview}"/>
