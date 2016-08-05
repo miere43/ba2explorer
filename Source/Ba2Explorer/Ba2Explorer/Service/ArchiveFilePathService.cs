@@ -6,6 +6,7 @@ using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Ba2Explorer.View;
 using Ba2Explorer.ViewModel;
 
 namespace Ba2Explorer.Service

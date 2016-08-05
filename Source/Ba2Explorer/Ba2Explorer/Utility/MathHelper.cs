@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Ba2Explorer
+namespace Ba2Explorer.Utility
 {
     public static class MathHelper
     {

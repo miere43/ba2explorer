@@ -5,13 +5,13 @@ using System.Media;
 using System.Windows;
 using System.Windows.Controls;
 
-namespace Ba2Explorer.View
+namespace Ba2Explorer.Controls
 {
     /// <summary>
     /// Represents a control which is capable of playing
     /// various audio tracks. Supports WAV only.
     /// </summary>
-    public partial class AudioPlayerControl : UserControl
+    public partial class AudioPlayer : UserControl
     {
         private Stream soundSource;
         public Stream SoundSource
@@ -29,7 +29,7 @@ namespace Ba2Explorer.View
 
         private SoundPlayer soundPlayer;
 
-        public AudioPlayerControl()
+        public AudioPlayer()
         {
             InitializeComponent();
             soundPlayer = new SoundPlayer();
@@ -45,7 +45,7 @@ namespace Ba2Explorer.View
             SoundSourceChanged(); // No source by default.
         }
 
-        ~AudioPlayerControl()
+        ~AudioPlayer()
         {
             AppSettings.Instance.FilePreview.OnSaving -= FilePreviewSettingsBeforeSave;
         }

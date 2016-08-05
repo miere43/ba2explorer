@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Ba2Explorer
+namespace Ba2Explorer.View
 {
     public class ArchiveFilePathCustomSorter : IComparer, IComparer<ArchiveFilePath>
     {

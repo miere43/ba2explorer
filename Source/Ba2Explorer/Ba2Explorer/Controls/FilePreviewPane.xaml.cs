@@ -16,18 +16,17 @@ using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using Ba2Explorer.Controller;
+using Ba2Explorer.Service;
 using System.ComponentModel;
 using Ba2Explorer.Controls;
 using System.Linq;
 
-namespace Ba2Explorer.View
+namespace Ba2Explorer.Controls
 {
-
     /// <summary>
     /// Control to preview various files from archive.
     /// </summary>
-    public partial class FilePreviewControl : UserControl
+    public partial class FilePreviewPane : UserControl
     {
         #region Dependency Properties
 
@@ -41,7 +40,7 @@ namespace Ba2Explorer.View
         }
 
         public static readonly DependencyProperty ArchiveProperty =
-            DependencyProperty.Register(nameof(Archive), typeof(ArchiveInfo), typeof(FilePreviewControl));
+            DependencyProperty.Register(nameof(Archive), typeof(ArchiveInfo), typeof(FilePreviewPane));
 
         /// <summary>
         /// Gets or sets file index in archive that will be previewed.
@@ -53,14 +52,14 @@ namespace Ba2Explorer.View
         }
 
         public static readonly DependencyProperty PreviewFileNameProperty =
-            DependencyProperty.Register(nameof(PreviewFileName), typeof(string), typeof(FilePreviewControl),
+            DependencyProperty.Register(nameof(PreviewFileName), typeof(string), typeof(FilePreviewPane),
                 new FrameworkPropertyMetadata(propertyChangedCallback: PreviewFileNamePropertyChanged));
 
         #endregion
 
         private static void PreviewFileNamePropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            var control = (FilePreviewControl)d;
+            var control = (FilePreviewPane)d;
             control.SetPreview(control.PreviewFileName);
         }
 
@@ -84,7 +83,7 @@ namespace Ba2Explorer.View
         /// </summary>
         private BackgroundWorker m_previewWorker;
 
-        public FilePreviewControl()
+        public FilePreviewPane()
         {
             LazyStaticInit();
 
@@ -131,10 +130,10 @@ namespace Ba2Explorer.View
 
         private void LoadPreviewInBackground(object sender, DoWorkEventArgs args)
         {
-            args.Result = FilePreviewer.LoadPreview(args);
+            args.Result = FilePreviewService.LoadPreview(args);
         }
 
-        ~FilePreviewControl()
+        ~FilePreviewPane()
         {
             m_previewWorker.DoWork -= LoadPreviewInBackground;
             m_previewWorker.RunWorkerCompleted -= LoadPreviewCompleted;
@@ -183,7 +182,7 @@ namespace Ba2Explorer.View
             if (fileIndex == -1)
                 return; // TODO set error preview?
 
-            PreviewFileType fileType = FilePreviewer.ResolveFileTypeFromFileName(fileName);
+            PreviewFileType fileType = FilePreviewService.ResolveFileTypeFromFileName(fileName);
 
             if (m_previewWorker.IsBusy)
             {

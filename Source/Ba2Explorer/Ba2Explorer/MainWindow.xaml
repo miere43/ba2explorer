@@ -102,7 +102,7 @@
         <GridSplitter Background="#4A5573" Grid.Row="1" Grid.RowSpan="2" Grid.Column="0" Width="2"
                       Visibility="{Binding Visibility, ElementName=FilePreview}"/>
 
-        <view:FilePreviewControl
+        <ctrls:FilePreviewPane
             x:Name="FilePreview"
             Visibility="{Binding IsChecked, ElementName=FilePreviewPanelMenuItem, Converter={StaticResource BoolToCollapsedVisConverter}}"
             IsEnabled="{Binding IsChecked, ElementName=FilePreviewPanelMenuItem}"

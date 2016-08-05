@@ -1,14 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Ba2Explorer.Utility;
 using System.Windows;
 using System.Security;
 using Microsoft.Win32;
 
-namespace Ba2Explorer
+namespace Ba2Explorer.Utility
 {
     internal static class ExtensionAssociation
     {

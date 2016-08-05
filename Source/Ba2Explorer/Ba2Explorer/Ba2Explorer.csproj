@@ -84,18 +84,17 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="ArchiveFilePath.cs" />
-    <Compile Include="ArchiveFilePathCustomSorter.cs" />
+    <Compile Include="View\ArchiveFilePath.cs" />
+    <Compile Include="View\ArchiveFilePathCustomSorter.cs" />
     <Compile Include="Controls\FileListView.xaml.cs">
       <DependentUpon>FileListView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="ExtensionAssociation.cs" />
+    <Compile Include="Utility\ExtensionAssociation.cs" />
     <Compile Include="Logging\FileLogger.cs" />
     <Compile Include="Logging\ILogger.cs" />
     <Compile Include="Logging\LogPriority.cs" />
     <Compile Include="Logging\NullLogger.cs" />
-    <Compile Include="MathHelper.cs" />
-    <Compile Include="NotifyTaskCompletion.cs" />
+    <Compile Include="Utility\MathHelper.cs" />
     <Compile Include="Service\ArchiveFilePathService.cs" />
     <Compile Include="Settings\AppSettings.cs" />
     <Compile Include="Settings\AppSettingsBase.cs" />
@@ -120,20 +119,20 @@
     <Compile Include="View\FileExtractionWindow.xaml.cs">
       <DependentUpon>FileExtractionWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="View\FilePreviewControl.xaml.cs">
-      <DependentUpon>FilePreviewControl.xaml</DependentUpon>
+    <Compile Include="Controls\FilePreviewPane.xaml.cs">
+      <DependentUpon>FilePreviewPane.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\Converters\InverseBooleanConverter.cs" />
     <Compile Include="Thirdparty\DdsImage.cs" />
     <Compile Include="ViewModel\ArchiveInfo.cs" />
     <Compile Include="ViewModel\FileExtractionViewModel.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
-    <Compile Include="Controller\FilePreviewer.cs" />
+    <Compile Include="Service\FilePreviewService.cs" />
     <Compile Include="View\SettingsWindow.xaml.cs">
       <DependentUpon>SettingsWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="View\AudioPlayerControl.xaml.cs">
-      <DependentUpon>AudioPlayerControl.xaml</DependentUpon>
+    <Compile Include="Controls\AudioPlayer.xaml.cs">
+      <DependentUpon>AudioPlayer.xaml</DependentUpon>
     </Compile>
     <Compile Include="Utility\NativeMethods_2.cs" />
     <Page Include="Controls\FileListView.xaml">
@@ -144,7 +143,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="View\FilePreviewControl.xaml">
+    <Page Include="Controls\FilePreviewPane.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -164,7 +163,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="View\AudioPlayerControl.xaml">
+    <Page Include="Controls\AudioPlayer.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

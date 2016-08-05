@@ -16,7 +16,7 @@ using Ba2Explorer.View;
 using Ba2Explorer.ViewModel;
 using S16.Drawing;
 
-namespace Ba2Explorer.Controller
+namespace Ba2Explorer.Service
 {
     public enum PreviewFileType
     {
@@ -56,7 +56,7 @@ namespace Ba2Explorer.Controller
         }
     }
 
-    public static class FilePreviewer
+    public static class FilePreviewService
     {
         private static EncodedStringConverter m_stringConv = new EncodedStringConverter();
 
