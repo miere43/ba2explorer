@@ -351,10 +351,5 @@ namespace Ba2Explorer.View
         }
 
         #endregion
-
-        private void ArchiveFilesList_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            //FilePreview.PreviewFileName = ArchiveFilesList.SelectedItem as string;
-        }
     }
 }

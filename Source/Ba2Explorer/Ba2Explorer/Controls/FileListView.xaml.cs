@@ -20,6 +20,9 @@ namespace Ba2Explorer.Controls
     {
         #region Dependency Properties
 
+        /// <summary>
+        /// Gets or sets file selected in list view. Returns null if nothing selected or selected item is not file.
+        /// </summary>
         public string SelectedFile
         {
             get { return (string)GetValue(SelectedFileProperty); }
@@ -162,7 +165,11 @@ namespace Ba2Explorer.Controls
         private void FileView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             ArchiveFilePath item = (ArchiveFilePath)FileView.SelectedItem;
-            if (item == null || item.Type != FilePathType.File) return;
+            if (item == null || item.Type != FilePathType.File)
+            {
+                SelectedFile = null;
+                return;
+            }
 
             StringBuilder b = new StringBuilder();
             for (int i = 0; i < m_paths.Count; ++i)

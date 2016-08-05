@@ -172,15 +172,24 @@ namespace Ba2Explorer.Controls
         /// <param name="filePath">Path to file from archive.</param>
         private void SetPreview(string fileName)
         {
+            if (fileName == null)
+            {
+                SetNoPreview();
+                return;
+            }
+
             if (Archive == null || Archive.IsDisposed)
                 return;
 
-            if (!IsEnabled || !Archive.Archive.ContainsFile(fileName))
-                return; // TODO set error preview?
+            Contract.Assert(Archive.Archive.ContainsFile(fileName), "something is wrong, you should have this file");
+            if (!IsEnabled)
+            {
+                return;
+            }
 
             int fileIndex = Archive.Archive.GetFileIndex(fileName);
             if (fileIndex == -1)
-                return; // TODO set error preview?
+                return;
 
             PreviewFileType fileType = FilePreviewService.ResolveFileTypeFromFileName(fileName);
 
@@ -206,6 +215,13 @@ namespace Ba2Explorer.Controls
                 }
                 m_previewWorker.RunWorkerAsync(new object[] { Archive, fileIndex, fileType });
             }
+        }
+
+        private void SetNoPreview()
+        {
+            PreviewImageBox.Visibility = Visibility.Collapsed;
+            PreviewTextFieldParent.Visibility = Visibility.Collapsed;
+            SoundPlayerControl.Visibility = Visibility.Collapsed;
         }
 
         #endregion
