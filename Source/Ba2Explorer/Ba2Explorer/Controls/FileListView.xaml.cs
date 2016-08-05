@@ -95,6 +95,28 @@ namespace Ba2Explorer.Controls
             UpdatePathLabel();
         }
 
+        private void GoBack()
+        {
+            if (m_currentLevel == 0)
+                return;
+
+            if (m_currentLevel == 1)
+            {
+                m_paths.Clear();
+                m_currentLevel = 0;
+                ArchiveFilePathService.GetRoots(m_currentPaths, Archive);
+            }
+            else
+            {
+                --m_currentLevel;
+                m_paths.RemoveAt(m_currentLevel);
+                ArchiveFilePathService.GetRoots(m_currentPaths, Archive, m_paths[m_currentLevel - 1], m_currentLevel);
+            }
+
+            if (m_currentPaths.Count > 1)
+                FileView.SelectedIndex = 1;
+        }
+
         private void MoveHierarchy(ArchiveFilePath item)
         {
             Contract.Requires(item != null);
@@ -104,25 +126,15 @@ namespace Ba2Explorer.Controls
                 ++m_currentLevel;
                 ArchiveFilePathService.GetRoots(m_currentPaths, Archive, item, m_currentLevel);
                 m_paths.Add(item);
-                Debug.WriteLine("Open Dir, Item {0}, Level {1} => {2}, Stack Size {3}", item.Path, m_currentLevel - 1, m_currentLevel, m_paths.Count);
+                if (m_currentPaths.Count > 1)
+                    FileView.SelectedIndex = 1; // select first folder (not Go Back button)
+                else if (m_currentPaths.Count == 1)
+                    FileView.SelectedIndex = 0; // select Go Back button, no items in folder (not possible actually, but howerer)
+                m_prevFolderIndex = FileView.SelectedIndex; // I guess thats correct.
             }
             else if (item.Type == FilePathType.GoBack)
             {
-                Contract.Assert(m_currentLevel != 0); // should not happen
-                if (m_currentLevel == 1)
-                {
-                    Debug.WriteLine("Go Back, Get Main Roots");
-                    m_paths.Clear();
-                    m_currentLevel = 0;
-                    ArchiveFilePathService.GetRoots(m_currentPaths, Archive);
-                }
-                else
-                {
-                    --m_currentLevel;
-                    m_paths.RemoveAt(m_currentLevel);
-                    Debug.WriteLine("Go Back, Item {0}, Level {1} => {2}, Stack Size {3}", item.Path, m_currentLevel + 1, m_currentLevel, m_paths.Count);
-                    ArchiveFilePathService.GetRoots(m_currentPaths, Archive, m_paths[m_currentLevel - 1], m_currentLevel);
-                }
+                GoBack();
             }
             else if (item.Type == FilePathType.File)
             {
@@ -148,7 +160,7 @@ namespace Ba2Explorer.Controls
             PathLabel.Content = b.ToString();
         }
 
-        private void FileListView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        private void FileViewItem_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             var item = ((FrameworkElement)e.Source).DataContext as ArchiveFilePath;
             if (item != null)
@@ -168,6 +180,23 @@ namespace Ba2Explorer.Controls
             }
             b.Append(item.Path);
             SelectedFile = b.ToString();
+        }
+
+        private void FileView_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                var item = (ArchiveFilePath)FileView.SelectedItem;
+                if (item != null)
+                    MoveHierarchy(item);
+            }
+            else if (e.Key == Key.Back)
+            {
+                GoBack();
+
+                FileView.Items.Refresh();
+                UpdatePathLabel();
+            }
         }
     }
 }

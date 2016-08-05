@@ -19,11 +19,12 @@
         <Label Grid.Row="0" x:Name="PathLabel"></Label>
         <ListView x:Name="FileView"
                   Grid.Row="1"
+                  KeyDown="FileView_KeyDown"
                   SelectionChanged="FileView_SelectionChanged"
                   VirtualizingPanel.IsVirtualizing="True">
             <ListView.ItemContainerStyle>
                 <Style TargetType="ListViewItem">
-                    <EventSetter Event="MouseDoubleClick" Handler="FileListView_MouseDoubleClick" />
+                    <EventSetter Event="MouseDoubleClick" Handler="FileViewItem_MouseDoubleClick" />
                 </Style>
             </ListView.ItemContainerStyle>
             <ListView.ItemTemplate>
