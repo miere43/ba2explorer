@@ -34,7 +34,10 @@ namespace Ba2Explorer.ViewModel
             set
             {
                 lock (m_lock)
+                {
                     m_archive = value;
+                    RaisePropertyChanged();
+                }
             }
         }
 

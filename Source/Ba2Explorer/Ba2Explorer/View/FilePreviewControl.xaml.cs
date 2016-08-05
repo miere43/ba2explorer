@@ -40,7 +40,6 @@ namespace Ba2Explorer.View
             set { SetValue(ArchiveProperty, value); }
         }
 
-        // Using a DependencyProperty as the backing store for Archive.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty ArchiveProperty =
             DependencyProperty.Register(nameof(Archive), typeof(ArchiveInfo), typeof(FilePreviewControl), new PropertyMetadata(null));
 
@@ -56,7 +55,6 @@ namespace Ba2Explorer.View
             }
         }
 
-        // Using a DependencyProperty as the backing store for PreviewFileName.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty PreviewFileNameProperty =
             DependencyProperty.Register(nameof(PreviewFileName), typeof(string), typeof(FilePreviewControl), new PropertyMetadata(null));
 

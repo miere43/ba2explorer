@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -38,7 +39,7 @@ namespace Ba2Explorer.Controls
         }
 
         public static readonly DependencyProperty ArchiveProperty =
-            DependencyProperty.Register("Archive", typeof(ArchiveInfo), typeof(FileListView), new PropertyMetadata(null));
+            DependencyProperty.Register(nameof(Archive), typeof(ArchiveInfo), typeof(FileListView), new PropertyMetadata(null));
 
         #endregion
 
@@ -52,6 +53,8 @@ namespace Ba2Explorer.Controls
         /// </summary>
         ArchiveFilePath m_currentItem = null;
 
+        ObservableCollection<ArchiveFilePath> m_currentPaths = new ObservableCollection<ArchiveFilePath>();
+
         /// <summary>
         /// Current level in file hierarchy
         /// </summary>
@@ -60,6 +63,10 @@ namespace Ba2Explorer.Controls
         public FileListView()
         {
             InitializeComponent();
+
+            FileView.ItemsSource = m_currentPaths;
+            ListCollectionView view = (ListCollectionView)CollectionViewSource.GetDefaultView(FileView.ItemsSource);
+            view.CustomSort = new ArchiveFilePathCustomSorter();
         }
 
         private void Reset()
@@ -72,7 +79,8 @@ namespace Ba2Explorer.Controls
         private void LoadTopLevelHierarchy()
         {
             FileView.Tag = 0;
-            FileView.ItemsSource = ArchiveFilePathService.GetRoots(Archive);
+            ArchiveFilePathService.GetRoots(m_currentPaths, Archive);
+            FileView.Items.Refresh();
         }
 
         private void MoveHierarchy(ArchiveFilePath item)
@@ -84,7 +92,7 @@ namespace Ba2Explorer.Controls
                     m_currentItem = item;
                     int level = (int)FileView.Tag;
                     ++level;
-                    FileView.ItemsSource = ArchiveFilePathService.GetRoots(Archive, m_currentItem, level);
+                    ArchiveFilePathService.GetRoots(m_currentPaths, Archive, m_currentItem, level);
                     FileView.Tag = level;
                     m_paths.Push(m_currentItem);
                     Debug.WriteLine("Open Dir, Item {0}, Level {1} => {2}, Stack Size {3}", m_currentItem.Path, level - 1, level, m_paths.Count);
@@ -98,7 +106,7 @@ namespace Ba2Explorer.Controls
                         Debug.WriteLine("Go Back, Get Main Roots");
                         m_paths.Clear();
                         FileView.Tag = 0;
-                        FileView.ItemsSource = ArchiveFilePathService.GetRoots(Archive);
+                        ArchiveFilePathService.GetRoots(m_currentPaths, Archive);
                         m_currentItem = null;
                     }
                     else
@@ -111,13 +119,14 @@ namespace Ba2Explorer.Controls
                         --level;
                         Debug.WriteLine("Go Back, Item {0}, Level {1} => {2}, Stack Size {3}", m_currentItem.Path, level + 1, level, m_paths.Count);
                         FileView.Tag = level;
-                        FileView.ItemsSource = ArchiveFilePathService.GetRoots(Archive, m_currentItem, level);
+                        ArchiveFilePathService.GetRoots(m_currentPaths, Archive, m_currentItem, level);
                     }
                 }
                 else
                 {
                     MessageBox.Show("TODO");
                 }
+                FileView.Items.Refresh();
             }
         }
 

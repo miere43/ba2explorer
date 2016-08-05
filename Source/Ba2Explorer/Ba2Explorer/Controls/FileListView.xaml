@@ -6,7 +6,8 @@
              xmlns:local="clr-namespace:Ba2Explorer.Controls"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
-    <ListView x:Name="FileView">
+    <ListView x:Name="FileView"
+              VirtualizingPanel.IsVirtualizing="True">
         <ListView.ItemContainerStyle>
             <Style TargetType="ListViewItem">
                 <EventSetter Event="MouseDoubleClick" Handler="FileListView_MouseDoubleClick" />
