@@ -8,7 +8,6 @@
 
 ## File List View
 * make export methods work again
-* GoBack still sometimes doesn't work
 * update style, add icons, use Windows Explorer as reference.
 * maybe change ListView to Table to show additional info.
 * optimize stuff, reduce allocations

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -46,19 +47,14 @@ namespace Ba2Explorer.Controls
         /// <summary>
         /// Opened paths hierarchy.
         /// </summary>
-        Stack<ArchiveFilePath> m_paths = new Stack<ArchiveFilePath>();
-
-        /// <summary>
-        /// We view this item's children now.
-        /// </summary>
-        ArchiveFilePath m_currentItem = null;
+        List<ArchiveFilePath> m_paths = new List<ArchiveFilePath>();
 
         ObservableCollection<ArchiveFilePath> m_currentPaths = new ObservableCollection<ArchiveFilePath>();
 
         /// <summary>
         /// Current level in file hierarchy
         /// </summary>
-        int m_currentLevel = -1; // TODO make use of it instead of Tag property
+        int m_currentLevel = 0;
 
         public FileListView()
         {
@@ -71,63 +67,67 @@ namespace Ba2Explorer.Controls
 
         private void Reset()
         {
+            m_currentPaths.Clear();
             m_paths.Clear();
-            m_currentItem = null;
-            m_currentLevel = -1;
+            m_currentLevel = 0;
+            PathLabel.Content = "";
         }
 
         private void LoadTopLevelHierarchy()
         {
-            FileView.Tag = 0;
+            m_currentLevel = 0;
             ArchiveFilePathService.GetRoots(m_currentPaths, Archive);
             FileView.Items.Refresh();
+            UpdatePathLabel();
         }
 
         private void MoveHierarchy(ArchiveFilePath item)
         {
-            if (item != null)
+            Contract.Requires(item != null);
+
+            if (item.Type == FilePathType.Directory)
             {
-                if (item.Type == FilePathType.Directory)
+                ++m_currentLevel;
+                ArchiveFilePathService.GetRoots(m_currentPaths, Archive, item, m_currentLevel);
+                m_paths.Add(item);
+                Debug.WriteLine("Open Dir, Item {0}, Level {1} => {2}, Stack Size {3}", item.Path, m_currentLevel - 1, m_currentLevel, m_paths.Count);
+            }
+            else if (item.Type == FilePathType.GoBack)
+            {
+                Contract.Assert(m_currentLevel != 0); // should not happen
+                if (m_currentLevel == 1)
                 {
-                    m_currentItem = item;
-                    int level = (int)FileView.Tag;
-                    ++level;
-                    ArchiveFilePathService.GetRoots(m_currentPaths, Archive, m_currentItem, level);
-                    FileView.Tag = level;
-                    m_paths.Push(m_currentItem);
-                    Debug.WriteLine("Open Dir, Item {0}, Level {1} => {2}, Stack Size {3}", m_currentItem.Path, level - 1, level, m_paths.Count);
-                }
-                else if (item.Type == FilePathType.GoBack)
-                {
-                    int level = (int)FileView.Tag;
-                    Debug.Assert(level != 0); // should not happen
-                    if (level == 1)
-                    {
-                        Debug.WriteLine("Go Back, Get Main Roots");
-                        m_paths.Clear();
-                        FileView.Tag = 0;
-                        ArchiveFilePathService.GetRoots(m_currentPaths, Archive);
-                        m_currentItem = null;
-                    }
-                    else
-                    {
-                        item = m_paths.Pop();
-                        if (m_currentItem == item)
-                            m_currentItem = m_paths.Pop();
-                        else
-                            m_currentItem = item;
-                        --level;
-                        Debug.WriteLine("Go Back, Item {0}, Level {1} => {2}, Stack Size {3}", m_currentItem.Path, level + 1, level, m_paths.Count);
-                        FileView.Tag = level;
-                        ArchiveFilePathService.GetRoots(m_currentPaths, Archive, m_currentItem, level);
-                    }
+                    Debug.WriteLine("Go Back, Get Main Roots");
+                    m_paths.Clear();
+                    m_currentLevel = 0;
+                    ArchiveFilePathService.GetRoots(m_currentPaths, Archive);
                 }
                 else
                 {
-                    MessageBox.Show("TODO");
+                    --m_currentLevel;
+                    m_paths.RemoveAt(m_currentLevel);
+                    Debug.WriteLine("Go Back, Item {0}, Level {1} => {2}, Stack Size {3}", item.Path, m_currentLevel + 1, m_currentLevel, m_paths.Count);
+                    ArchiveFilePathService.GetRoots(m_currentPaths, Archive, m_paths[m_currentLevel - 1], m_currentLevel);
                 }
-                FileView.Items.Refresh();
             }
+            else
+            {
+                MessageBox.Show("TODO");
+            }
+
+            FileView.Items.Refresh();
+            UpdatePathLabel();
+        }
+
+        private void UpdatePathLabel()
+        {
+            StringBuilder b = new StringBuilder("\\");
+            foreach (var path in m_paths)
+            {
+                b.Append(path.Path);
+                b.Append('\\');
+            }
+            PathLabel.Content = b.ToString();
         }
 
         private void FileListView_MouseDoubleClick(object sender, MouseButtonEventArgs e)

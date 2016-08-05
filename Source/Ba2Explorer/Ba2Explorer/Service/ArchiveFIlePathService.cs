@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -47,7 +48,7 @@ namespace Ba2Explorer.Service
         /// <returns></returns>
         public static void GetRoots(ObservableCollection<ArchiveFilePath> roots, ArchiveInfo archive, ArchiveFilePath filePath, int level)
         {
-            Debug.Assert(filePath.Type == FilePathType.Directory);
+            Contract.Assert(filePath.Type == FilePathType.Directory);
             roots.Clear();
             List<int> levelDirHashes = new List<int>();
 
