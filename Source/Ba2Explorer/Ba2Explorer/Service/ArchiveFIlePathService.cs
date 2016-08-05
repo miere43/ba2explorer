@@ -12,7 +12,7 @@ namespace Ba2Explorer.Service
 {
     public static class ArchiveFilePathService
     {
-        private static char[] SplitChars = new char[] { '\\' };
+        private static List<string> m_names = new List<string>();
 
         public static void GetRoots(ObservableCollection<ArchiveFilePath> roots, ArchiveInfo archive)
         {
@@ -21,11 +21,11 @@ namespace Ba2Explorer.Service
 
             foreach (string path in archive.Archive.FileList)
             {
-                string[] names = path.Split(SplitChars);
-                if (names.Length < 1)
+                SplitNames(path);
+                if (m_names.Count < 1)
                     continue;
-                var root = names[1];
-                bool isFile = names.Length <= 2;
+                var root = m_names[1];
+                bool isFile = m_names.Count <= 2;
                 int rootHash = root.GetHashCode();
                 if (!isFile && levelDirHashes.Contains(rootHash))
                     continue; // don't add same directory twice
@@ -56,13 +56,13 @@ namespace Ba2Explorer.Service
 
             foreach (string path in archive.Archive.FileList)
             {
-                string[] names = path.Split(SplitChars);
-                if (names.Length < level + 1)
+                if (!CheckPathAtLevel(path, filePath.Path, level))
                     continue;
-                if (names[level] != filePath.Path)
+                SplitNames(path);
+                if (m_names.Count < level + 1)
                     continue;
-                var root = names[level + 1];
-                bool isFile = names.Length <= level + 2;
+                var root = m_names[level + 1];
+                bool isFile = m_names.Count <= level + 2;
                 int rootHash = root.GetHashCode();
                 if (!isFile && levelDirHashes.Contains(rootHash))
                     continue; // don't add same directory twice
@@ -74,6 +74,60 @@ namespace Ba2Explorer.Service
                 if (!isFile)
                     levelDirHashes.Add(root.GetHashCode());
             }
+        }
+
+        private static bool CheckPathAtLevel(string path, string pathToCheck, int level)
+        {
+            int levelsPassed = 0;
+            int pos = 0;
+            if (level == 0)
+                goto skipLevelDetection;
+            foreach (char c in path)
+            {
+                if (c == '\\')
+                {
+                    ++levelsPassed;
+                    if (levelsPassed == level)
+                        break;
+                }
+                ++pos;
+            }
+            if (levelsPassed != level)
+                return false;
+            skipLevelDetection:
+            int pcPos = 0;
+            ++pos; // skip '\' char.
+            while (pcPos < pathToCheck.Length)
+            {
+                if (path[pos] != pathToCheck[pcPos])
+                    return false;
+                ++pos;
+                ++pcPos;
+            }
+            return true;
+        }
+
+        private static void SplitNames(string path)
+        {
+            m_names.Clear();
+
+            int startIndex = 0;
+            int length = 0;
+            foreach (char c in path)
+            {
+                if (c == '\\')
+                {
+                    m_names.Add(path.Substring(startIndex, length));
+                    startIndex += length + 1; // +1 to skip '\' char
+                    length = 0;
+                }
+                else
+                {
+                    ++length;
+                }
+            }
+            if (length != 0)
+                m_names.Add(path.Substring(startIndex, length));
         }
     }
 }

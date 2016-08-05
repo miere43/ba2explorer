@@ -116,7 +116,7 @@
     <Compile Include="Logging\NullLogger.cs" />
     <Compile Include="MathHelper.cs" />
     <Compile Include="NotifyTaskCompletion.cs" />
-    <Compile Include="Service\ArchiveFIlePathService.cs" />
+    <Compile Include="Service\ArchiveFilePathService.cs" />
     <Compile Include="Settings\AppSettings.cs" />
     <Compile Include="Settings\AppSettingsBase.cs" />
     <Compile Include="Settings\FilePreviewSettings.cs" />
