@@ -9,6 +9,7 @@
     xmlns:d1p1="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:view="clr-namespace:Ba2Explorer.View"
     xmlns:vm="clr-namespace:Ba2Explorer.ViewModel"
+    xmlns:cmds="clr-namespace:Ba2Explorer.View.Commands"
     ShutdownMode="OnMainWindowClose"
     Exit="Application_Exit">
 

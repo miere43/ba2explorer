@@ -221,11 +221,11 @@ namespace Ba2Explorer.ViewModel
         /// </summary>
         /// <param name="fileName">File name in archive.</param>
         /// <returns>Task.</returns>
-        public async Task ExtractFileWithDialog(int fileIndex)
+        public async Task ExtractFileWithDialog(string fileName)
         {
-            string fileName = ArchiveInfo.Archive.FileList[fileIndex];
-            if (fileName == null)
-                throw new Exception($"no file with index {fileIndex} exists.");
+            Contract.Assert(fileName != null);
+            int fileIndex = ArchiveInfo.Archive.GetFileIndex(fileName);
+            Contract.Assert(fileIndex != -1);
 
             SaveFileDialog dialog = new SaveFileDialog();
             dialog.CheckPathExists = true;

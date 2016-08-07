@@ -29,9 +29,17 @@ namespace Ba2Explorer.Controls
             set { SetValue(SelectedFileProperty, value); }
         }
 
-        // Using a DependencyProperty as the backing store for SelectedFile.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty SelectedFileProperty =
             DependencyProperty.Register(nameof(SelectedFile), typeof(string), typeof(FileListView));
+
+        public IList<string> SelectedFiles
+        {
+            get { return (IList<string>)GetValue(SelectedFilesProperty); }
+            set { SetValue(SelectedFilesProperty, value); }
+        }
+
+        public static readonly DependencyProperty SelectedFilesProperty =
+            DependencyProperty.Register(nameof(SelectedFiles), typeof(IList<string>), typeof(FileListView));
 
         public ArchiveInfo Archive
         {
@@ -70,6 +78,7 @@ namespace Ba2Explorer.Controls
             InitializeComponent();
 
             FileView.ItemsSource = m_currentPaths;
+            SelectedFiles = new List<string>();
             ListCollectionView view = (ListCollectionView)CollectionViewSource.GetDefaultView(FileView.ItemsSource);
             view.CustomSort = new ArchiveFilePathCustomSorter();
         }
@@ -81,6 +90,7 @@ namespace Ba2Explorer.Controls
             m_currentLevel = 0;
             PathLabel.Content = "";
             SelectedFile = null;
+            SelectedFiles.Clear();
         }
 
         private void LoadTopLevelHierarchy()
@@ -164,21 +174,33 @@ namespace Ba2Explorer.Controls
 
         private void FileView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            ArchiveFilePath item = (ArchiveFilePath)FileView.SelectedItem;
-            if (item == null || item.Type != FilePathType.File)
+            SelectedFiles.Clear();
+            foreach (var oitem in FileView.SelectedItems)
             {
-                SelectedFile = null;
-                return;
+                ArchiveFilePath item = (ArchiveFilePath)oitem;
+                if (item == null || item.Type != FilePathType.File)
+                {
+                    continue;
+                }
+
+                StringBuilder b = new StringBuilder();
+                for (int i = 0; i < m_paths.Count; ++i)
+                {
+                    b.Append(m_paths[i].Path);
+                    b.Append('\\');
+                }
+                b.Append(item.Path);
+                SelectedFiles.Add(b.ToString());
             }
 
-            StringBuilder b = new StringBuilder();
-            for (int i = 0; i < m_paths.Count; ++i)
+            if (SelectedFiles.Count == 0)
             {
-                b.Append(m_paths[i].Path);
-                b.Append('\\');
+                SelectedFile = null;
             }
-            b.Append(item.Path);
-            SelectedFile = b.ToString();
+            else
+            {
+                SelectedFile = SelectedFiles[0];
+            }
         }
 
         private void FileView_KeyDown(object sender, KeyEventArgs e)

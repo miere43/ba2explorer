@@ -207,31 +207,30 @@ namespace Ba2Explorer.View
                 return;
             }
 
-            // e.CanExecute = ArchiveFilesList.SelectedIndex != -1;
+            e.CanExecute = !String.IsNullOrWhiteSpace(FileListView.SelectedFile);
             e.Handled = true;
         }
 
-        private /* async */ void ExtractSelectedExecuted(object sender, ExecutedRoutedEventArgs e)
+        private async void ExtractSelectedExecuted(object sender, ExecutedRoutedEventArgs e)
         {
-            //if (ArchiveFilesList.SelectedItems.Count == 1)
-            //{
-            //    string sel = ArchiveFilesList.SelectedItem as string;
+            if (FileListView.SelectedFiles.Count == 1)
+            {
+                string sel = FileListView.SelectedFiles[0];
+                await viewModel.ExtractFileWithDialog(sel);
 
-            //    await viewModel.ExtractFileWithDialog(viewModel.ArchiveInfo.Archive.GetFileIndex(sel));
-            //    e.Handled = true;
-            //}
-            //else if (ArchiveFilesList.SelectedItems.Count > 1)
-            //{
-            //    List<string> sels = ArchiveFilesList.SelectedItems.Cast<string>().ToList();
-            //    List<int> ss = new List<int>();
-            //    foreach (var sel in sels)
-            //    {
-            //        ss.Add(viewModel.ArchiveInfo.Archive.GetFileIndex(sel));
-            //    }
+                e.Handled = true;
+            }
+            else if (FileListView.SelectedFiles.Count > 1)
+            {
+                List<int> ss = new List<int>();
+                foreach (var sel in FileListView.SelectedFiles)
+                {
+                    ss.Add(viewModel.ArchiveInfo.Archive.GetFileIndex(sel));
+                }
 
-            //    viewModel.ExtractFilesWithDialog(ss);
-            //    e.Handled = true;
-            //}
+                viewModel.ExtractFilesWithDialog(ss);
+                e.Handled = true;
+            }
         }
 
         private void ExtractAllCommandExecuted(object sender, ExecutedRoutedEventArgs e)
