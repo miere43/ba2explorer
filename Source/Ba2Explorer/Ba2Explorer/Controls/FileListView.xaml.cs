@@ -13,6 +13,13 @@ using Ba2Explorer.ViewModel;
 
 namespace Ba2Explorer.Controls
 {
+    public class FileListItem
+    {
+        public FilePathType Type { get; set; }
+
+        public string Path { get; set; }
+    }
+
     /// <summary>
     /// Interaction logic for FileListView.xaml
     /// </summary>
@@ -23,23 +30,23 @@ namespace Ba2Explorer.Controls
         /// <summary>
         /// Gets or sets file selected in list view. Returns null if nothing selected or selected item is not file.
         /// </summary>
-        public string SelectedFile
+        public FileListItem SelectedItem
         {
-            get { return (string)GetValue(SelectedFileProperty); }
-            set { SetValue(SelectedFileProperty, value); }
+            get { return (FileListItem)GetValue(SelectedItemProperty); }
+            set { SetValue(SelectedItemProperty, value); }
         }
 
-        public static readonly DependencyProperty SelectedFileProperty =
-            DependencyProperty.Register(nameof(SelectedFile), typeof(string), typeof(FileListView));
+        public static readonly DependencyProperty SelectedItemProperty =
+            DependencyProperty.Register(nameof(SelectedItem), typeof(FileListItem), typeof(FileListView));
 
-        public IList<string> SelectedFiles
+        public IList<FileListItem> SelectedItems
         {
-            get { return (IList<string>)GetValue(SelectedFilesProperty); }
-            set { SetValue(SelectedFilesProperty, value); }
+            get { return (IList<FileListItem>)GetValue(SelectedItemsProperty); }
+            set { SetValue(SelectedItemsProperty, value); }
         }
 
-        public static readonly DependencyProperty SelectedFilesProperty =
-            DependencyProperty.Register(nameof(SelectedFiles), typeof(IList<string>), typeof(FileListView));
+        public static readonly DependencyProperty SelectedItemsProperty =
+            DependencyProperty.Register(nameof(SelectedItems), typeof(IList<FileListItem>), typeof(FileListView));
 
         public ArchiveInfo Archive
         {
@@ -78,7 +85,7 @@ namespace Ba2Explorer.Controls
             InitializeComponent();
 
             FileView.ItemsSource = m_currentPaths;
-            SelectedFiles = new List<string>();
+            SelectedItems = new List<FileListItem>();
             ListCollectionView view = (ListCollectionView)CollectionViewSource.GetDefaultView(FileView.ItemsSource);
             view.CustomSort = new ArchiveFilePathCustomSorter();
         }
@@ -89,8 +96,8 @@ namespace Ba2Explorer.Controls
             m_paths.Clear();
             m_currentLevel = 0;
             PathLabel.Content = "";
-            SelectedFile = null;
-            SelectedFiles.Clear();
+            SelectedItem = null;
+            SelectedItems.Clear();
         }
 
         private void LoadTopLevelHierarchy()
@@ -174,32 +181,37 @@ namespace Ba2Explorer.Controls
 
         private void FileView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            SelectedFiles.Clear();
+            SelectedItems.Clear();
+            StringBuilder b = new StringBuilder();
             foreach (var oitem in FileView.SelectedItems)
             {
                 ArchiveFilePath item = (ArchiveFilePath)oitem;
-                if (item == null || item.Type != FilePathType.File)
+                if (item == null)
                 {
                     continue;
                 }
+                b.Clear();
 
-                StringBuilder b = new StringBuilder();
                 for (int i = 0; i < m_paths.Count; ++i)
                 {
                     b.Append(m_paths[i].Path);
                     b.Append('\\');
                 }
                 b.Append(item.Path);
-                SelectedFiles.Add(b.ToString());
+                SelectedItems.Add(new FileListItem()
+                {
+                    Type = item.Type,
+                    Path = b.ToString()
+                });
             }
 
-            if (SelectedFiles.Count == 0)
+            if (SelectedItems.Count == 0)
             {
-                SelectedFile = null;
+                SelectedItem = null;
             }
             else
             {
-                SelectedFile = SelectedFiles[0];
+                SelectedItem = SelectedItems[0];
             }
         }
 

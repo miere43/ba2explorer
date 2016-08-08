@@ -181,7 +181,6 @@ namespace Ba2Explorer.Controls
             if (Archive == null || Archive.IsDisposed)
                 return;
 
-            Contract.Assert(Archive.Archive.ContainsFile(fileName), "something is wrong, you should have this file");
             if (!IsEnabled)
             {
                 return;

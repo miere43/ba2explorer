@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using Ba2Explorer.Service;
 using System.Diagnostics;
 using System.ComponentModel;
+using Ba2Explorer.Controls;
 
 namespace Ba2Explorer.View
 {
@@ -207,25 +208,28 @@ namespace Ba2Explorer.View
                 return;
             }
 
-            e.CanExecute = !String.IsNullOrWhiteSpace(FileListView.SelectedFile);
+            e.CanExecute = FileListView.SelectedItem != null &&
+                !String.IsNullOrWhiteSpace(FileListView.SelectedItem.Path) &&
+                FileListView.SelectedItem.Type != FilePathType.GoBack;
+
             e.Handled = true;
         }
 
         private async void ExtractSelectedExecuted(object sender, ExecutedRoutedEventArgs e)
         {
-            if (FileListView.SelectedFiles.Count == 1)
+            if (FileListView.SelectedItems.Count == 1)
             {
-                string sel = FileListView.SelectedFiles[0];
-                await viewModel.ExtractFileWithDialog(sel);
+                FileListItem sel = FileListView.SelectedItems[0];
+                await viewModel.ExtractFileWithDialog(sel.Path);
 
                 e.Handled = true;
             }
-            else if (FileListView.SelectedFiles.Count > 1)
+            else if (FileListView.SelectedItems.Count > 1)
             {
                 List<int> ss = new List<int>();
-                foreach (var sel in FileListView.SelectedFiles)
+                foreach (var sel in FileListView.SelectedItems)
                 {
-                    ss.Add(viewModel.ArchiveInfo.Archive.GetFileIndex(sel));
+                    ss.Add(viewModel.ArchiveInfo.Archive.GetFileIndex(sel.Path));
                 }
 
                 viewModel.ExtractFilesWithDialog(ss);
