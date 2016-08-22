@@ -20,13 +20,13 @@ namespace Ba2Explorer.View
                 return -1;
             if (x.Type == FilePathType.Directory) {
                 if (y.Type == FilePathType.Directory)
-                    return string.Compare(x.Path, y.Path, StringComparison.CurrentCulture);
+                    return string.Compare(x.DisplayPath, y.DisplayPath, StringComparison.CurrentCulture);
                 else if (y.Type == FilePathType.File)
                     return -1;
             }
             if (x.Type == FilePathType.File)
                 if (y.Type == FilePathType.File)
-                    return string.Compare(x.Path, y.Path, StringComparison.CurrentCulture);
+                    return string.Compare(x.DisplayPath, y.DisplayPath, StringComparison.CurrentCulture);
                 else if (y.Type == FilePathType.Directory)
                     return 1;
             return 0;

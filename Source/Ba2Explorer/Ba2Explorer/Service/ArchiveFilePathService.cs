@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Ba2Explorer.View;
 using Ba2Explorer.ViewModel;
+using Ba2Tools;
 
 namespace Ba2Explorer.Service
 {
@@ -15,12 +16,12 @@ namespace Ba2Explorer.Service
     {
         private static List<string> m_names = new List<string>();
 
-        public static void GetRoots(ObservableCollection<ArchiveFilePath> roots, ArchiveInfo archive)
+        public static void GetRootDirectories(IList<ArchiveFilePath> roots, BA2Archive archive)
         {
             roots.Clear();
             List<int> levelDirHashes = new List<int>();
 
-            foreach (string path in archive.Archive.FileList)
+            foreach (string path in archive.FileList)
             {
                 SplitNames(path);
                 if (m_names.Count < 1)
@@ -38,12 +39,64 @@ namespace Ba2Explorer.Service
 
                 roots.Add(new ArchiveFilePath()
                 {
-                    Path = root,
-                    Type = isFile ? FilePathType.File : FilePathType.Directory
+                    DisplayPath = root,
+                    Type = isFile ? FilePathType.File : FilePathType.Directory,
+                    RealPath = path
                 });
 
                 if (!isFile)
                     levelDirHashes.Add(rootHash);
+            }
+        }
+
+        public static void DiscoverDirectoryItems(IList<ArchiveFilePath> output, BA2Archive archive, ArchiveFilePath parent)
+        {
+            // Contract.Requires(folder.EndsWith("\\", StringComparison.OrdinalIgnoreCase));
+            // `folder` must end with '\' char.
+            output.Clear();
+            string folder = parent.GetDirectoryPath();
+
+            List<int> hashes = new List<int>();
+            int length = archive.FileList.Count;
+            int startIndex = 0;
+            for (; startIndex < length; ++startIndex)
+            {
+                if (archive.FileList[startIndex].StartsWith(folder, StringComparison.OrdinalIgnoreCase))
+                    break;
+            }
+            for (int i = startIndex; i < length; ++i)
+            {
+                string item = archive.FileList[i];
+                int folderEndIndex = item.IndexOf(folder, 0, StringComparison.OrdinalIgnoreCase);
+                if (folderEndIndex == -1)
+                    return; // this is correct
+                int nestedFolderIndex = item.IndexOf('\\', folderEndIndex + folder.Length + 1);
+                if (nestedFolderIndex == -1)
+                {
+                    // this is file
+                    output.Add(new ArchiveFilePath()
+                    {
+                        Type = FilePathType.File,
+                        DisplayPath = item.Substring(folderEndIndex + folder.Length + 1),
+                        RealPath = item,
+                        Parent = parent
+                    });
+                }
+                else
+                {
+                    // this is dir
+                    var add = new ArchiveFilePath()
+                    {
+                        Type = FilePathType.Directory,
+                        DisplayPath = item.Substring(folderEndIndex + folder.Length + 1, nestedFolderIndex - (folderEndIndex + folder.Length + 1)),
+                        RealPath = item
+                    };
+                    int hash = StringComparer.OrdinalIgnoreCase.GetHashCode(add.DisplayPath);
+                    if (hashes.Contains(hash))
+                        continue;
+                    hashes.Add(hash);
+                    output.Add(add);
+                }
             }
         }
 
@@ -60,7 +113,7 @@ namespace Ba2Explorer.Service
             roots.Clear();
             List<int> levelDirHashes = new List<int>();
 
-            roots.Add(new ArchiveFilePath() { Type = FilePathType.GoBack, Path = "..." });
+            roots.Add(new ArchiveFilePath() { Type = FilePathType.GoBack, DisplayPath = "..." });
 
             foreach (string path in archive.Archive.FileList)
             {
@@ -83,8 +136,9 @@ namespace Ba2Explorer.Service
 
                 roots.Add(new ArchiveFilePath()
                 {
-                    Path = root,
-                    Type = isFile ? FilePathType.File : FilePathType.Directory
+                    DisplayPath = root,
+                    Type = isFile ? FilePathType.File : FilePathType.Directory,
+                    RealPath = path
                 });
 
                 if (!isFile)
@@ -97,7 +151,7 @@ namespace Ba2Explorer.Service
             int pos = 0;
             for (int i = 0; i < pathsToCheck.Count; ++i)
             {
-                string pathToCheck = pathsToCheck[i].Path;
+                string pathToCheck = pathsToCheck[i].DisplayPath;
                 int pcPos = 0;
                 while (pcPos < pathToCheck.Length)
                 {
