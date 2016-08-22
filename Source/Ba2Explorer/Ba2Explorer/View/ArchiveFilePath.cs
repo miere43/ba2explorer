@@ -6,8 +6,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Ba2Explorer.Service;
 using Ba2Tools;
-using System.CodeDom.Compiler;
 using System.Diagnostics;
+using System.Windows.Data;
 
 namespace Ba2Explorer.View
 {
@@ -21,15 +21,13 @@ namespace Ba2Explorer.View
     [DebuggerDisplay("{Type}, PathComponent = {DisplayPath}")]
     public sealed class ArchiveFilePath
     {
+        private static ArchiveFilePathCustomSorter sorter = new ArchiveFilePathCustomSorter();
+
         public FilePathType Type { get; set; }
 
         public string DisplayPath { get; set; }
 
         public string RealPath { get; set; }
-
-        public bool IsSelected { get; set; }
-
-        public bool IsExpanded { get; set; }
 
         public ObservableCollection<ArchiveFilePath> Children { get; set; }
 
@@ -40,6 +38,9 @@ namespace Ba2Explorer.View
             if (Children != null) return;
             Children = new ObservableCollection<ArchiveFilePath>();
             ArchiveFilePathService.DiscoverDirectoryItems(Children, archive, this);
+
+            var g = (ListCollectionView)CollectionViewSource.GetDefaultView(Children);
+            g.CustomSort = sorter;
         }
 
         public string GetDirectoryPath()

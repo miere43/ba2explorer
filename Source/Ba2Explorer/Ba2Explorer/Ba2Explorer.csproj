@@ -86,8 +86,8 @@
     </ApplicationDefinition>
     <Compile Include="View\ArchiveFilePath.cs" />
     <Compile Include="View\ArchiveFilePathCustomSorter.cs" />
-    <Compile Include="Controls\FileListView.xaml.cs">
-      <DependentUpon>FileListView.xaml</DependentUpon>
+    <Compile Include="Controls\ArchiveFileView.xaml.cs">
+      <DependentUpon>ArchiveFileView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Utility\ExtensionAssociation.cs" />
     <Compile Include="Logging\FileLogger.cs" />
@@ -135,7 +135,7 @@
       <DependentUpon>AudioPlayer.xaml</DependentUpon>
     </Compile>
     <Compile Include="Utility\NativeMethods_2.cs" />
-    <Page Include="Controls\FileListView.xaml">
+    <Page Include="Controls\ArchiveFileView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

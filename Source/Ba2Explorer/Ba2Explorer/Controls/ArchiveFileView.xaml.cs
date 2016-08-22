@@ -27,7 +27,7 @@ namespace Ba2Explorer.Controls
     /// <summary>
     /// Interaction logic for FileListView.xaml
     /// </summary>
-    public partial class FileListView : UserControl
+    public partial class ArchiveFileView : UserControl
     {
         #region Dependency Properties
 
@@ -41,7 +41,7 @@ namespace Ba2Explorer.Controls
         }
 
         public static readonly DependencyProperty SelectedItemProperty =
-            DependencyProperty.Register(nameof(SelectedItem), typeof(FileListItem), typeof(FileListView));
+            DependencyProperty.Register(nameof(SelectedItem), typeof(FileListItem), typeof(ArchiveFileView));
 
         public IList<FileListItem> SelectedItems
         {
@@ -50,7 +50,7 @@ namespace Ba2Explorer.Controls
         }
 
         public static readonly DependencyProperty SelectedItemsProperty =
-            DependencyProperty.Register(nameof(SelectedItems), typeof(IList<FileListItem>), typeof(FileListView));
+            DependencyProperty.Register(nameof(SelectedItems), typeof(IList<FileListItem>), typeof(ArchiveFileView));
 
         public ArchiveInfo Archive
         {
@@ -59,7 +59,7 @@ namespace Ba2Explorer.Controls
         }
 
         public static readonly DependencyProperty ArchiveProperty =
-            DependencyProperty.Register(nameof(Archive), typeof(ArchiveInfo), typeof(FileListView), 
+            DependencyProperty.Register(nameof(Archive), typeof(ArchiveInfo), typeof(ArchiveFileView), 
                new FrameworkPropertyMetadata(propertyChangedCallback: ArchivePropertyChanged));
 
         #endregion
@@ -67,22 +67,25 @@ namespace Ba2Explorer.Controls
         private ObservableCollection<ArchiveFilePath> m_filePaths = new ObservableCollection<ArchiveFilePath>();
         public ObservableCollection<ArchiveFilePath> FilePaths { get { return m_filePaths; } }
 
+        private ArchiveFilePath m_selectedDirectory = null;
+
+        private TreeViewItem m_selectedDirectoryItem = null;
+
         private static void ArchivePropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            var fs = (FileListView)d;
-            fs.Reset();
-            if (fs.Archive != null)
-                fs.LoadTopLevelHierarchy();
+            var self = (ArchiveFileView)d;
+            self.Reset();
+            if (self.Archive != null)
+                self.LoadTopLevelHierarchy();
         }
 
-        ObservableCollection<ArchiveFilePath> m_currentPaths = new ObservableCollection<ArchiveFilePath>();
-
-        public FileListView()
+        public ArchiveFileView()
         {
             InitializeComponent();
+
             if (DesignerProperties.GetIsInDesignMode(this))
             {
-                FileView.ItemsSource = new ObservableCollection<ArchiveFilePath>()
+                FileListView.ItemsSource = new ObservableCollection<ArchiveFilePath>()
                 {
                     new ArchiveFilePath() { Type = FilePathType.GoBack, DisplayPath = "..." },
                     new ArchiveFilePath() { Type = FilePathType.Directory, DisplayPath = "Some Directory" },
@@ -91,16 +94,11 @@ namespace Ba2Explorer.Controls
                 return;
             }
 
-            FileView.ItemsSource = m_currentPaths;
             SelectedItems = new List<FileListItem>();
-            //ListCollectionView view = (ListCollectionView)CollectionViewSource.GetDefaultView(FileView.ItemsSource);
-            //view.CustomSort = new ArchiveFilePathCustomSorter();
-            FileTree.ItemsSource = FilePaths;
         }
 
         private void Reset()
         {
-            m_currentPaths.Clear();
             PathLabel.Content = "";
             SelectedItem = null;
             SelectedItems.Clear();
@@ -124,32 +122,12 @@ namespace Ba2Explorer.Controls
             }
 
             FilePaths.Add(root);
-            FileView.ItemsSource = root.Children;
+            FileListView.ItemsSource = root.Children;
 
-            TreeViewItem rootItem = (FileTree.ItemContainerGenerator.ContainerFromIndex(0) as TreeViewItem);
+            TreeViewItem rootItem = (FileTreeView.ItemContainerGenerator.ContainerFromIndex(0) as TreeViewItem);
             rootItem.IsSelected = true;
             rootItem.IsExpanded = true;
         }
-
-        private TreeViewItem CreateTreeViewItem(ArchiveFilePath path)
-        {
-            TreeViewItem item = new TreeViewItem();
-            item.Header = path.DisplayPath;
-            if (path.Type == FilePathType.Directory)
-            {
-                item.Items.Add("*");
-                item.Expanded += Item_Expanded;
-                item.Collapsed += Item_Collapsed;
-            }
-            item.Selected += Item_Selected;
-            item.Tag = path;
-            return item;
-            //FileTree.Items.Add(item);
-        }
-
-        private ArchiveFilePath m_selectedDirectory = null;
-
-        private TreeViewItem m_selectedDirectoryItem = null;
 
         private void Item_Selected(object sender, RoutedEventArgs e)
         {
@@ -160,21 +138,11 @@ namespace Ba2Explorer.Controls
             {
                 m_selectedDirectory = selectedFilePath;
                 m_selectedDirectoryItem = item;
-                Debug.WriteLine($"Selected Directory Item = {m_selectedDirectory.DisplayPath}");
-                FileView.ItemsSource = selectedFilePath.Children;
-                //m_selectedDirectoryItem.IsExpanded = true;
-            }
-            else
-            {
-                // do nothing
+                FileListView.ItemsSource = selectedFilePath.Children;
             }
         }
 
-        private void Item_Collapsed(object sender, RoutedEventArgs e)
-        {
-        }
-
-        private void Item_Expanded(object sender, RoutedEventArgs e)
+        private void FileTree_ItemExpanded(object sender, RoutedEventArgs e)
         {
             TreeViewItem item = (TreeViewItem)e.OriginalSource;
 
@@ -186,29 +154,10 @@ namespace Ba2Explorer.Controls
                     filePath.DiscoverChildren(Archive.Archive);
                 }
             }
-            FileView.Items.Refresh();
         }
 
         private void GoBack()
         {
-            //if (m_currentLevel == 0)
-            //    return;
-
-            //if (m_currentLevel == 1)
-            //{
-            //    m_paths.Clear();
-            //    m_currentLevel = 0;
-            //    ArchiveFilePathService.GetRoots(m_currentPaths, Archive);
-            //}
-            //else
-            //{
-            //    --m_currentLevel;
-            //    m_paths.RemoveAt(m_currentLevel);
-            //    ArchiveFilePathService.GetRoots(m_currentPaths, Archive, m_paths, m_currentLevel);
-            //}
-
-            //if (m_currentPaths.Count > 1)
-            //    FileView.SelectedIndex = 1;
         }
 
         private void ListViewOpenItem(ArchiveFilePath item)
@@ -220,7 +169,7 @@ namespace Ba2Explorer.Controls
                 if (m_selectedDirectoryItem.ItemContainerGenerator.Status != GeneratorStatus.ContainersGenerated)
                 {
                     // Selected Directory TreeViewItem wasn't expanded yet and children TreeViewItem's was not generated yet, which
-                    // means that call to ItemContainerGenerator.ContainerFromItem(item) returns null.
+                    // means that call to ItemContainerGenerator.ContainerFromItem(item) will return null.
                     // We force item generation, container expansion and layout invalidation so call to that method returns TreeViewItem
                     // as excepted.
                     m_selectedDirectoryItem.IsExpanded = true;
@@ -245,7 +194,7 @@ namespace Ba2Explorer.Controls
                 throw new NotSupportedException($"{ item.Type } is not supported.");
             }
 
-            FileView.Items.Refresh();
+            FileListView.Items.Refresh();
             //UpdatePathLabel();
         }
 
@@ -271,7 +220,7 @@ namespace Ba2Explorer.Controls
         {
             SelectedItems.Clear();
             //StringBuilder b = new StringBuilder();
-            foreach (var oitem in FileView.SelectedItems)
+            foreach (var oitem in FileListView.SelectedItems)
             {
                 ArchiveFilePath item = (ArchiveFilePath)oitem;
                 if (item == null)
@@ -307,7 +256,7 @@ namespace Ba2Explorer.Controls
         {
             if (e.Key == Key.Enter)
             {
-                var item = (ArchiveFilePath)FileView.SelectedItem;
+                var item = (ArchiveFilePath)FileListView.SelectedItem;
                 if (item != null)
                     ListViewOpenItem(item);
             }
@@ -315,7 +264,7 @@ namespace Ba2Explorer.Controls
             {
                 GoBack();
 
-                FileView.Items.Refresh();
+                FileListView.Items.Refresh();
                 UpdatePathLabel();
             }
         }

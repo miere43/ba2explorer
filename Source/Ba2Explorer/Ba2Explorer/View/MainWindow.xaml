@@ -77,12 +77,12 @@
             </MenuItem>
         </Menu>
 
-        <ctrls:FileListView
+        <ctrls:ArchiveFileView
             x:Name="FileListView"
             Archive="{Binding ArchiveInfo}"
             Grid.Row="2"
             Grid.Column="0">
-        </ctrls:FileListView>
+        </ctrls:ArchiveFileView>
 
             <!--<ListView BorderThickness="0,1,0,0"
                   x:Name="ArchiveFilesList"

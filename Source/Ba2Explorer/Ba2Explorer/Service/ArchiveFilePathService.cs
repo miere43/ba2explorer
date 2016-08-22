@@ -51,8 +51,6 @@ namespace Ba2Explorer.Service
 
         public static void DiscoverDirectoryItems(IList<ArchiveFilePath> output, BA2Archive archive, ArchiveFilePath parent)
         {
-            // Contract.Requires(folder.EndsWith("\\", StringComparison.OrdinalIgnoreCase));
-            // `folder` must end with '\' char.
             output.Clear();
             string folder = parent.GetDirectoryPath();
 
