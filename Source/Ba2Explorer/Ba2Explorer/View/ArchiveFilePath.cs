@@ -42,6 +42,20 @@ namespace Ba2Explorer.View
             g.CustomSort = sorter;
         }
 
+        public void Destroy()
+        {
+            if (Children == null) return;
+            foreach (var child in Children)
+            {
+                child.Destroy();
+            }
+            Children.Clear();
+            Children = null;
+            Parent = null;
+            DisplayPath = null;
+            RealPath = null;
+        }
+
         public string GetDirectoryPath()
         {
             int p = RealPath.IndexOf(DisplayPath, 0, StringComparison.OrdinalIgnoreCase);

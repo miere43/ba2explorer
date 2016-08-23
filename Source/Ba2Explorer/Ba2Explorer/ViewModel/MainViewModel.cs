@@ -16,6 +16,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Diagnostics.Contracts;
 using System.ComponentModel;
+using Ba2Tools;
 
 namespace Ba2Explorer.ViewModel
 {
@@ -182,7 +183,13 @@ namespace Ba2Explorer.ViewModel
             {
                 ArchiveInfo = ArchiveInfo.Open(path);
             }
-            catch (Exception e)
+            catch (BA2LoadException e)
+            {
+                MessageBox.Show($"Unable to open archive:{ Environment.NewLine }{ Environment.NewLine }{ e.Message }", "Error",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+                return false;
+            }
+            catch (IOException e)
             {
                 MessageBox.Show($"Unable to open archive:{ Environment.NewLine }{ Environment.NewLine }{ e.Message }", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);

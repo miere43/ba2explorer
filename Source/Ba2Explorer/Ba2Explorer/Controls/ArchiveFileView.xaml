@@ -49,9 +49,14 @@
                   ItemsSource="{Binding Path=FilePaths, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}}"
                   Grid.Row="1"
                   Grid.Column="0"
+                  VirtualizingPanel.IsVirtualizing="True"
+                  VirtualizingPanel.VirtualizationMode="Recycling"
                   TreeViewItem.Selected="FileTree_ItemSelected"
                   TreeViewItem.Expanded="FileTree_ItemExpanded">
         </TreeView>
+
+        <GridSplitter Background="#4A5573" Width="2" Grid.Row="1" Grid.Column="0"/>
+        
         <ListView x:Name="FileListView"
                   Grid.Row="1"
                   Grid.Column="1"

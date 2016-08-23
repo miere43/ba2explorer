@@ -71,6 +71,10 @@ namespace Ba2Explorer.Controls
 
         private TreeViewItem m_selectedDirectoryItem = null;
 
+        private TreeViewItem m_rootItem = null;
+
+        private ArchiveFilePath m_rootFilePath = null;
+
         private static void ArchivePropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var self = (ArchiveFileView)d;
@@ -98,18 +102,31 @@ namespace Ba2Explorer.Controls
 
         private void Reset()
         {
+            FileTreeView.IsEnabled = false;
+            FileListView.IsEnabled = false;
+
             PathLabel.Content = "";
             SelectedItem = null;
             SelectedItems.Clear();
             m_filePaths.Clear();
+            m_rootItem = null;
+            FileListView.ItemsSource = null;
+            if (m_rootFilePath != null)
+            {
+                m_rootFilePath.Destroy();
+                m_rootFilePath = null;
+            }
+
+            FileTreeView.IsEnabled = true;
+            FileListView.IsEnabled = true;
         }
 
         private void LoadTopLevelHierarchy()
         {
-            ArchiveFilePath root = new ArchiveFilePath();
-            root.DisplayPath = Archive.FileName;
-            root.Children = new ObservableCollection<ArchiveFilePath>();
-            root.Type = FilePathType.Directory;
+            m_rootFilePath = new ArchiveFilePath();
+            m_rootFilePath.DisplayPath = Archive.FileName;
+            m_rootFilePath.Children = new ObservableCollection<ArchiveFilePath>();
+            m_rootFilePath.Type = FilePathType.Directory;
 
             List<ArchiveFilePath> rootDirs = new List<ArchiveFilePath>();
             ArchiveFilePathService.GetRootDirectories(rootDirs, Archive.Archive);
@@ -117,15 +134,23 @@ namespace Ba2Explorer.Controls
             {
                 if (path.Type == FilePathType.Directory)
                     path.DiscoverChildren(Archive.Archive);
-                root.Children.Add(path);
+                path.Parent = m_rootFilePath;
+                m_rootFilePath.Children.Add(path);
             }
 
-            FilePaths.Add(root);
-            FileListView.ItemsSource = root.Children;
+            FilePaths.Add(m_rootFilePath);
+            FileListView.ItemsSource = m_rootFilePath.Children;
 
-            TreeViewItem rootItem = (FileTreeView.ItemContainerGenerator.ContainerFromIndex(0) as TreeViewItem);
-            rootItem.IsSelected = true;
-            rootItem.IsExpanded = true;
+            var itemGen = FileTreeView.ItemContainerGenerator;
+            if (itemGen.Status != GeneratorStatus.ContainersGenerated)
+            {
+                itemGen.GenerateBatches().Dispose();
+            }
+
+            FileTreeView.UpdateLayout();
+            m_rootItem = (itemGen.ContainerFromIndex(0) as TreeViewItem);
+            m_rootItem.IsSelected = true;
+            m_rootItem.IsExpanded = true;
         }
 
         private void FileTree_ItemSelected(object sender, RoutedEventArgs e)
@@ -161,18 +186,23 @@ namespace Ba2Explorer.Controls
 
             if (item.Type == FilePathType.Directory)
             {
-                if (m_selectedDirectoryItem.ItemContainerGenerator.Status != GeneratorStatus.ContainersGenerated)
-                {
-                    // Selected Directory TreeViewItem wasn't expanded yet and children TreeViewItem's was not generated yet, which
-                    // means that call to ItemContainerGenerator.ContainerFromItem(item) will return null.
-                    // We force item generation, container expansion and layout invalidation so call to that method returns TreeViewItem
-                    // as excepted.
-                    m_selectedDirectoryItem.IsExpanded = true;
-                    m_selectedDirectoryItem.ItemContainerGenerator.GenerateBatches().Dispose();
-                    m_selectedDirectoryItem.UpdateLayout();
-                }
-
                 TreeViewItem treeItem = (TreeViewItem)m_selectedDirectoryItem.ItemContainerGenerator.ContainerFromItem(item);
+                if (treeItem == null)
+                {
+                    if (m_selectedDirectoryItem.ItemContainerGenerator.Status != GeneratorStatus.ContainersGenerated)
+                    {
+                        // Selected Directory TreeViewItem wasn't expanded yet and children TreeViewItem's was not generated yet, which
+                        // means that call to ItemContainerGenerator.ContainerFromItem(item) will return null.
+                        // We force item generation, container expansion and layout invalidation so call to that method returns TreeViewItem
+                        // as excepted.
+                        m_selectedDirectoryItem.IsExpanded = true;
+                        m_selectedDirectoryItem.ItemContainerGenerator.GenerateBatches().Dispose();
+                    }
+
+                    m_selectedDirectoryItem.BringIntoView();
+                    m_selectedDirectoryItem.UpdateLayout();
+                    treeItem = (TreeViewItem)m_selectedDirectoryItem.ItemContainerGenerator.ContainerFromItem(item);
+                }
                 treeItem.IsExpanded = true;
                 treeItem.IsSelected = true;
             }
