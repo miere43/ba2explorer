@@ -12,6 +12,7 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Input;
 using Ba2Explorer.Service;
+using Ba2Explorer.Utility;
 using Ba2Explorer.View;
 using Ba2Explorer.ViewModel;
 
@@ -73,7 +74,9 @@ namespace Ba2Explorer.Controls
 
         private TreeViewItem m_rootItem = null;
 
-        private ArchiveFilePath m_rootFilePath = null;
+        private ArchiveFilePath m_rootFilePath;
+
+        private ObjectPool<ArchiveFilePath> m_pathsPool = new ObjectPool<ArchiveFilePath>(10);
 
         private static void ArchivePropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
@@ -98,6 +101,8 @@ namespace Ba2Explorer.Controls
             }
 
             SelectedItems = new List<FileListItem>();
+            m_rootFilePath = m_pathsPool.Take();
+            m_rootFilePath.Children = new ObservableCollection<ArchiveFilePath>();
         }
 
         private void Reset()
@@ -111,29 +116,37 @@ namespace Ba2Explorer.Controls
             m_filePaths.Clear();
             m_rootItem = null;
             FileListView.ItemsSource = null;
-            if (m_rootFilePath != null)
-            {
-                m_rootFilePath.Destroy();
-                m_rootFilePath = null;
-            }
+            ReturnChildrenPathsToPool(m_rootFilePath);
+            m_rootFilePath.Reset();
+            m_pathsPool.ResetItemPointers();
 
             FileTreeView.IsEnabled = true;
             FileListView.IsEnabled = true;
         }
 
+        private void ReturnChildrenPathsToPool(ArchiveFilePath root)
+        {
+            foreach (var child in root.Children)
+            {
+                if (child.Type == FilePathType.Directory && child.Children != null)
+                {
+                    ReturnChildrenPathsToPool(child);
+                }
+                m_pathsPool.Return(child);
+            }
+        }
+
         private void LoadTopLevelHierarchy()
         {
-            m_rootFilePath = new ArchiveFilePath();
             m_rootFilePath.DisplayPath = Archive.FileName;
-            m_rootFilePath.Children = new ObservableCollection<ArchiveFilePath>();
             m_rootFilePath.Type = FilePathType.Directory;
 
             List<ArchiveFilePath> rootDirs = new List<ArchiveFilePath>();
-            ArchiveFilePathService.GetRootDirectories(rootDirs, Archive.Archive);
+            ArchiveFilePathService.GetRootDirectories(rootDirs, Archive.Archive, m_pathsPool);
             foreach (var path in rootDirs)
             {
                 if (path.Type == FilePathType.Directory)
-                    path.DiscoverChildren(Archive.Archive);
+                    path.DiscoverChildren(Archive.Archive, m_pathsPool);
                 path.Parent = m_rootFilePath;
                 m_rootFilePath.Children.Add(path);
             }
@@ -175,7 +188,7 @@ namespace Ba2Explorer.Controls
                 ArchiveFilePath filePath = (ArchiveFilePath)filePathObject;
                 if (filePath.Type == FilePathType.Directory && filePath.Children == null)
                 {
-                    filePath.DiscoverChildren(Archive.Archive);
+                    filePath.DiscoverChildren(Archive.Archive, m_pathsPool);
                 }
             }
         }

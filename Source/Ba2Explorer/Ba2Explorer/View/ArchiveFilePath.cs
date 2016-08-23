@@ -8,6 +8,7 @@ using Ba2Explorer.Service;
 using Ba2Tools;
 using System.Diagnostics;
 using System.Windows.Data;
+using Ba2Explorer.Utility;
 
 namespace Ba2Explorer.View
 {
@@ -18,7 +19,7 @@ namespace Ba2Explorer.View
     }
 
     [DebuggerDisplay("{Type}, PathComponent = {DisplayPath}")]
-    public sealed class ArchiveFilePath
+    public sealed class ArchiveFilePath : Poolable
     {
         private static ArchiveFilePathCustomSorter sorter = new ArchiveFilePathCustomSorter();
 
@@ -32,34 +33,32 @@ namespace Ba2Explorer.View
 
         public ArchiveFilePath Parent { get; set; }
 
-        public void DiscoverChildren(BA2Archive archive)
+        public void DiscoverChildren(BA2Archive archive, ObjectPool<ArchiveFilePath> pool)
         {
             if (Children != null) return;
             Children = new ObservableCollection<ArchiveFilePath>();
-            ArchiveFilePathService.DiscoverDirectoryItems(Children, archive, this);
+            ArchiveFilePathService.DiscoverDirectoryItems(Children, archive, this, pool);
 
             var g = (ListCollectionView)CollectionViewSource.GetDefaultView(Children);
             g.CustomSort = sorter;
-        }
-
-        public void Destroy()
-        {
-            if (Children == null) return;
-            foreach (var child in Children)
-            {
-                child.Destroy();
-            }
-            Children.Clear();
-            Children = null;
-            Parent = null;
-            DisplayPath = null;
-            RealPath = null;
         }
 
         public string GetDirectoryPath()
         {
             int p = RealPath.IndexOf(DisplayPath, 0, StringComparison.OrdinalIgnoreCase);
             return RealPath.Substring(0, p + DisplayPath.Length);
+        }
+
+        public override void Reset()
+        {
+            if (Children != null)
+            {
+                Children.Clear();
+            }
+            Parent = null;
+            DisplayPath = null;
+            RealPath = null;
+            // Type = meh
         }
     }
 }

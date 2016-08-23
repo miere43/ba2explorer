@@ -6,6 +6,7 @@ using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Ba2Explorer.Utility;
 using Ba2Explorer.View;
 using Ba2Explorer.ViewModel;
 using Ba2Tools;
@@ -16,7 +17,7 @@ namespace Ba2Explorer.Service
     {
         private static List<string> m_names = new List<string>();
 
-        public static void GetRootDirectories(IList<ArchiveFilePath> roots, BA2Archive archive)
+        public static void GetRootDirectories(IList<ArchiveFilePath> roots, BA2Archive archive, ObjectPool<ArchiveFilePath> pool)
         {
             roots.Clear();
             List<int> levelDirHashes = new List<int>();
@@ -37,19 +38,20 @@ namespace Ba2Explorer.Service
                         continue; // don't add same directory twice
                 }
 
-                roots.Add(new ArchiveFilePath()
-                {
-                    DisplayPath = root,
-                    Type = isFile ? FilePathType.File : FilePathType.Directory,
-                    RealPath = path
-                });
+                ArchiveFilePath filePath = pool.Take();
+                filePath.DisplayPath = root;
+                filePath.Type = isFile ? FilePathType.File : FilePathType.Directory;
+                filePath.RealPath = path;
+
+                roots.Add(filePath);
 
                 if (!isFile)
                     levelDirHashes.Add(rootHash);
             }
         }
 
-        public static void DiscoverDirectoryItems(IList<ArchiveFilePath> output, BA2Archive archive, ArchiveFilePath parent)
+        public static void DiscoverDirectoryItems(IList<ArchiveFilePath> output, BA2Archive archive, ArchiveFilePath parent,
+            ObjectPool<ArchiveFilePath> pool)
         {
             output.Clear();
             string folder = parent.GetDirectoryPath();
@@ -72,28 +74,29 @@ namespace Ba2Explorer.Service
                 if (nestedFolderIndex == -1)
                 {
                     // this is file
-                    output.Add(new ArchiveFilePath()
-                    {
-                        Type = FilePathType.File,
-                        DisplayPath = item.Substring(folderEndIndex + folder.Length + 1),
-                        RealPath = item,
-                        Parent = parent
-                    });
+                    ArchiveFilePath file = pool.Take();
+                    file.Type = FilePathType.File;
+                    file.DisplayPath = item.Substring(folderEndIndex + folder.Length + 1);
+                    file.RealPath = item;
+                    file.Parent = parent;
+
+                    output.Add(file);
                 }
                 else
                 {
                     // this is dir
-                    var add = new ArchiveFilePath()
-                    {
-                        Type = FilePathType.Directory,
-                        DisplayPath = item.Substring(folderEndIndex + folder.Length + 1, nestedFolderIndex - (folderEndIndex + folder.Length + 1)),
-                        RealPath = item
-                    };
-                    int hash = StringComparer.OrdinalIgnoreCase.GetHashCode(add.DisplayPath);
+                    string displayPath = item.Substring(folderEndIndex + folder.Length + 1, nestedFolderIndex - (folderEndIndex + folder.Length + 1));
+
+                    int hash = StringComparer.OrdinalIgnoreCase.GetHashCode(displayPath);
                     if (hashes.Contains(hash))
                         continue;
                     hashes.Add(hash);
-                    output.Add(add);
+
+                    ArchiveFilePath dir = pool.Take();
+                    dir.Type = FilePathType.Directory;
+                    dir.DisplayPath = displayPath;
+                    dir.RealPath = item;
+                    output.Add(dir);
                 }
             }
         }

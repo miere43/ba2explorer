@@ -84,6 +84,8 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Utility\Poolable.cs" />
+    <Compile Include="Utility\ObjectPool.cs" />
     <Compile Include="Utility\IconCache.cs" />
     <Compile Include="View\ArchiveFilePath.cs" />
     <Compile Include="View\ArchiveFilePathCustomSorter.cs" />
