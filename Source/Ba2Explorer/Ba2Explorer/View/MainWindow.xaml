@@ -78,7 +78,7 @@
         </Menu>
 
         <ctrls:ArchiveFileView
-            x:Name="FileListView"
+            x:Name="FileView"
             Archive="{Binding ArchiveInfo}"
             Grid.Row="2"
             Grid.Column="0">
@@ -107,7 +107,7 @@
             Visibility="{Binding IsChecked, ElementName=FilePreviewPanelMenuItem, Converter={StaticResource BoolToCollapsedVisConverter}}"
             IsEnabled="{Binding IsChecked, ElementName=FilePreviewPanelMenuItem}"
             Archive="{Binding ArchiveInfo}"
-            PreviewFileName="{Binding ElementName=FileListView, Path=SelectedItem.Path}"
+            PreviewFileName="{Binding ElementName=FileView, Path=SelectedItem.RealPath}"
             Grid.Row="1"
             Grid.RowSpan="2"
             Grid.Column="1" />

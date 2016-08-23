@@ -66,7 +66,6 @@ namespace Ba2Explorer.Utility
                 if (obj.Equals(m_pool[i]) /* no null check nessessary */)
                 {
                     m_prevReturnItemIndex = i;
-                    Debug.WriteLine($"iters to locate = {iterated}");
                     return i;
                 }
                 ++iterated;
@@ -92,7 +91,6 @@ namespace Ba2Explorer.Utility
             m_prevFreeItemIndex = i;
             ++m_numUsed;
             obj.m_free = false;
-            Debug.WriteLine($"Take(): num used = {m_numUsed}");
             return obj;
         }
 
@@ -103,7 +101,6 @@ namespace Ba2Explorer.Utility
             m_pool[pos].Reset();
             m_pool[pos].m_free = true;
             --m_numUsed;
-            Debug.WriteLine($"Return(): num used = {m_numUsed}");
         }
 
         /// <summary>

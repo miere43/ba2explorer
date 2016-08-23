@@ -27,6 +27,7 @@ namespace Ba2Explorer.View
 
         public string DisplayPath { get; set; }
 
+        // TODO rename to SourcePath
         public string RealPath { get; set; }
 
         public ObservableCollection<ArchiveFilePath> Children { get; set; }
@@ -35,8 +36,9 @@ namespace Ba2Explorer.View
 
         public void DiscoverChildren(BA2Archive archive, ObjectPool<ArchiveFilePath> pool)
         {
-            if (Children != null) return;
-            Children = new ObservableCollection<ArchiveFilePath>();
+            if (Children == null)
+                Children = new ObservableCollection<ArchiveFilePath>();
+
             ArchiveFilePathService.DiscoverDirectoryItems(Children, archive, this, pool);
 
             var g = (ListCollectionView)CollectionViewSource.GetDefaultView(Children);
@@ -46,7 +48,12 @@ namespace Ba2Explorer.View
         public string GetDirectoryPath()
         {
             int p = RealPath.IndexOf(DisplayPath, 0, StringComparison.OrdinalIgnoreCase);
-            return RealPath.Substring(0, p + DisplayPath.Length);
+            return RealPath.Substring(0, p + DisplayPath.Length + 1);
+        }
+
+        public string GetExtractionPath()
+        {
+            return RealPath;
         }
 
         public override void Reset()

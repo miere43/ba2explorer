@@ -208,27 +208,27 @@ namespace Ba2Explorer.View
                 return;
             }
 
-            e.CanExecute = FileListView.SelectedItem != null &&
-                !String.IsNullOrWhiteSpace(FileListView.SelectedItem.Path);
+            e.CanExecute = FileView.SelectedItem != null &&
+                !String.IsNullOrWhiteSpace(FileView.SelectedItem.RealPath);
 
             e.Handled = true;
         }
 
         private async void ExtractSelectedExecuted(object sender, ExecutedRoutedEventArgs e)
         {
-            if (FileListView.SelectedItems.Count == 1)
+            if (FileView.SelectedItems.Count == 1)
             {
-                FileListItem sel = FileListView.SelectedItems[0];
-                await viewModel.ExtractFileWithDialog(sel.Path);
+                ArchiveFilePath sel = FileView.SelectedItems[0];
+                await viewModel.ExtractFileWithDialog(sel.GetExtractionPath());
 
                 e.Handled = true;
             }
-            else if (FileListView.SelectedItems.Count > 1)
+            else if (FileView.SelectedItems.Count > 1)
             {
                 List<int> ss = new List<int>();
-                foreach (var sel in FileListView.SelectedItems)
+                foreach (var sel in FileView.SelectedItems)
                 {
-                    ss.Add(viewModel.ArchiveInfo.Archive.GetFileIndex(sel.Path));
+                    ss.Add(viewModel.ArchiveInfo.Archive.GetFileIndex(sel.GetExtractionPath()));
                 }
 
                 viewModel.ExtractFilesWithDialog(ss);

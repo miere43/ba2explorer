@@ -85,7 +85,7 @@ namespace Ba2Explorer.Service
                 else
                 {
                     // this is dir
-                    string displayPath = item.Substring(folderEndIndex + folder.Length + 1, nestedFolderIndex - (folderEndIndex + folder.Length + 1));
+                    string displayPath = item.Substring(folderEndIndex + folder.Length, nestedFolderIndex - (folderEndIndex + folder.Length));
 
                     int hash = StringComparer.OrdinalIgnoreCase.GetHashCode(displayPath);
                     if (hashes.Contains(hash))

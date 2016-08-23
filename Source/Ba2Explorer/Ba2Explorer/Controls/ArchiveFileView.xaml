@@ -25,7 +25,7 @@
             </Grid>
         </DataTemplate>
         <ContextMenu x:Key="FileViewItemContextMenu">
-            <MenuItem Command="cmds:AppCommands.ExtractSelected" Header="Test" />
+            <MenuItem Command="cmds:AppCommands.ExtractSelected" Header="Extract" />
         </ContextMenu>
         
         <HierarchicalDataTemplate DataType="{x:Type view:ArchiveFilePath}"

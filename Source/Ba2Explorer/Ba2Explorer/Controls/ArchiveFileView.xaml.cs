@@ -18,13 +18,6 @@ using Ba2Explorer.ViewModel;
 
 namespace Ba2Explorer.Controls
 {
-    public class FileListItem
-    {
-        public FilePathType Type { get; set; }
-
-        public string Path { get; set; }
-    }
-
     /// <summary>
     /// Interaction logic for FileListView.xaml
     /// </summary>
@@ -35,23 +28,23 @@ namespace Ba2Explorer.Controls
         /// <summary>
         /// Gets or sets file selected in list view. Returns null if nothing selected or selected item is not file.
         /// </summary>
-        public FileListItem SelectedItem
+        public ArchiveFilePath SelectedItem
         {
-            get { return (FileListItem)GetValue(SelectedItemProperty); }
+            get { return (ArchiveFilePath)GetValue(SelectedItemProperty); }
             set { SetValue(SelectedItemProperty, value); }
         }
 
         public static readonly DependencyProperty SelectedItemProperty =
-            DependencyProperty.Register(nameof(SelectedItem), typeof(FileListItem), typeof(ArchiveFileView));
+            DependencyProperty.Register(nameof(SelectedItem), typeof(ArchiveFilePath), typeof(ArchiveFileView));
 
-        public IList<FileListItem> SelectedItems
+        public IList<ArchiveFilePath> SelectedItems
         {
-            get { return (IList<FileListItem>)GetValue(SelectedItemsProperty); }
+            get { return (IList<ArchiveFilePath>)GetValue(SelectedItemsProperty); }
             set { SetValue(SelectedItemsProperty, value); }
         }
 
         public static readonly DependencyProperty SelectedItemsProperty =
-            DependencyProperty.Register(nameof(SelectedItems), typeof(IList<FileListItem>), typeof(ArchiveFileView));
+            DependencyProperty.Register(nameof(SelectedItems), typeof(IList<ArchiveFilePath>), typeof(ArchiveFileView));
 
         public ArchiveInfo Archive
         {
@@ -100,7 +93,7 @@ namespace Ba2Explorer.Controls
                 return;
             }
 
-            SelectedItems = new List<FileListItem>();
+            SelectedItems = new List<ArchiveFilePath>();
             m_rootFilePath = m_pathsPool.Take();
             m_rootFilePath.Children = new ObservableCollection<ArchiveFilePath>();
         }
@@ -186,7 +179,7 @@ namespace Ba2Explorer.Controls
             foreach (var filePathObject in item.Items)
             {
                 ArchiveFilePath filePath = (ArchiveFilePath)filePathObject;
-                if (filePath.Type == FilePathType.Directory && filePath.Children == null)
+                if (filePath.Type == FilePathType.Directory && (filePath.Children == null || filePath.Children.Count == 0))
                 {
                     filePath.DiscoverChildren(Archive.Archive, m_pathsPool);
                 }
@@ -269,11 +262,7 @@ namespace Ba2Explorer.Controls
                 //    b.Append('\\');
                 //}
                 //b.Append(item.DisplayPath);
-                SelectedItems.Add(new FileListItem()
-                {
-                    Type = item.Type,
-                    Path = item.DisplayPath
-                });
+                SelectedItems.Add(item);
             }
 
             if (SelectedItems.Count == 0)
