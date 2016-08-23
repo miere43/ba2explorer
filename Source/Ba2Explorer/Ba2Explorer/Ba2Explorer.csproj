@@ -84,6 +84,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Utility\IconCache.cs" />
     <Compile Include="View\ArchiveFilePath.cs" />
     <Compile Include="View\ArchiveFilePathCustomSorter.cs" />
     <Compile Include="Controls\ArchiveFileView.xaml.cs">
@@ -113,7 +114,7 @@
     <Compile Include="Utility\UACElevationHelper.cs" />
     <Compile Include="View\Commands\AppCommands.cs" />
     <Compile Include="View\Converters\ArchiveFilesViewColumnSpanConverter.cs" />
-    <Compile Include="View\Converters\FilePathTypeToImageConverter.cs" />
+    <Compile Include="View\Converters\FilePathToImageConverter.cs" />
     <Compile Include="View\Converters\BooleanToCollapsedVisibilityConverter.cs" />
     <Compile Include="View\Converters\ObjectToBooleanConverter.cs" />
     <Compile Include="View\FileExtractionWindow.xaml.cs">

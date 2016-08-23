@@ -78,11 +78,6 @@ namespace Ba2Explorer.Controls
 
             soundPlayer.Stream = soundSource;
 
-            // TODO:
-            // changing this line to soundPlayer.LoadAsync() can cause troubles
-            //
-            // stream could be disposed while SoundPlayer consumes it
-            // SoundPlayer will throw exception then.
             soundPlayer.Load();
 
             if (AutoplaySoundCheckbox.IsChecked.HasValue &&

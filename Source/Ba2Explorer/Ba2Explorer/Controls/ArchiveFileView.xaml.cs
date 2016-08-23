@@ -87,7 +87,6 @@ namespace Ba2Explorer.Controls
             {
                 FileListView.ItemsSource = new ObservableCollection<ArchiveFilePath>()
                 {
-                    new ArchiveFilePath() { Type = FilePathType.GoBack, DisplayPath = "..." },
                     new ArchiveFilePath() { Type = FilePathType.Directory, DisplayPath = "Some Directory" },
                     new ArchiveFilePath() { Type = FilePathType.File, DisplayPath = "Some File" }
                 };
@@ -129,7 +128,7 @@ namespace Ba2Explorer.Controls
             rootItem.IsExpanded = true;
         }
 
-        private void Item_Selected(object sender, RoutedEventArgs e)
+        private void FileTree_ItemSelected(object sender, RoutedEventArgs e)
         {
             TreeViewItem item = (TreeViewItem)e.OriginalSource;
             ArchiveFilePath selectedFilePath = (ArchiveFilePath)item.DataContext;
@@ -156,10 +155,6 @@ namespace Ba2Explorer.Controls
             }
         }
 
-        private void GoBack()
-        {
-        }
-
         private void ListViewOpenItem(ArchiveFilePath item)
         {
             Contract.Requires(item != null);
@@ -180,10 +175,6 @@ namespace Ba2Explorer.Controls
                 TreeViewItem treeItem = (TreeViewItem)m_selectedDirectoryItem.ItemContainerGenerator.ContainerFromItem(item);
                 treeItem.IsExpanded = true;
                 treeItem.IsSelected = true;
-            }
-            else if (item.Type == FilePathType.GoBack)
-            {
-                GoBack();
             }
             else if (item.Type == FilePathType.File)
             {
@@ -209,14 +200,14 @@ namespace Ba2Explorer.Controls
             PathLabel.Content = b.ToString();
         }
 
-        private void FileViewItem_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        private void FileList_ItemMouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             var item = ((FrameworkElement)e.Source).DataContext as ArchiveFilePath;
             if (item != null)
                 ListViewOpenItem(item);
         }
 
-        private void FileView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void FileList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             SelectedItems.Clear();
             //StringBuilder b = new StringBuilder();
@@ -252,20 +243,14 @@ namespace Ba2Explorer.Controls
             }
         }
 
-        private void FileView_KeyDown(object sender, KeyEventArgs e)
+        private void FileList_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
             {
                 var item = (ArchiveFilePath)FileListView.SelectedItem;
                 if (item != null)
                     ListViewOpenItem(item);
-            }
-            else if (e.Key == Key.Back)
-            {
-                GoBack();
-
-                FileListView.Items.Refresh();
-                UpdatePathLabel();
+                e.Handled = true;
             }
         }
     }

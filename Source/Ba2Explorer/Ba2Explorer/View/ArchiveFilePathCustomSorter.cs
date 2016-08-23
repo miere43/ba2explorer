@@ -16,8 +16,6 @@ namespace Ba2Explorer.View
 
         public int Compare(ArchiveFilePath x, ArchiveFilePath y)
         {
-            if (x.Type == FilePathType.GoBack)
-                return -1;
             if (x.Type == FilePathType.Directory) {
                 if (y.Type == FilePathType.Directory)
                     return string.Compare(x.DisplayPath, y.DisplayPath, StringComparison.CurrentCulture);

@@ -13,7 +13,6 @@ namespace Ba2Explorer.View
 {
     public enum FilePathType
     {
-        GoBack,
         Directory,
         File
     }

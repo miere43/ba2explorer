@@ -209,8 +209,7 @@ namespace Ba2Explorer.View
             }
 
             e.CanExecute = FileListView.SelectedItem != null &&
-                !String.IsNullOrWhiteSpace(FileListView.SelectedItem.Path) &&
-                FileListView.SelectedItem.Type != FilePathType.GoBack;
+                !String.IsNullOrWhiteSpace(FileListView.SelectedItem.Path);
 
             e.Handled = true;
         }

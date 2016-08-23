@@ -23,6 +23,7 @@ namespace Ba2Explorer.Controls
      * - fix horizontal scrolling with scrollbar when resizing window 
      * - fix bunch of TODOs in code.
      * - reduce memory allocation for each redraw, cache GlyphRuns.
+     * - crash when one line contains more than 65535 characters
     */ 
 
     /// <summary>
@@ -106,10 +107,6 @@ namespace Ba2Explorer.Controls
         {
             m_runs = new List<GlyphRun>();
 
-            //FontSize = 12;
-            //FontFamily = new FontFamily("Consolas");
-
-            // TODO: remove listener
             DependencyPropertyDescriptor
                 .FromProperty(Control.FontSizeProperty, typeof(Control))
                 .AddValueChanged(this, FontSizePropertyChanged);
