@@ -246,22 +246,13 @@ namespace Ba2Explorer.Controls
         private void FileList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             SelectedItems.Clear();
-            //StringBuilder b = new StringBuilder();
             foreach (var oitem in FileListView.SelectedItems)
             {
                 ArchiveFilePath item = (ArchiveFilePath)oitem;
-                if (item == null)
+                if (item == null || item.Type == FilePathType.Directory)
                 {
                     continue;
                 }
-                //b.Clear();
-
-                //for (int i = 0; i < m_paths.Count; ++i)
-                //{
-                //    b.Append(m_paths[i].DisplayPath);
-                //    b.Append('\\');
-                //}
-                //b.Append(item.DisplayPath);
                 SelectedItems.Add(item);
             }
 

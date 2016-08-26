@@ -30,7 +30,10 @@
         
         <HierarchicalDataTemplate DataType="{x:Type view:ArchiveFilePath}"
                                   ItemsSource="{Binding Path=Children}">
-            <TextBlock Text="{Binding Path=DisplayPath}" />
+            <StackPanel Orientation="Horizontal">
+                <Image Source="{Binding Converter={StaticResource FilePathToImageConverter}}" Margin="0,3,3,0" />
+                <TextBlock Text="{Binding DisplayPath}" Margin="0,3,0,3" />
+            </StackPanel>
         </HierarchicalDataTemplate>
     </UserControl.Resources>
     <Grid>

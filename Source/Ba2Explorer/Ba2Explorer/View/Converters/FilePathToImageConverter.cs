@@ -7,7 +7,7 @@ using Ba2Explorer.Utility;
 
 namespace Ba2Explorer.View.Converters
 {
-    [ValueConversion(typeof(FilePathType), typeof(ImageSource))]
+    [ValueConversion(typeof(ArchiveFilePath), typeof(ImageSource))]
     public class FilePathToImageConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)

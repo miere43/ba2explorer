@@ -1,14 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using Ba2Explorer.Utility;
 using Ba2Explorer.View;
-using Ba2Explorer.ViewModel;
 using Ba2Tools;
 
 namespace Ba2Explorer.Service
@@ -76,7 +71,7 @@ namespace Ba2Explorer.Service
                     // this is file
                     ArchiveFilePath file = pool.Take();
                     file.Type = FilePathType.File;
-                    file.DisplayPath = item.Substring(folderEndIndex + folder.Length + 1);
+                    file.DisplayPath = item.Substring(folderEndIndex + folder.Length);
                     file.RealPath = item;
                     file.Parent = parent;
 
