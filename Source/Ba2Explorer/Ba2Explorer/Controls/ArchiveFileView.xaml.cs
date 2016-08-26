@@ -165,10 +165,13 @@ namespace Ba2Explorer.Controls
             ArchiveFilePath selectedFilePath = (ArchiveFilePath)item.DataContext;
 
             if (selectedFilePath == m_selectedDirectory) return;
-
             if (selectedFilePath.Type == FilePathType.File)
             {
                 if (selectedFilePath.Parent == null) return;
+                if (selectedFilePath.Parent == m_selectedDirectory)
+                {
+                    FileListView.SelectedItem = selectedFilePath;
+                }
                 selectedFilePath = selectedFilePath.Parent;
             }
 
