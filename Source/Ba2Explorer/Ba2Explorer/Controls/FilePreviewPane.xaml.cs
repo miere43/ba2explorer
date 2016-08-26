@@ -172,7 +172,8 @@ namespace Ba2Explorer.Controls
         /// <param name="filePath">Path to file from archive.</param>
         private void SetPreview(string fileName)
         {
-            if (fileName == null)
+            // Render nothing for null fileNames and for directories.
+            if (fileName == null || (fileName.Length > 0 && fileName[fileName.Length - 1] == '\\'))
             {
                 SetNoPreview();
                 return;

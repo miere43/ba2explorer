@@ -30,8 +30,14 @@ namespace Ba2Explorer.View
         // TODO rename to SourcePath
         public string RealPath { get; set; }
 
+        /// <summary>
+        /// Children file paths for Directory type.
+        /// </summary>
         public ObservableCollection<ArchiveFilePath> Children { get; set; }
 
+        /// <summary>
+        /// Parent directory for this file path. Null if root element.
+        /// </summary>
         public ArchiveFilePath Parent { get; set; }
 
         public void DiscoverChildren(BA2Archive archive, ObjectPool<ArchiveFilePath> pool)
@@ -44,6 +50,8 @@ namespace Ba2Explorer.View
             var g = (ListCollectionView)CollectionViewSource.GetDefaultView(Children);
             g.CustomSort = sorter;
         }
+
+        public string FullPath => Type == FilePathType.File ? RealPath : RealPath.Substring(0, RealPath.LastIndexOf('\\') + 1);
 
         public string GetDirectoryPath()
         {

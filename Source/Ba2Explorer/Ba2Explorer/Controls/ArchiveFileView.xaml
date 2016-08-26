@@ -24,6 +24,7 @@
                 <Label Grid.Column="1" Content="{Binding DisplayPath}" Margin="4,2,0,2" Padding="0" />
             </Grid>
         </DataTemplate>
+        
         <ContextMenu x:Key="FileViewItemContextMenu">
             <MenuItem Command="cmds:AppCommands.ExtractSelected" Header="Extract" />
         </ContextMenu>
@@ -32,7 +33,7 @@
                                   ItemsSource="{Binding Path=Children}">
             <StackPanel Orientation="Horizontal">
                 <Image Source="{Binding Converter={StaticResource FilePathToImageConverter}}" Margin="0,3,3,0" />
-                <TextBlock Text="{Binding DisplayPath}" Margin="0,3,0,3" />
+                <TextBlock Text="{Binding DisplayPath}" Margin="0,3,3,3" />
             </StackPanel>
         </HierarchicalDataTemplate>
     </UserControl.Resources>

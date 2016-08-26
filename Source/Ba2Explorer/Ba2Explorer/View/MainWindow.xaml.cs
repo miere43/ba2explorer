@@ -201,16 +201,9 @@ namespace Ba2Explorer.View
 
         private void ExtractCanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
-            if (viewModel.ArchiveInfo == null)
-            {
-                e.CanExecute = false;
-                e.Handled = true;
-                return;
-            }
-
-            e.CanExecute = FileView.SelectedItem != null &&
-                !String.IsNullOrWhiteSpace(FileView.SelectedItem.RealPath);
-
+            e.CanExecute = viewModel.ArchiveInfo != null
+                && FileView.SelectedItem != null
+                && !String.IsNullOrWhiteSpace(FileView.SelectedItem.RealPath);
             e.Handled = true;
         }
 
@@ -280,15 +273,6 @@ namespace Ba2Explorer.View
         #endregion
 
         #region Helper methods
-
-        //private void SetSelectedItemFilePreview()
-        //{
-        //    string selection = (string)ArchiveFilesList.SelectedItem;
-
-        //    // TODO handle multiple selection
-        //    if (selection == null) return;
-        //    FilePreview.SetPreview(selection);
-        //}
 
         /// <summary>
         /// Changes main window title. Call without parameter to reset title, call with parameter to add additional string to the title.

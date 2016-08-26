@@ -164,12 +164,17 @@ namespace Ba2Explorer.Controls
             TreeViewItem item = (TreeViewItem)e.OriginalSource;
             ArchiveFilePath selectedFilePath = (ArchiveFilePath)item.DataContext;
 
-            if (selectedFilePath.Type == FilePathType.Directory)
+            if (selectedFilePath == m_selectedDirectory) return;
+
+            if (selectedFilePath.Type == FilePathType.File)
             {
-                m_selectedDirectory = selectedFilePath;
-                m_selectedDirectoryItem = item;
-                FileListView.ItemsSource = selectedFilePath.Children;
+                if (selectedFilePath.Parent == null) return;
+                selectedFilePath = selectedFilePath.Parent;
             }
+
+            m_selectedDirectory = selectedFilePath;
+            m_selectedDirectoryItem = item;
+            FileListView.ItemsSource = selectedFilePath.Children;
         }
 
         private void FileTree_ItemExpanded(object sender, RoutedEventArgs e)
@@ -249,7 +254,7 @@ namespace Ba2Explorer.Controls
             foreach (var oitem in FileListView.SelectedItems)
             {
                 ArchiveFilePath item = (ArchiveFilePath)oitem;
-                if (item == null || item.Type == FilePathType.Directory)
+                if (item == null)
                 {
                     continue;
                 }
