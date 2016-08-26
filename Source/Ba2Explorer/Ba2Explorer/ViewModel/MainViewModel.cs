@@ -17,6 +17,7 @@ using System.Runtime.CompilerServices;
 using System.Diagnostics.Contracts;
 using System.ComponentModel;
 using Ba2Tools;
+using Ba2Explorer.Service;
 
 namespace Ba2Explorer.ViewModel
 {
@@ -260,6 +261,46 @@ namespace Ba2Explorer.ViewModel
             }
         }
 
+        public void ExtractDirectoryWithDialog(ArchiveFilePath filePath)
+        {
+            List<int> indices = new List<int>();
+            ArchiveFilePathService.GetDirectoryFiles(filePath, ArchiveInfo.Archive, indices);
+            Debug.Assert(indices.Count != 0); // ba2 archives have no empty directories.
+
+            var dialog = new System.Windows.Forms.FolderBrowserDialog();
+            dialog.Description = "Extract folder...";
+            dialog.ShowNewFolderButton = true;
+
+            if (!String.IsNullOrWhiteSpace(AppSettings.Instance.Global.ExtractionLatestFolder))
+                dialog.SelectedPath = AppSettings.Instance.Global.ExtractionLatestFolder;
+
+            var result = dialog.ShowDialog();
+            if (result == System.Windows.Forms.DialogResult.OK)
+            {
+                ExtractFiles(dialog.SelectedPath, indices);
+            }
+        }
+
+        public void ExtractWithDialog(IEnumerable<ArchiveFilePath> paths)
+        {
+            List<int> indices = new List<int>();
+            foreach (var path in paths)
+            {
+                if (path.Type == FilePathType.Directory)
+                {
+                    ArchiveFilePathService.GetDirectoryFiles(path, ArchiveInfo.Archive, indices);
+                }
+                else
+                {
+                    int index = ArchiveInfo.Archive.GetFileIndex(path.RealPath);
+                    Debug.Assert(index != -1);
+                    indices.Add(index);
+                }
+            }
+
+            ExtractFilesWithDialog(indices);
+        }
+
         public void ExtractAllWithDialog()
         {
             var dialog = new System.Windows.Forms.FolderBrowserDialog();
@@ -274,7 +315,6 @@ namespace Ba2Explorer.ViewModel
             {
                 ExtractAll(dialog.SelectedPath);
             }
-            else { return; }
         }
 
         private void ExtractAll(string destinationFolder)
@@ -301,23 +341,18 @@ namespace Ba2Explorer.ViewModel
             if (files == null)
                 throw new ArgumentNullException(nameof(files));
 
-                var dialog = new System.Windows.Forms.FolderBrowserDialog();
-                dialog.Description = "Extract files to folder...";
-                dialog.ShowNewFolderButton = true;
+            var dialog = new System.Windows.Forms.FolderBrowserDialog();
+            dialog.Description = "Extract files to folder...";
+            dialog.ShowNewFolderButton = true;
 
-                if (!String.IsNullOrWhiteSpace(AppSettings.Instance.Global.ExtractionLatestFolder))
-                    dialog.SelectedPath = AppSettings.Instance.Global.ExtractionLatestFolder;
+            if (!String.IsNullOrWhiteSpace(AppSettings.Instance.Global.ExtractionLatestFolder))
+                dialog.SelectedPath = AppSettings.Instance.Global.ExtractionLatestFolder;
 
-                var result = dialog.ShowDialog();
-                if (result == System.Windows.Forms.DialogResult.OK)
-                {
-                    ExtractFiles(dialog.SelectedPath, files);
-                }
-                else
-                {
-                    return;
-                }
-
+            var result = dialog.ShowDialog();
+            if (result == System.Windows.Forms.DialogResult.OK)
+            {
+                ExtractFiles(dialog.SelectedPath, files);
+            }
         }
 
         public void RemoveRecentArchive(string filePath)

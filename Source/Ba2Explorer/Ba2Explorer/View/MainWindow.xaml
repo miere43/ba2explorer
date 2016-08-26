@@ -34,7 +34,7 @@
         <conv:BooleanToCollapsedVisibilityConverter x:Key="BoolToCollapsedVisConverter" />
         <conv:ArchiveFilesViewColumnSpanConverter x:Key="ArchiveFilesColumnSpanConverter" />
     </Window.Resources>
-    
+
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="1*"/>
@@ -80,25 +80,12 @@
         <ctrls:ArchiveFileView
             x:Name="FileView"
             Archive="{Binding ArchiveInfo}"
-            Grid.Row="2"
+            Grid.Row="1"
+            Grid.RowSpan="2"
+            Grid.ColumnSpan="{Binding IsChecked, ElementName=FilePreviewPanelMenuItem, Converter={StaticResource ArchiveFilesColumnSpanConverter}}"
             Grid.Column="0">
         </ctrls:ArchiveFileView>
 
-            <!--<ListView BorderThickness="0,1,0,0"
-                  x:Name="ArchiveFilesList"
-                  Grid.Row="2"
-                  Grid.Column="0"
-                  DataContext="{Binding ArchiveInfo}"
-                  ItemsSource="{Binding FileNames}"
-                  SelectionChanged="ArchiveFilesList_SelectionChanged"
-                  Grid.ColumnSpan="{Binding IsChecked, ElementName=FilePreviewPanelMenuItem, Converter={StaticResource ArchiveFilesColumnSpanConverter}}">
-            <ListView.ContextMenu>
-                <ContextMenu>
-                    <MenuItem Header="Extract" Command="commands:AppCommands.ExtractSelected" />
-                </ContextMenu>
-            </ListView.ContextMenu>
-        </ListView>-->
-        
         <GridSplitter Background="#4A5573" Grid.Row="1" Grid.RowSpan="2" Grid.Column="0" Width="2"
                       Visibility="{Binding Visibility, ElementName=FilePreview}"/>
 
@@ -123,12 +110,9 @@
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
-            <!-- TODO change to AccessText -->
-            <TextBlock Grid.Row="0" Grid.Column="0">Filter: </TextBlock>
-            <TextBox x:Name="FilterText" TextChanged="FilterText_TextChanged" Grid.Row="0" Grid.Column="1" Margin="4,0,2,0"></TextBox>
         </Grid>
 
-        <StatusBar Grid.Row="3" Grid.ColumnSpan="2" x:Name="StatusBar" Visibility="Collapsed">
+        <StatusBar Grid.Row="3" Grid.ColumnSpan="2" x:Name="StatusBar">
             <TextBlock x:Name="StatusBarTime" />
             <Separator />
             <TextBlock x:Name="StatusBarText" />

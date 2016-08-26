@@ -95,6 +95,17 @@ namespace Ba2Explorer.Service
                 }
             }
         }
+
+        public static void GetDirectoryFiles(ArchiveFilePath dir, BA2Archive archive, List<int> outputIndices)
+        {
+            // @TODO: optimize.
+            IReadOnlyList<string> files = archive.FileList;
+            string folder = dir.GetExtractionPath();
+            for (int i = 0; i < files.Count; ++i)
+            {
+                if (files[i].StartsWith(folder)) outputIndices.Add(i);
+            }
+        }
         
         private static void SplitNames(string path)
         {

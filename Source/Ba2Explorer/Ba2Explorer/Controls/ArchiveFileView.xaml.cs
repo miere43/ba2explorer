@@ -11,6 +11,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Input;
+using System.Windows.Media;
 using Ba2Explorer.Service;
 using Ba2Explorer.Utility;
 using Ba2Explorer.View;
@@ -26,7 +27,7 @@ namespace Ba2Explorer.Controls
         #region Dependency Properties
 
         /// <summary>
-        /// Gets or sets file selected in list view. Returns null if nothing selected or selected item is not file.
+        /// Gets or sets file selected in list view or returns null if nothing selected.
         /// </summary>
         public ArchiveFilePath SelectedItem
         {
@@ -103,7 +104,6 @@ namespace Ba2Explorer.Controls
             FileTreeView.IsEnabled = false;
             FileListView.IsEnabled = false;
 
-            PathLabel.Content = "";
             SelectedItem = null;
             SelectedItems.Clear();
             m_filePaths.Clear();
@@ -132,6 +132,7 @@ namespace Ba2Explorer.Controls
         private void LoadTopLevelHierarchy()
         {
             m_rootFilePath.DisplayPath = Archive.FileName;
+            m_rootFilePath.RealPath = "\\";
             m_rootFilePath.Type = FilePathType.Directory;
 
             List<ArchiveFilePath> rootDirs = new List<ArchiveFilePath>();
@@ -178,6 +179,11 @@ namespace Ba2Explorer.Controls
             m_selectedDirectory = selectedFilePath;
             m_selectedDirectoryItem = item;
             FileListView.ItemsSource = selectedFilePath.Children;
+
+            // @TODO: set this.SelectedItem to selected directory.
+            this.SelectedItems.Clear();
+            this.SelectedItems.Add(m_selectedDirectory);
+            this.SelectedItem = m_selectedDirectory;
         }
 
         private void FileTree_ItemExpanded(object sender, RoutedEventArgs e)
@@ -233,17 +239,6 @@ namespace Ba2Explorer.Controls
             //UpdatePathLabel();
         }
 
-        private void UpdatePathLabel()
-        {
-            StringBuilder b = new StringBuilder("\\");
-            //foreach (var path in m_paths)
-            //{
-            //    b.Append(path.DisplayPath);
-            //    b.Append('\\');
-            //}
-            PathLabel.Content = b.ToString();
-        }
-
         private void FileList_ItemMouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             var item = ((FrameworkElement)e.Source).DataContext as ArchiveFilePath;
@@ -283,6 +278,25 @@ namespace Ba2Explorer.Controls
                     ListViewOpenItem(item);
                 e.Handled = true;
             }
+        }
+
+        private void FileTree_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            TreeViewItem treeViewItem = VisualUpwardSearch(e.OriginalSource as DependencyObject);
+
+            if (treeViewItem != null)
+            {
+                treeViewItem.Focus();
+                e.Handled = true;
+            }
+        }
+
+        static TreeViewItem VisualUpwardSearch(DependencyObject source)
+        {
+            while (source != null && !(source is TreeViewItem))
+                source = VisualTreeHelper.GetParent(source);
+
+            return source as TreeViewItem;
         }
     }
 }

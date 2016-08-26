@@ -299,7 +299,7 @@ namespace Ba2Explorer.Controls
         /// <param name="stream">DDS image stream.</param>
         private void SetDdsPreview(DdsImage image)
         {
-            Contract.Requires(image != null);
+            Debug.Assert(image != null);
 
             IntPtr hBitmap = image.BitmapImage.GetHbitmap();
             BitmapSource source = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(

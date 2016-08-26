@@ -19,8 +19,6 @@ namespace Ba2Explorer.View
     {
         private MainViewModel viewModel;
 
-        private CollectionView archiveFilesFilter;
-
         private Action statusbarButtonAction;
 
         public MainWindow()
@@ -151,32 +149,6 @@ namespace Ba2Explorer.View
 
         #endregion
 
-        #region Archive files filter
-
-        private bool ArchiveFileFilter(object item)
-        {
-            if (String.IsNullOrWhiteSpace(FilterText.Text))
-                return true;
-            else
-            {
-                string filePath = (string)item;
-                return filePath.IndexOf(FilterText.Text, StringComparison.OrdinalIgnoreCase) >= 0;
-            }
-        }
-
-        private void FilterText_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            if (viewModel.ArchiveInfo == null)
-                return;
-
-            //CollectionViewSource.GetDefaultView(ArchiveFilesList.ItemsSource).Refresh();
-
-            //if (FilePreview.HasFileInQueue())
-            //    SetSelectedItemFilePreview();
-        }
-
-        #endregion
-
         #region Commands / Logic
 
         private void OpenCommandExecuted(object sender, ExecutedRoutedEventArgs e)
@@ -212,19 +184,21 @@ namespace Ba2Explorer.View
             if (FileView.SelectedItems.Count == 1)
             {
                 ArchiveFilePath sel = FileView.SelectedItems[0];
-                await viewModel.ExtractFileWithDialog(sel.GetExtractionPath());
+                if (sel.Type == FilePathType.Directory)
+                {
+                    // @TODO: ExtractDirectoryWithDialog
+                    viewModel.ExtractDirectoryWithDialog(sel);
+                }
+                else
+                {
+                    await viewModel.ExtractFileWithDialog(sel.GetExtractionPath());
+                }
 
                 e.Handled = true;
             }
             else if (FileView.SelectedItems.Count > 1)
             {
-                List<int> ss = new List<int>();
-                foreach (var sel in FileView.SelectedItems)
-                {
-                    ss.Add(viewModel.ArchiveInfo.Archive.GetFileIndex(sel.GetExtractionPath()));
-                }
-
-                viewModel.ExtractFilesWithDialog(ss);
+                viewModel.ExtractWithDialog(FileView.SelectedItems);
                 e.Handled = true;
             }
         }

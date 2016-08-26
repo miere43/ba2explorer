@@ -24,6 +24,7 @@ namespace Ba2Explorer.Controls
      * - fix bunch of TODOs in code.
      * - reduce memory allocation for each redraw, cache GlyphRuns.
      * - crash when one line contains more than 65535 characters
+     * - tab rendered as question glyph.
     */ 
 
     /// <summary>

@@ -61,7 +61,7 @@ namespace Ba2Explorer.View
 
         public string GetExtractionPath()
         {
-            return RealPath;
+            return FullPath;
         }
 
         public override void Reset()
