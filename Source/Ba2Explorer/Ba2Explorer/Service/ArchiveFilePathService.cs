@@ -100,10 +100,11 @@ namespace Ba2Explorer.Service
         {
             // @TODO: optimize.
             IReadOnlyList<string> files = archive.FileList;
-            string folder = dir.GetExtractionPath();
+            string folder = dir.GetDirectoryPath();
             for (int i = 0; i < files.Count; ++i)
             {
-                if (files[i].StartsWith(folder)) outputIndices.Add(i);
+                if (files[i].StartsWith(folder))
+                    outputIndices.Add(i);
             }
         }
         

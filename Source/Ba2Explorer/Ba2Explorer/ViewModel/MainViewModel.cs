@@ -263,9 +263,9 @@ namespace Ba2Explorer.ViewModel
 
         public void ExtractDirectoryWithDialog(ArchiveFilePath filePath)
         {
-            List<int> indices = new List<int>();
-            ArchiveFilePathService.GetDirectoryFiles(filePath, ArchiveInfo.Archive, indices);
-            Debug.Assert(indices.Count != 0); // ba2 archives have no empty directories.
+            //List<int> indices = new List<int>();
+            //ArchiveFilePathService.GetDirectoryFiles(filePath, ArchiveInfo.Archive, indices);
+            //Debug.Assert(indices.Count != 0); // ba2 archives have no empty directories.
 
             var dialog = new System.Windows.Forms.FolderBrowserDialog();
             dialog.Description = "Extract folder...";
@@ -277,7 +277,8 @@ namespace Ba2Explorer.ViewModel
             var result = dialog.ShowDialog();
             if (result == System.Windows.Forms.DialogResult.OK)
             {
-                ExtractFiles(dialog.SelectedPath, indices);
+                ArchiveInfo.ExtractDirectoryContents(filePath, dialog.SelectedPath);
+                // ExtractFiles(dialog.SelectedPath, indices);
             }
         }
 

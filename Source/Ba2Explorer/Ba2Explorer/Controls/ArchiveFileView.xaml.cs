@@ -38,9 +38,9 @@ namespace Ba2Explorer.Controls
         public static readonly DependencyProperty SelectedItemProperty =
             DependencyProperty.Register(nameof(SelectedItem), typeof(ArchiveFilePath), typeof(ArchiveFileView));
 
-        public IList<ArchiveFilePath> SelectedItems
+        public ObservableCollection<ArchiveFilePath> SelectedItems
         {
-            get { return (IList<ArchiveFilePath>)GetValue(SelectedItemsProperty); }
+            get { return (ObservableCollection<ArchiveFilePath>)GetValue(SelectedItemsProperty); }
             set { SetValue(SelectedItemsProperty, value); }
         }
 
@@ -94,7 +94,7 @@ namespace Ba2Explorer.Controls
                 return;
             }
 
-            SelectedItems = new List<ArchiveFilePath>();
+            SelectedItems = new ObservableCollection<ArchiveFilePath>();
             m_rootFilePath = m_pathsPool.Take();
             m_rootFilePath.Children = new ObservableCollection<ArchiveFilePath>();
         }
@@ -164,6 +164,7 @@ namespace Ba2Explorer.Controls
         {
             TreeViewItem item = (TreeViewItem)e.OriginalSource;
             ArchiveFilePath selectedFilePath = (ArchiveFilePath)item.DataContext;
+			ArchiveFilePath selectedDirectory = m_selectedDirectory;
 
             if (selectedFilePath == m_selectedDirectory) return;
             if (selectedFilePath.Type == FilePathType.File)
@@ -173,17 +174,21 @@ namespace Ba2Explorer.Controls
                 {
                     FileListView.SelectedItem = selectedFilePath;
                 }
-                selectedFilePath = selectedFilePath.Parent;
+				selectedDirectory = selectedFilePath.Parent;
             }
+			else if (selectedFilePath.Type == FilePathType.Directory)
+			{
+				selectedDirectory = selectedFilePath;
+			}
 
-            m_selectedDirectory = selectedFilePath;
+            m_selectedDirectory = selectedDirectory;
             m_selectedDirectoryItem = item;
-            FileListView.ItemsSource = selectedFilePath.Children;
+            FileListView.ItemsSource = selectedDirectory.Children;
 
             // @TODO: set this.SelectedItem to selected directory.
             this.SelectedItems.Clear();
-            this.SelectedItems.Add(m_selectedDirectory);
-            this.SelectedItem = m_selectedDirectory;
+            this.SelectedItems.Add(selectedFilePath);
+            this.SelectedItem = selectedFilePath;
         }
 
         private void FileTree_ItemExpanded(object sender, RoutedEventArgs e)
@@ -223,8 +228,14 @@ namespace Ba2Explorer.Controls
                     m_selectedDirectoryItem.UpdateLayout();
                     treeItem = (TreeViewItem)m_selectedDirectoryItem.ItemContainerGenerator.ContainerFromItem(item);
                 }
-                treeItem.IsExpanded = true;
-                treeItem.IsSelected = true;
+				if (treeItem != null)
+				{
+					if (m_selectedDirectory != null && !m_selectedDirectoryItem.IsExpanded) { 
+						m_selectedDirectoryItem.IsExpanded = true;
+					}
+					treeItem.IsSelected = true;
+					treeItem.IsExpanded = true;
+				}
             }
             else if (item.Type == FilePathType.File)
             {
@@ -253,20 +264,11 @@ namespace Ba2Explorer.Controls
             {
                 ArchiveFilePath item = (ArchiveFilePath)oitem;
                 if (item == null)
-                {
                     continue;
-                }
                 SelectedItems.Add(item);
             }
 
-            if (SelectedItems.Count == 0)
-            {
-                SelectedItem = null;
-            }
-            else
-            {
-                SelectedItem = SelectedItems[0];
-            }
+			SelectedItem = SelectedItems.Count == 0 ? null : SelectedItems[0];
         }
 
         private void FileList_KeyDown(object sender, KeyEventArgs e)

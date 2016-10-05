@@ -14,6 +14,9 @@ using System.Linq;
 using System.ComponentModel;
 using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
+using Ba2Explorer.Service;
+using Ba2Explorer.View;
+using System.Diagnostics;
 
 namespace Ba2Explorer.ViewModel
 {
@@ -107,8 +110,6 @@ namespace Ba2Explorer.ViewModel
 
         #region Public methods
 
-        public BA2Archive GetArchive() { return Archive; }
-
         public Task ExtractAllAsync(string destFolder, CancellationToken cancellationToken, IProgress<int> progress)
         {
             return Task.Run(() =>
@@ -123,6 +124,30 @@ namespace Ba2Explorer.ViewModel
                     throw;
                 }
             });
+        }
+
+        /// <summary>
+        /// Extracts all files from archive directory to specified directory 'outputDir'.
+        /// </summary>
+        public void ExtractDirectoryContents(ArchiveFilePath archiveDir, string outputDir)
+        {
+            Debug.Assert(archiveDir.Type == FilePathType.Directory);
+
+            List<int> indices = new List<int>();
+            ArchiveFilePathService.GetDirectoryFiles(archiveDir, Archive, indices);
+
+            string archiveDirPath = archiveDir.GetDirectoryPath();
+            foreach (var index in indices)
+            {
+                string outputPath = Path.Combine(outputDir, Archive.FileList[index].Substring(archiveDirPath.Length));
+                Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
+                Debug.WriteLine($"{index} = {outputPath}");
+
+                using (FileStream stream = File.Create(outputPath, 4096))
+                {
+                    m_archive.ExtractToStream(index, stream);
+                }
+            }
         }
 
         /// <summary>
