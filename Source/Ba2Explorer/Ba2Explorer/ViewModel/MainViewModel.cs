@@ -69,6 +69,17 @@ namespace Ba2Explorer.ViewModel
             }
         }
 
+		private ObservableCollection<string> favoriteArchives;
+		public ObservableCollection<string> FavoriteArchives
+		{
+			get { return favoriteArchives; }
+			set
+			{
+				favoriteArchives = value;
+				RaisePropertyChanged();
+			}
+		}
+
         public bool HasRecentArchives
         {
             get
@@ -104,8 +115,10 @@ namespace Ba2Explorer.ViewModel
 //                PrepareDesignTimeData();
 //#endif
 
-            RecentArchives = AppSettings.Instance.MainWindow.GetLatestFiles();
+            RecentArchives = AppSettings.Instance.MainWindow.GetRecentArchives();
             RecentArchives.CollectionChanged += (sender, args) => RaisePropertyChanged(nameof(HasRecentArchives));
+
+			FavoriteArchives = AppSettings.Instance.MainWindow.GetFavoriteArchives();
         }
 
         /// <summary>

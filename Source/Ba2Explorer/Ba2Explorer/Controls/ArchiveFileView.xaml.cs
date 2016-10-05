@@ -185,7 +185,6 @@ namespace Ba2Explorer.Controls
             m_selectedDirectoryItem = item;
             FileListView.ItemsSource = selectedDirectory.Children;
 
-            // @TODO: set this.SelectedItem to selected directory.
             this.SelectedItems.Clear();
             this.SelectedItems.Add(selectedFilePath);
             this.SelectedItem = selectedFilePath;

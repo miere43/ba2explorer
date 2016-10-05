@@ -65,6 +65,18 @@
             <MenuItem Header="View">
                 <MenuItem x:Name="FilePreviewPanelMenuItem" IsChecked="True" IsCheckable="True" Header="File Preview Panel" />
             </MenuItem>
+			<MenuItem Header="Favorites" Click="FavoritesMenuItem_Click">
+				<MenuItem.ItemsSource>
+					<CompositeCollection>
+						<!-- @TODO         code depends on this string \/\/\/\/\/\/\/\/ -->
+						<MenuItem x:Name="FavoriteAddMenuItem" Header="Add to favorites" IsEnabled="{Binding ArchiveInfo, Converter={StaticResource ObjectToBooleanConverter}}"
+								  Click="FavoriteAddMenuItem_Click"/>
+						<!-- @TODO Edit Favorites -->
+						<Separator />
+						<CollectionContainer Collection="{Binding FavoriteArchives, Source={StaticResource MainVM}}" />
+					</CompositeCollection>
+				</MenuItem.ItemsSource>
+			</MenuItem>
             <MenuItem Header="Archive" IsEnabled="{Binding ArchiveInfo, Converter={StaticResource ObjectToBooleanConverter}}">
                 <MenuItem Header="Close" Command="Close" />
                 <Separator />

@@ -186,7 +186,6 @@ namespace Ba2Explorer.View
                 ArchiveFilePath sel = FileView.SelectedItems[0];
                 if (sel.Type == FilePathType.Directory)
                 {
-                    // @TODO: ExtractDirectoryWithDialog
                     viewModel.ExtractDirectoryWithDialog(sel);
                 }
                 else
@@ -244,15 +243,33 @@ namespace Ba2Explorer.View
             statusbarButtonAction?.Invoke();
         }
 
-        #endregion
+		private void FavoriteAddMenuItem_Click(object sender, RoutedEventArgs e)
+		{
+			if (viewModel == null || viewModel.ArchiveInfo == null || string.IsNullOrEmpty(viewModel.ArchiveInfo.FilePath))
+				return;
 
-        #region Helper methods
+			AppSettings.Instance.MainWindow.AddFavoriteArchive(viewModel.ArchiveInfo.FilePath, viewModel.FavoriteArchives);
+		}
 
-        /// <summary>
-        /// Changes main window title. Call without parameter to reset title, call with parameter to add additional string to the title.
-        /// </summary>
-        /// <param name="value">Additional string, which will be appended to title. Use <c>null</c> to remove additional string.</param>
-        private void UpdateTitle(string value = null)
+		private void FavoritesMenuItem_Click(object sender, RoutedEventArgs e)
+		{
+			if (e.OriginalSource == sender) return;
+			string name = (string)((MenuItem)e.OriginalSource).Header;
+			if (string.IsNullOrEmpty(name) || name == "Add to favorites") return;
+			// @TODO wtf is this              ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+			viewModel.OpenArchive(name);
+		}
+
+		#endregion
+
+		#region Helper methods
+
+		/// <summary>
+		/// Changes main window title. Call without parameter to reset title, call with parameter to add additional string to the title.
+		/// </summary>
+		/// <param name="value">Additional string, which will be appended to title. Use <c>null</c> to remove additional string.</param>
+		private void UpdateTitle(string value = null)
         {
             if (value == null)
                 this.Title = "BA2 Explorer";
@@ -310,6 +327,6 @@ namespace Ba2Explorer.View
                     AssociateExtensionMenuItem.Header = "Associate archive extension";
         }
 
-        #endregion
-    }
+		#endregion
+	}
 }

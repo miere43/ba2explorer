@@ -20,7 +20,11 @@ namespace Ba2Explorer.Settings
 
         public List<string> RecentArchives { get; set; } = null;
 
-        private const int maxRecentArchives = 5;
+		public List<string> FavoriteArchives { get; set; } = null;
+
+        private const int maxRecentArchives = 8;
+
+		private const int maxFavoriteArchives = 16;
 
         /// <summary>
         /// Pushes archive file path to settings' internal
@@ -41,6 +45,25 @@ namespace Ba2Explorer.Settings
             PushRecentArchiveInternal(archivePath, to);
         }
 
+		public void AddFavoriteArchive(string archivePath, IList<string> to)
+		{
+			if (archivePath == null)
+				throw new ArgumentNullException(nameof(archivePath));
+			if (to == null)
+				throw new ArgumentNullException(nameof(to));
+
+			if (FavoriteArchives == null)
+				FavoriteArchives = new List<string>();
+
+			foreach (var path in FavoriteArchives)
+				if (string.Equals(path, archivePath, StringComparison.OrdinalIgnoreCase))
+					return;
+
+			FavoriteArchives.Add(archivePath);
+			to.Add(archivePath);
+			// TODO
+		}
+
         private void PushRecentArchiveInternal(string archivePath, IList<string> to)
         {
             int sameIndex = to.IndexOf(archivePath);
@@ -60,7 +83,7 @@ namespace Ba2Explorer.Settings
         /// <summary>
         /// Rethieves latest files as ObservableCollection.
         /// </summary>
-        public ObservableCollection<string> GetLatestFiles()
+        public ObservableCollection<string> GetRecentArchives()
         {
             return new ObservableCollection<string>(this.RecentArchives);
         }
@@ -79,9 +102,16 @@ namespace Ba2Explorer.Settings
             if (WindowTop < -WindowHeight)
                 WindowTop = 32;
             if (RecentArchives == null)
-                RecentArchives = new List<string>(maxRecentArchives);
+                RecentArchives = new List<string>(0);
+			if (FavoriteArchives == null)
+				FavoriteArchives = new List<string>(0);
 
             base.Loaded();
         }
-    }
+
+		public ObservableCollection<string> GetFavoriteArchives()
+		{
+			return new ObservableCollection<string>(this.FavoriteArchives);
+		}
+	}
 }
